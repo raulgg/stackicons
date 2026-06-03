@@ -52,4 +52,27 @@ describe("/icons route", () => {
     expect(body).toContain("Unknown icon slug: not-real.");
     expect(body).not.toMatch(/\b(?:href|src)=/);
   });
+
+  it("should ignore the version query param when a valid icon request renders", async () => {
+    // Given
+    const requestWithoutVersion = new Request(
+      "http://localhost/icons?icons=typescript,react&columns=2&gap=12&theme=dark",
+    );
+    const requestWithVersion = new Request(
+      "http://localhost/icons?icons=typescript,react&columns=2&gap=12&theme=dark&v=cache-key",
+    );
+
+    // When
+    const responseWithoutVersion = await GET(requestWithoutVersion);
+    const responseWithVersion = await GET(requestWithVersion);
+    const bodyWithoutVersion = await responseWithoutVersion.text();
+    const bodyWithVersion = await responseWithVersion.text();
+
+    // Then
+    expect(responseWithVersion.status).toBe(200);
+    expect(responseWithVersion.headers.get("Cache-Control")).toBe(
+      "public, max-age=31536000, s-maxage=31536000, immutable",
+    );
+    expect(bodyWithVersion).toBe(bodyWithoutVersion);
+  });
 });

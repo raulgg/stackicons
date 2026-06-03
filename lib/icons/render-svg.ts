@@ -1,13 +1,10 @@
-import { readFile } from "node:fs/promises";
-import path from "node:path";
-
 import { normalizeTrustedSvgAsset } from "./normalize-svg";
+import { readRawSvgAsset } from "./raw-svg-cache";
 import { getIconAssetPath } from "./registry";
 import { escapeXml } from "./svg-utils";
 import type { ParsedIconRequest } from "./parse-request";
 
 const iconSize = 40;
-const rawSvgCache = new Map<string, Promise<string>>();
 
 export async function renderIconSvg({
   columns,
@@ -26,7 +23,7 @@ export async function renderIconSvg({
       const x = (index % columns) * (iconSize + gap);
       const y = Math.floor(index / columns) * (iconSize + gap);
       const assetPath = getIconAssetPath({ slug: icon.slug, theme });
-      const assetSvg = await readRawSvg(assetPath);
+      const assetSvg = await readRawSvgAsset(assetPath);
       const normalizedSvg = normalizeTrustedSvgAsset({
         occurrence: index,
         slug: icon.slug,
@@ -44,19 +41,4 @@ export async function renderIconSvg({
   <desc id="desc">${escapeXml(description)}</desc>
   ${iconMarkup.join("\n  ")}
 </svg>`;
-}
-
-async function readRawSvg(assetPath: string): Promise<string> {
-  const cachedSvg = rawSvgCache.get(assetPath);
-
-  if (cachedSvg) {
-    return cachedSvg;
-  }
-
-  const svgPromise = readFile(
-    path.join(process.cwd(), "assets", "icons", path.basename(assetPath)),
-    "utf8",
-  );
-  rawSvgCache.set(assetPath, svgPromise);
-  return svgPromise;
 }
