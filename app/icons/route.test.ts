@@ -21,8 +21,11 @@ describe("/icons route", () => {
     );
     expect(body).toContain('<svg xmlns="http://www.w3.org/2000/svg"');
     expect(body).toContain('width="92" height="92"');
-    expect(body).toContain("<desc id=\"desc\">TypeScript, React, TypeScript</desc>");
-    expect(body).toContain("README Stack Icons");
+    expect(body).toContain('role="img"');
+    expect(body).toContain("<title id=\"title\">TypeScript, React, TypeScript</title>");
+    expect(body).toContain(
+      "<desc id=\"desc\">Technology stack icons for TypeScript, React, TypeScript.</desc>",
+    );
     expect(body.match(/#3178C6/g)).toHaveLength(2);
     expect(body).toContain('<svg x="0" y="0" width="40" height="40"');
     expect(body).toContain('<svg x="52" y="0" width="40" height="40"');

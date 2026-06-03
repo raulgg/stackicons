@@ -18,7 +18,8 @@ export async function renderIconSvg({
   const usedColumns = Math.min(columns, icons.length);
   const width = usedColumns * iconSize + Math.max(usedColumns - 1, 0) * gap;
   const height = rows * iconSize + Math.max(rows - 1, 0) * gap;
-  const labels = icons.map((icon) => icon.label).join(", ");
+  const title = icons.map((icon) => icon.label).join(", ");
+  const description = `Technology stack icons for ${title}.`;
   const iconMarkup = await Promise.all(
     icons.map(async (icon, index) => {
       const x = (index % columns) * (iconSize + gap);
@@ -38,8 +39,8 @@ export async function renderIconSvg({
   );
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-labelledby="title desc">
-  <title id="title">README Stack Icons</title>
-  <desc id="desc">${escapeXml(labels)}</desc>
+  <title id="title">${escapeXml(title)}</title>
+  <desc id="desc">${escapeXml(description)}</desc>
   ${iconMarkup.join("\n  ")}
 </svg>`;
 }

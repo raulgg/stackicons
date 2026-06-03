@@ -27,7 +27,7 @@ function request(overrides: Partial<ParsedIconRequest>): ParsedIconRequest {
 }
 
 describe("renderIconSvg", () => {
-  it("should render icons in request order with repeated slugs when an SVG is generated", async () => {
+  it("should render document metadata in request order with repeated slugs when an SVG is generated", async () => {
     // Given
     const parsedRequest = request({
       icons: [
@@ -44,8 +44,12 @@ describe("renderIconSvg", () => {
     const svg = await renderIconSvg(parsedRequest);
 
     // Then
+    expect(svg).toContain('role="img" aria-labelledby="title desc"');
     expect(svg).toContain(
-      '<desc id="desc">TypeScript, React, TypeScript, Next.js</desc>',
+      "<title id=\"title\">TypeScript, React, TypeScript, Next.js</title>",
+    );
+    expect(svg).toContain(
+      "<desc id=\"desc\">Technology stack icons for TypeScript, React, TypeScript, Next.js.</desc>",
     );
     expect(svg.match(/#3178C6/g)).toHaveLength(2);
     expect(svg.indexOf("#3178C6")).toBeLessThan(svg.indexOf("#087EA4"));
@@ -72,7 +76,7 @@ describe("renderIconSvg", () => {
 
     // Then
     expect(svg).toContain(
-      '<svg xmlns="http://www.w3.org/2000/svg" width="92" height="144" viewBox="0 0 92 144"',
+      '<svg xmlns="http://www.w3.org/2000/svg" width="92" height="144" viewBox="0 0 92 144" role="img"',
     );
     expect(svg.match(/<svg x="/g)).toHaveLength(5);
     expect(svg).toContain('<svg x="0" y="0" width="40" height="40"');
