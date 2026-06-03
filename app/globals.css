@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 42 24% 96%;
+  --foreground: 204 18% 12%;
+  --card: 42 24% 98%;
+  --card-foreground: 204 18% 12%;
+  --primary: 169 77% 24%;
+  --primary-foreground: 40 28% 97%;
+  --secondary: 199 34% 88%;
+  --secondary-foreground: 204 18% 16%;
+  --muted: 38 18% 89%;
+  --muted-foreground: 202 10% 38%;
+  --accent: 12 82% 57%;
+  --accent-foreground: 40 28% 97%;
+  --border: 205 15% 78%;
+  --input: 205 15% 78%;
+  --ring: 169 77% 24%;
+  --radius: 0.5rem;
+}
+
+* {
+  border-color: hsl(var(--border));
+}
+
+body {
+  min-height: 100vh;
+  background:
+    linear-gradient(135deg, rgba(240, 123, 75, 0.08), transparent 36%),
+    hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: Charter, "Bitstream Charter", "Sitka Text", Cambria, serif;
+}
+
+.font-mono {
+  font-family: "SF Mono", "Cascadia Code", "Roboto Mono", Menlo, monospace;
+}
