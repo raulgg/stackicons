@@ -1,4 +1,4 @@
-const DEFAULT_ICONS = "typescript,nextjs,tailwind,vercel";
+const DEFAULT_ICONS = "typescript,nextjs,tailwindcss,vercel";
 const DEFAULT_COLUMNS = "16";
 const DEFAULT_GAP = "8";
 

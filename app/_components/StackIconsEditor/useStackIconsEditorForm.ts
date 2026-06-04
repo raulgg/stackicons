@@ -2,6 +2,8 @@
 
 import React from "react";
 
+import { parseIconRequest } from "@/lib/icons/parse-request";
+
 import type { StackIconsEditorState } from "./state";
 
 function buildPageQuery(state: StackIconsEditorState): string {
@@ -14,6 +16,16 @@ function buildPageQuery(state: StackIconsEditorState): string {
   return params.toString();
 }
 
+function buildIconRequestParams(state: StackIconsEditorState): URLSearchParams {
+  const params = new URLSearchParams();
+
+  params.set("icons", state.icons.trim() === "" ? "all" : state.icons);
+  params.set("columns", state.columns);
+  params.set("gap", state.gap);
+
+  return params;
+}
+
 function buildIconsUrl(
   state: StackIconsEditorState,
   currentOrigin: string,
@@ -23,13 +35,7 @@ function buildIconsUrl(
   }
 
   const url = new URL("/icons", currentOrigin);
-
-  url.searchParams.set(
-    "icons",
-    state.icons.trim() === "" ? "all" : state.icons,
-  );
-  url.searchParams.set("columns", state.columns);
-  url.searchParams.set("gap", state.gap);
+  url.search = buildIconRequestParams(state).toString();
 
   return url.toString();
 }
@@ -52,20 +58,25 @@ export function useStackIconsEditorForm(initialState: StackIconsEditorState) {
     getCurrentOrigin,
     getServerOriginSnapshot,
   );
-  const [state, setState] = React.useState<StackIconsEditorState>(initialState);
+  const [editorState, setEditorState] =
+    React.useState<StackIconsEditorState>(initialState);
+  const [previewState, setPreviewState] =
+    React.useState<StackIconsEditorState | null>(null);
+  const [validationErrors, setValidationErrors] = React.useState<string[]>([]);
 
-  const generatedUrl = buildIconsUrl(state, currentOrigin);
+  const generatedUrl =
+    previewState === null ? "" : buildIconsUrl(previewState, currentOrigin);
 
   function updateField<Field extends keyof StackIconsEditorState>(
     field: Field,
     value: StackIconsEditorState[Field],
   ) {
     const nextState = {
-      ...state,
+      ...editorState,
       [field]: value,
     };
 
-    setState(nextState);
+    setEditorState(nextState);
 
     const nextQuery = buildPageQuery(nextState);
     const nextUrl = `${window.location.pathname}?${nextQuery}`;
@@ -73,9 +84,24 @@ export function useStackIconsEditorForm(initialState: StackIconsEditorState) {
     window.history.replaceState(null, "", nextUrl);
   }
 
+  function generatePreview() {
+    const parsedRequest = parseIconRequest(buildIconRequestParams(editorState));
+
+    if (!parsedRequest.success) {
+      setPreviewState(null);
+      setValidationErrors(parsedRequest.errors);
+      return;
+    }
+
+    setPreviewState(editorState);
+    setValidationErrors([]);
+  }
+
   return {
+    generatePreview,
     generatedUrl,
-    state,
+    state: editorState,
     updateField,
+    validationErrors,
   };
 }

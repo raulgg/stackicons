@@ -1,8 +1,10 @@
 "use client";
 
+import Image from "next/image";
 import React from "react";
-import { LinkIcon } from "lucide-react";
+import { ImageIcon, LinkIcon, WandSparklesIcon } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import type { StackIconsEditorState } from "./state";
 import { useStackIconsEditorForm } from "./useStackIconsEditorForm";
 
@@ -13,8 +15,15 @@ type StackIconsEditorProps = {
 };
 
 export function StackIconsEditor({ initialState }: StackIconsEditorProps) {
-  const { generatedUrl, state, updateField } =
-    useStackIconsEditorForm(initialState);
+  const {
+    generatedUrl,
+    generatePreview,
+    state,
+    updateField,
+    validationErrors,
+  } = useStackIconsEditorForm(initialState);
+
+  const hasValidationErrors = validationErrors.length > 0;
 
   return (
     <div className="rounded-lg border bg-card p-5 shadow-sm">
@@ -68,6 +77,25 @@ export function StackIconsEditor({ initialState }: StackIconsEditorProps) {
         </div>
       </div>
 
+      <Button className="mt-5 w-full" onClick={generatePreview} type="button">
+        <WandSparklesIcon className="h-4 w-4" aria-hidden="true" />
+        Generate Preview
+      </Button>
+
+      {hasValidationErrors ? (
+        <div
+          aria-live="polite"
+          className="mt-4 rounded-md border border-accent/60 bg-accent/10 px-3 py-2 font-mono text-sm text-foreground"
+          role="alert"
+        >
+          <ul className="grid gap-1">
+            {validationErrors.map((error) => (
+              <li key={error}>{error}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
       <div className="mt-5">
         <label
           className="flex items-center gap-2 font-mono text-xs text-muted-foreground"
@@ -79,11 +107,31 @@ export function StackIconsEditor({ initialState }: StackIconsEditorProps) {
         <input
           className="mt-1 w-full rounded-md border bg-muted px-3 py-2 font-mono text-sm text-muted-foreground"
           id="generated-url"
+          placeholder="Generate a preview to create the SVG URL"
           readOnly
           type="text"
           value={generatedUrl}
         />
       </div>
+
+      {generatedUrl === "" ? null : (
+        <div className="mt-5">
+          <p className="flex items-center gap-2 font-mono text-xs text-muted-foreground">
+            <ImageIcon className="h-3.5 w-3.5" aria-hidden="true" />
+            Preview
+          </p>
+          <div className="mt-2 overflow-auto rounded-md border bg-background p-3">
+            <Image
+              alt="Generated stack icons preview"
+              className="h-auto w-auto max-w-none"
+              height={160}
+              src={generatedUrl}
+              unoptimized
+              width={640}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
