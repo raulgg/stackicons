@@ -12,9 +12,22 @@ function setLocation(url: string) {
   window.history.replaceState(null, "", url);
 }
 
+function mockClipboard(writeText: ReturnType<typeof vi.fn>) {
+  Object.defineProperty(navigator, "clipboard", {
+    configurable: true,
+    value: {
+      writeText,
+    },
+  });
+}
+
 describe("StackIconsEditor", () => {
   beforeEach(() => {
     setLocation("/");
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: undefined,
+    });
   });
 
   it("should reflect raw form state in the page query when fields change", async () => {
@@ -153,6 +166,142 @@ describe("StackIconsEditor", () => {
     expect((readmeHtml as HTMLTextAreaElement).value).not.toContain(
       "decoding=",
     );
+  });
+
+  it("should show the Copy HTML button only after README HTML is generated", () => {
+    // Given
+    render(
+      <StackIconsEditor initialState={DEFAULT_STACK_ICONS_EDITOR_STATE} />,
+    );
+
+    // Then
+    expect(
+      screen.queryByRole("button", { name: "Copy HTML" }),
+    ).not.toBeInTheDocument();
+
+    // When
+    fireEvent.click(screen.getByRole("button", { name: "Generate Preview" }));
+
+    // Then
+    expect(screen.getByRole("button", { name: "Copy HTML" })).toBeEnabled();
+  });
+
+  it("should copy generated README HTML exactly as displayed", async () => {
+    // Given
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    mockClipboard(writeText);
+    render(
+      <StackIconsEditor initialState={DEFAULT_STACK_ICONS_EDITOR_STATE} />,
+    );
+    fireEvent.change(screen.getByLabelText("Icon slugs"), {
+      target: { value: "react,nextjs" },
+    });
+    fireEvent.change(screen.getByLabelText("Columns"), {
+      target: { value: "4" },
+    });
+    fireEvent.change(screen.getByLabelText("Gap"), {
+      target: { value: "8" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Generate Preview" }));
+
+    const readmeHtml = screen.getByLabelText("README HTML");
+
+    // When
+    fireEvent.click(screen.getByRole("button", { name: "Copy HTML" }));
+
+    // Then
+    await waitFor(() => {
+      expect(writeText).toHaveBeenCalledWith(
+        (readmeHtml as HTMLTextAreaElement).value,
+      );
+    });
+    expect(writeText).toHaveBeenCalledTimes(1);
+    expect(screen.getByText("HTML copied.")).toBeInTheDocument();
+    expect(readmeHtml).toHaveValue(`<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?icons=react%2Cnextjs&amp;columns=4&amp;gap=8&amp;theme=dark" />
+  <img src="http://localhost:3000/icons?icons=react%2Cnextjs&amp;columns=4&amp;gap=8&amp;theme=light" alt="React, Next.js" title="React, Next.js" width="88" height="40" />
+</picture>`);
+  });
+
+  it("should show copy failure feedback when clipboard writing fails", async () => {
+    // Given
+    const writeText = vi.fn().mockRejectedValue(new Error("Denied"));
+    mockClipboard(writeText);
+    render(
+      <StackIconsEditor initialState={DEFAULT_STACK_ICONS_EDITOR_STATE} />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Generate Preview" }));
+    const readmeHtml = screen.getByLabelText("README HTML");
+
+    // When
+    fireEvent.click(screen.getByRole("button", { name: "Copy HTML" }));
+
+    // Then
+    await waitFor(() => {
+      expect(screen.getByText("Could not copy HTML.")).toBeInTheDocument();
+    });
+    expect(writeText).toHaveBeenCalledWith(
+      (readmeHtml as HTMLTextAreaElement).value,
+    );
+  });
+
+  it("should reset stale copy feedback after regenerating README HTML", async () => {
+    // Given
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    mockClipboard(writeText);
+    render(
+      <StackIconsEditor initialState={DEFAULT_STACK_ICONS_EDITOR_STATE} />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Generate Preview" }));
+    fireEvent.click(screen.getByRole("button", { name: "Copy HTML" }));
+    await screen.findByText("HTML copied.");
+
+    // When
+    fireEvent.change(screen.getByLabelText("Icon slugs"), {
+      target: { value: "react" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Generate Preview" }));
+
+    // Then
+    expect(screen.queryByText("HTML copied.")).not.toBeInTheDocument();
+    expect(screen.getByLabelText("README HTML")).toHaveValue(`<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?icons=react&amp;columns=16&amp;gap=8&amp;theme=dark" />
+  <img src="http://localhost:3000/icons?icons=react&amp;columns=16&amp;gap=8&amp;theme=light" alt="React" title="React" width="40" height="40" />
+</picture>`);
+  });
+
+  it("should ignore stale copy feedback when copy finishes after regenerating README HTML", async () => {
+    // Given
+    let resolveWriteText: () => void = () => {};
+    const writeText = vi.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          resolveWriteText = resolve;
+        }),
+    );
+    mockClipboard(writeText);
+    render(
+      <StackIconsEditor initialState={DEFAULT_STACK_ICONS_EDITOR_STATE} />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Generate Preview" }));
+    fireEvent.click(screen.getByRole("button", { name: "Copy HTML" }));
+
+    // When
+    fireEvent.change(screen.getByLabelText("Icon slugs"), {
+      target: { value: "react" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Generate Preview" }));
+    await React.act(async () => {
+      resolveWriteText();
+    });
+
+    // Then
+    expect(screen.queryByText("HTML copied.")).not.toBeInTheDocument();
+    expect(screen.queryByText("Could not copy HTML.")).not.toBeInTheDocument();
+    expect(screen.getByLabelText("README HTML")).toHaveValue(`<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?icons=react&amp;columns=16&amp;gap=8&amp;theme=dark" />
+  <img src="http://localhost:3000/icons?icons=react&amp;columns=16&amp;gap=8&amp;theme=light" alt="React" title="React" width="40" height="40" />
+</picture>`);
   });
 
   it("should generate README HTML without dark sources when dark theme is disabled", async () => {

@@ -8,6 +8,8 @@ import { escapeXml } from "@/lib/utils";
 
 import type { StackIconsEditorState } from "./state";
 
+type CopyGeneratedHtmlStatus = "failed" | "idle" | "succeeded";
+
 function buildPageQuery(state: StackIconsEditorState): string {
   const params = new URLSearchParams();
 
@@ -175,6 +177,9 @@ export function useStackIconsEditorForm(initialState: StackIconsEditorState) {
   const [previewState, setPreviewState] =
     React.useState<StackIconsEditorState | null>(null);
   const [validationErrors, setValidationErrors] = React.useState<string[]>([]);
+  const [copyGeneratedHtmlStatus, setCopyGeneratedHtmlStatus] =
+    React.useState<CopyGeneratedHtmlStatus>("idle");
+  const previewGenerationId = React.useRef(0);
 
   const generatedUrl =
     previewState === null ? "" : buildIconsUrl(previewState, currentOrigin);
@@ -210,6 +215,8 @@ export function useStackIconsEditorForm(initialState: StackIconsEditorState) {
   }
 
   function generatePreview() {
+    previewGenerationId.current += 1;
+
     const parsedRequest = parseIconRequest(buildIconRequestParams(editorState));
     const parsedMobileRequest = parseIconRequest(
       buildIconRequestParams(editorState, editorState.mobileColumns),
@@ -218,20 +225,47 @@ export function useStackIconsEditorForm(initialState: StackIconsEditorState) {
     if (!parsedRequest.success) {
       setPreviewState(null);
       setValidationErrors(parsedRequest.errors);
+      setCopyGeneratedHtmlStatus("idle");
       return;
     }
 
     if (editorState.responsive && !parsedMobileRequest.success) {
       setPreviewState(null);
       setValidationErrors(parsedMobileRequest.errors);
+      setCopyGeneratedHtmlStatus("idle");
       return;
     }
 
     setPreviewState(editorState);
     setValidationErrors([]);
+    setCopyGeneratedHtmlStatus("idle");
+  }
+
+  async function copyGeneratedHtml() {
+    const copyPreviewGenerationId = previewGenerationId.current;
+
+    if (generatedHtml === "" || navigator.clipboard === undefined) {
+      setCopyGeneratedHtmlStatus("failed");
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(generatedHtml);
+      if (copyPreviewGenerationId !== previewGenerationId.current) {
+        return;
+      }
+      setCopyGeneratedHtmlStatus("succeeded");
+    } catch {
+      if (copyPreviewGenerationId !== previewGenerationId.current) {
+        return;
+      }
+      setCopyGeneratedHtmlStatus("failed");
+    }
   }
 
   return {
+    copyGeneratedHtml,
+    copyGeneratedHtmlStatus,
     generatePreview,
     generatedHtml,
     generatedUrl,

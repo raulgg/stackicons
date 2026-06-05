@@ -2,7 +2,14 @@
 
 import Image from "next/image";
 import React from "react";
-import { ImageIcon, LinkIcon, WandSparklesIcon } from "lucide-react";
+import {
+  CheckIcon,
+  CopyIcon,
+  ImageIcon,
+  LinkIcon,
+  WandSparklesIcon,
+  XIcon,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -17,6 +24,8 @@ type StackIconsEditorProps = {
 
 export function StackIconsEditor({ initialState }: StackIconsEditorProps) {
   const {
+    copyGeneratedHtml,
+    copyGeneratedHtmlStatus,
     generatedHtml,
     generatedUrl,
     generatePreview,
@@ -174,13 +183,27 @@ export function StackIconsEditor({ initialState }: StackIconsEditorProps) {
       </div>
 
       <div className="mt-5">
-        <label
-          className="flex items-center gap-2 font-mono text-xs text-muted-foreground"
-          htmlFor="generated-readme-html"
-        >
-          <LinkIcon className="h-3.5 w-3.5" aria-hidden="true" />
-          README HTML
-        </label>
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <label
+            className="flex items-center gap-2 font-mono text-xs text-muted-foreground"
+            htmlFor="generated-readme-html"
+          >
+            <LinkIcon className="h-3.5 w-3.5" aria-hidden="true" />
+            README HTML
+          </label>
+          {generatedHtml === "" ? null : (
+            <Button
+              className="w-full sm:w-auto"
+              onClick={copyGeneratedHtml}
+              size="sm"
+              type="button"
+              variant="outline"
+            >
+              <CopyIcon className="h-4 w-4" aria-hidden="true" />
+              Copy HTML
+            </Button>
+          )}
+        </div>
         <textarea
           className="mt-1 min-h-28 w-full resize-none rounded-md border bg-muted px-3 py-2 font-mono text-sm text-muted-foreground"
           id="generated-readme-html"
@@ -188,6 +211,24 @@ export function StackIconsEditor({ initialState }: StackIconsEditorProps) {
           readOnly
           value={generatedHtml}
         />
+        {copyGeneratedHtmlStatus === "succeeded" ? (
+          <p
+            aria-live="polite"
+            className="mt-2 flex items-center gap-2 font-mono text-xs text-green-700"
+          >
+            <CheckIcon className="h-3.5 w-3.5" aria-hidden="true" />
+            HTML copied.
+          </p>
+        ) : null}
+        {copyGeneratedHtmlStatus === "failed" ? (
+          <p
+            aria-live="polite"
+            className="mt-2 flex items-center gap-2 font-mono text-xs text-destructive"
+          >
+            <XIcon className="h-3.5 w-3.5" aria-hidden="true" />
+            Could not copy HTML.
+          </p>
+        ) : null}
       </div>
 
       <div className="mt-5">
