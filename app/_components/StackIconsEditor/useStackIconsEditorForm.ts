@@ -14,6 +14,7 @@ function buildPageQuery(state: StackIconsEditorState): string {
   params.set("icons", state.icons);
   params.set("columns", state.columns);
   params.set("gap", state.gap);
+  params.set("include-dark-theme", String(state.includeDarkTheme));
 
   return params.toString();
 }
@@ -51,6 +52,7 @@ function buildIconsUrl(
 function buildReadmeImageUrl(
   state: StackIconsEditorState,
   currentOrigin: string,
+  theme: "dark" | "light",
 ): string {
   if (currentOrigin === "") {
     return "";
@@ -65,7 +67,7 @@ function buildReadmeImageUrl(
 
   params.set("columns", state.columns);
   params.set("gap", state.gap);
-  params.set("theme", "light");
+  params.set("theme", theme);
 
   url.search = params.toString();
 
@@ -82,7 +84,7 @@ function buildReadmeHtml(
     return "";
   }
 
-  const fallbackUrl = buildReadmeImageUrl(state, currentOrigin);
+  const fallbackUrl = buildReadmeImageUrl(state, currentOrigin, "light");
 
   if (fallbackUrl === "") {
     return "";
@@ -97,8 +99,17 @@ function buildReadmeHtml(
     iconCount: parsedRequest.data.icons.length,
   });
 
+  const darkSourceUrl = state.includeDarkTheme
+    ? buildReadmeImageUrl(state, currentOrigin, "dark")
+    : "";
+  const darkSource =
+    darkSourceUrl === ""
+      ? ""
+      : `  <source media="(prefers-color-scheme: dark)" srcset="${escapeXml(darkSourceUrl)}" />
+`;
+
   return `<picture>
-  <img src="${escapeXml(fallbackUrl)}" alt="${escapeXml(labels)}" title="${escapeXml(labels)}" width="${width}" height="${height}" />
+${darkSource}  <img src="${escapeXml(fallbackUrl)}" alt="${escapeXml(labels)}" title="${escapeXml(labels)}" width="${width}" height="${height}" />
 </picture>`;
 }
 

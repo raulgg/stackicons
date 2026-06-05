@@ -78,6 +78,24 @@ export function StackIconsEditor({ initialState }: StackIconsEditorProps) {
         </div>
       </div>
 
+      <div className="mt-4 rounded-md border bg-background px-3 py-2">
+        <label
+          className="flex items-center gap-3 font-mono text-sm font-medium text-card-foreground"
+          htmlFor="include-dark-theme"
+        >
+          <input
+            checked={state.includeDarkTheme}
+            className="h-4 w-4 rounded border bg-background text-primary ring-ring transition focus:ring-2"
+            id="include-dark-theme"
+            onChange={(event) =>
+              updateField("includeDarkTheme", event.target.checked)
+            }
+            type="checkbox"
+          />
+          Include dark theme source
+        </label>
+      </div>
+
       <Button className="mt-5 w-full" onClick={generatePreview} type="button">
         <WandSparklesIcon className="h-4 w-4" aria-hidden="true" />
         Generate Preview

@@ -46,6 +46,7 @@ describe("StackIconsEditor", () => {
       expect(params.get("icons")).toBe("react,nextjs");
       expect(params.get("columns")).toBe("4");
       expect(params.get("gap")).toBe("12");
+      expect(params.get("include-dark-theme")).toBe("true");
       expect(params.has("baseUrl")).toBe(false);
       expect(params.has("v")).toBe(false);
     });
@@ -79,6 +80,7 @@ describe("StackIconsEditor", () => {
     expect(screen.getByLabelText("Icon slugs")).toHaveValue("solid,typescript");
     expect(screen.getByLabelText("Columns")).toHaveValue(6);
     expect(screen.getByLabelText("Gap")).toHaveValue(10);
+    expect(screen.getByLabelText("Include dark theme source")).toBeChecked();
     expect(screen.queryByLabelText("Base URL")).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Version")).not.toBeInTheDocument();
     expect(screen.getByLabelText("SVG URL")).toHaveValue("");
@@ -112,7 +114,7 @@ describe("StackIconsEditor", () => {
     );
   });
 
-  it("should generate basic README HTML for explicit light icon output", async () => {
+  it("should generate README HTML with dark source by default", async () => {
     // Given
     render(
       <StackIconsEditor initialState={DEFAULT_STACK_ICONS_EDITOR_STATE} />,
@@ -134,6 +136,7 @@ describe("StackIconsEditor", () => {
     const readmeHtml = screen.getByLabelText("README HTML");
 
     expect(readmeHtml).toHaveValue(`<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?icons=react%2Cnextjs&amp;columns=4&amp;gap=8&amp;theme=dark" />
   <img src="http://localhost:3000/icons?icons=react%2Cnextjs&amp;columns=4&amp;gap=8&amp;theme=light" alt="React, Next.js" title="React, Next.js" width="88" height="40" />
 </picture>`);
     expect((readmeHtml as HTMLTextAreaElement).value).not.toContain(
@@ -141,6 +144,39 @@ describe("StackIconsEditor", () => {
     );
     expect((readmeHtml as HTMLTextAreaElement).value).not.toContain(
       "decoding=",
+    );
+  });
+
+  it("should generate README HTML without dark sources when dark theme is disabled", async () => {
+    // Given
+    render(
+      <StackIconsEditor initialState={DEFAULT_STACK_ICONS_EDITOR_STATE} />,
+    );
+    fireEvent.change(screen.getByLabelText("Icon slugs"), {
+      target: { value: "react,nextjs" },
+    });
+    fireEvent.change(screen.getByLabelText("Columns"), {
+      target: { value: "4" },
+    });
+    fireEvent.change(screen.getByLabelText("Gap"), {
+      target: { value: "8" },
+    });
+    fireEvent.click(screen.getByLabelText("Include dark theme source"));
+
+    // When
+    fireEvent.click(screen.getByRole("button", { name: "Generate Preview" }));
+
+    // Then
+    const readmeHtml = screen.getByLabelText("README HTML");
+
+    expect(readmeHtml).toHaveValue(`<picture>
+  <img src="http://localhost:3000/icons?icons=react%2Cnextjs&amp;columns=4&amp;gap=8&amp;theme=light" alt="React, Next.js" title="React, Next.js" width="88" height="40" />
+</picture>`);
+    expect((readmeHtml as HTMLTextAreaElement).value).not.toContain(
+      "<source",
+    );
+    expect((readmeHtml as HTMLTextAreaElement).value).not.toContain(
+      "theme=dark",
     );
   });
 
@@ -160,6 +196,7 @@ describe("StackIconsEditor", () => {
     const readmeHtml = screen.getByLabelText("README HTML");
 
     expect(readmeHtml).toHaveValue(`<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?columns=16&amp;gap=8&amp;theme=dark" />
   <img src="http://localhost:3000/icons?columns=16&amp;gap=8&amp;theme=light" alt="All stack icons" title="All stack icons" width="760" height="184" />
 </picture>`);
   });
@@ -178,6 +215,7 @@ describe("StackIconsEditor", () => {
 
     // Then
     expect(screen.getByLabelText("README HTML")).toHaveValue(`<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?icons=typescript%2Creact%2Cnextjs&amp;columns=16&amp;gap=8&amp;theme=dark" />
   <img src="http://localhost:3000/icons?icons=typescript%2Creact%2Cnextjs&amp;columns=16&amp;gap=8&amp;theme=light" alt="TypeScript, React, Next.js" title="TypeScript, React, Next.js" width="136" height="40" />
 </picture>`);
   });
@@ -289,6 +327,28 @@ describe("StackIconsEditor", () => {
       columns: "6",
       gap: "10",
       icons: "solid,typescript",
+      includeDarkTheme: true,
+    });
+  });
+
+  it("should derive disabled dark theme state when page query params are parsed", () => {
+    // Given
+    const searchParams = {
+      columns: "6",
+      gap: "10",
+      icons: "solid,typescript",
+      "include-dark-theme": "false",
+    };
+
+    // When
+    const initialState = getStackIconsEditorInitialState(searchParams);
+
+    // Then
+    expect(initialState).toEqual({
+      columns: "6",
+      gap: "10",
+      icons: "solid,typescript",
+      includeDarkTheme: false,
     });
   });
 });
