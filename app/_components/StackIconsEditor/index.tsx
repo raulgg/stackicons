@@ -5,6 +5,7 @@ import React from "react";
 import { ImageIcon, LinkIcon, WandSparklesIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import type { StackIconsEditorState } from "./state";
 import { useStackIconsEditorForm } from "./useStackIconsEditorForm";
 
@@ -189,24 +190,69 @@ export function StackIconsEditor({ initialState }: StackIconsEditorProps) {
         />
       </div>
 
-      {generatedUrl === "" ? null : (
-        <div className="mt-5">
-          <p className="flex items-center gap-2 font-mono text-xs text-muted-foreground">
-            <ImageIcon className="h-3.5 w-3.5" aria-hidden="true" />
-            Preview
-          </p>
-          <div className="mt-2 overflow-auto rounded-md border bg-background p-3">
-            <Image
-              alt="Generated stack icons preview"
-              className="h-auto w-auto max-w-none"
-              height={160}
-              src={generatedUrl}
-              unoptimized
-              width={640}
-            />
+      <div className="mt-5">
+        <div
+          className={cn(
+            "rounded-md border p-3 transition-colors",
+            state.previewTheme === "dark"
+              ? "border-slate-700 bg-[#0d1117]"
+              : "bg-background",
+          )}
+          data-testid="preview-box"
+        >
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <p className="flex items-center gap-2 font-mono text-xs text-muted-foreground">
+              <ImageIcon className="h-3.5 w-3.5" aria-hidden="true" />
+              Preview
+            </p>
+            <fieldset>
+              <legend className="sr-only">Preview theme</legend>
+              <div className="grid grid-cols-2 gap-2">
+                {(["light", "dark"] as const).map((theme) => (
+                  <label
+                    className="flex items-center gap-2 rounded-md border px-3 py-2 font-mono text-xs text-card-foreground"
+                    htmlFor={`preview-theme-${theme}`}
+                    key={theme}
+                  >
+                    <input
+                      checked={state.previewTheme === theme}
+                      className="h-4 w-4 border bg-background text-primary ring-ring transition focus:ring-2"
+                      id={`preview-theme-${theme}`}
+                      name="preview-theme"
+                      onChange={() => updateField("previewTheme", theme)}
+                      type="radio"
+                    />
+                    {theme === "light" ? "Light" : "Dark"}
+                  </label>
+                ))}
+              </div>
+            </fieldset>
           </div>
+          {generatedUrl === "" ? (
+            <div
+              className={cn(
+                "mt-3 rounded-md border px-3 py-8 text-center font-mono text-sm",
+                state.previewTheme === "dark"
+                  ? "border-slate-700 bg-slate-900 text-slate-300"
+                  : "bg-muted text-muted-foreground",
+              )}
+            >
+              Generate a preview to render the SVG image
+            </div>
+          ) : (
+            <div className="mt-3 overflow-auto">
+              <Image
+                alt="Generated stack icons preview"
+                className="h-auto w-auto max-w-none"
+                height={160}
+                src={generatedUrl}
+                unoptimized
+                width={640}
+              />
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }

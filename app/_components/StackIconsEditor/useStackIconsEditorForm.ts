@@ -16,6 +16,7 @@ function buildPageQuery(state: StackIconsEditorState): string {
   params.set("mobile-columns", state.mobileColumns);
   params.set("gap", state.gap);
   params.set("include-dark-theme", String(state.includeDarkTheme));
+  params.set("preview-theme", state.previewTheme);
   params.set("responsive", String(state.responsive));
 
   return params.toString();
@@ -50,6 +51,7 @@ function buildIconsUrl(
 
   const url = new URL("/icons", currentOrigin);
   url.search = buildIconRequestParams(state).toString();
+  url.searchParams.set("theme", state.previewTheme);
 
   return url.toString();
 }
@@ -194,6 +196,17 @@ export function useStackIconsEditorForm(initialState: StackIconsEditorState) {
     const nextUrl = `${window.location.pathname}?${nextQuery}`;
 
     window.history.replaceState(null, "", nextUrl);
+
+    if (field === "previewTheme") {
+      setPreviewState((currentPreviewState) =>
+        currentPreviewState === null
+          ? null
+          : {
+              ...currentPreviewState,
+              previewTheme: value as StackIconsEditorState["previewTheme"],
+            },
+      );
+    }
   }
 
   function generatePreview() {

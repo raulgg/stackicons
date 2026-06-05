@@ -3,7 +3,10 @@ const DEFAULT_COLUMNS = "16";
 const DEFAULT_MOBILE_COLUMNS = "10";
 const DEFAULT_GAP = "8";
 const DEFAULT_INCLUDE_DARK_THEME = true;
+const DEFAULT_PREVIEW_THEME = "light";
 const DEFAULT_RESPONSIVE = false;
+
+export type StackIconsPreviewTheme = "dark" | "light";
 
 type EditorState = {
   icons: string;
@@ -11,6 +14,7 @@ type EditorState = {
   mobileColumns: string;
   gap: string;
   includeDarkTheme: boolean;
+  previewTheme: StackIconsPreviewTheme;
   responsive: boolean;
 };
 
@@ -22,6 +26,7 @@ export const DEFAULT_STACK_ICONS_EDITOR_STATE: StackIconsEditorState = {
   mobileColumns: DEFAULT_MOBILE_COLUMNS,
   gap: DEFAULT_GAP,
   includeDarkTheme: DEFAULT_INCLUDE_DARK_THEME,
+  previewTheme: DEFAULT_PREVIEW_THEME,
   responsive: DEFAULT_RESPONSIVE,
 };
 
@@ -46,10 +51,21 @@ export function getStackIconsEditorInitialState(
       DEFAULT_MOBILE_COLUMNS,
     gap: getSearchParamValue(searchParams.gap) ?? DEFAULT_GAP,
     includeDarkTheme: includeDarkTheme !== "false",
+    previewTheme: getPreviewTheme(searchParams),
     responsive: responsive === "true",
   };
 }
 
 function getSearchParamValue(value: SearchParamValue): string | undefined {
   return Array.isArray(value) ? value[0] : value;
+}
+
+function getPreviewTheme(
+  searchParams: Record<string, SearchParamValue>,
+): StackIconsPreviewTheme {
+  const previewTheme =
+    getSearchParamValue(searchParams["preview-theme"]) ??
+    getSearchParamValue(searchParams.previewTheme);
+
+  return previewTheme === "dark" ? "dark" : DEFAULT_PREVIEW_THEME;
 }

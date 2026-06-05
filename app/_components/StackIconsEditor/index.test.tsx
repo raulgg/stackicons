@@ -48,6 +48,7 @@ describe("StackIconsEditor", () => {
       expect(params.get("mobile-columns")).toBe("10");
       expect(params.get("gap")).toBe("12");
       expect(params.get("include-dark-theme")).toBe("true");
+      expect(params.get("preview-theme")).toBe("light");
       expect(params.get("responsive")).toBe("false");
       expect(params.has("baseUrl")).toBe(false);
       expect(params.has("v")).toBe(false);
@@ -83,6 +84,8 @@ describe("StackIconsEditor", () => {
     expect(screen.getByLabelText("Columns")).toHaveValue(6);
     expect(screen.getByLabelText("Gap")).toHaveValue(10);
     expect(screen.getByLabelText("Include dark theme source")).toBeChecked();
+    expect(screen.getByLabelText("Light")).toBeChecked();
+    expect(screen.getByLabelText("Dark")).not.toBeChecked();
     expect(screen.getByLabelText("Include responsive sources")).not.toBeChecked();
     expect(screen.getByLabelText("Mobile columns")).toHaveValue(10);
     expect(screen.getByLabelText("Mobile columns")).toBeDisabled();
@@ -310,12 +313,117 @@ describe("StackIconsEditor", () => {
 
     // Then
     const expectedUrl =
-      "http://localhost:3000/icons?icons=react%2Cnextjs&columns=4&gap=12";
+      "http://localhost:3000/icons?icons=react%2Cnextjs&columns=4&gap=12&theme=light";
 
     expect(screen.getByLabelText("SVG URL")).toHaveValue(expectedUrl);
     expect(
       screen.getByRole("img", { name: "Generated stack icons preview" }),
     ).toHaveAttribute("src", expectedUrl);
+  });
+
+  it("should use the selected dark theme for the preview URL only", () => {
+    // Given
+    render(
+      <StackIconsEditor initialState={DEFAULT_STACK_ICONS_EDITOR_STATE} />,
+    );
+    fireEvent.change(screen.getByLabelText("Icon slugs"), {
+      target: { value: "react,nextjs" },
+    });
+    fireEvent.change(screen.getByLabelText("Columns"), {
+      target: { value: "4" },
+    });
+    fireEvent.click(screen.getByLabelText("Dark"));
+
+    // When
+    fireEvent.click(screen.getByRole("button", { name: "Generate Preview" }));
+
+    // Then
+    const previewUrl =
+      "http://localhost:3000/icons?icons=react%2Cnextjs&columns=4&gap=8&theme=dark";
+
+    expect(screen.getByLabelText("SVG URL")).toHaveValue(previewUrl);
+    expect(
+      screen.getByRole("img", { name: "Generated stack icons preview" }),
+    ).toHaveAttribute("src", previewUrl);
+    expect(screen.getByLabelText("Include dark theme source")).toBeChecked();
+    expect(screen.getByLabelText("README HTML")).toHaveValue(`<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?icons=react%2Cnextjs&amp;columns=4&amp;gap=8&amp;theme=dark" />
+  <img src="http://localhost:3000/icons?icons=react%2Cnextjs&amp;columns=4&amp;gap=8&amp;theme=light" alt="React, Next.js" title="React, Next.js" width="88" height="40" />
+</picture>`);
+  });
+
+  it("should keep preview theme and include dark theme settings independent", () => {
+    // Given
+    render(
+      <StackIconsEditor initialState={DEFAULT_STACK_ICONS_EDITOR_STATE} />,
+    );
+
+    // When
+    fireEvent.click(screen.getByLabelText("Dark"));
+    fireEvent.click(screen.getByLabelText("Include dark theme source"));
+    fireEvent.click(screen.getByRole("button", { name: "Generate Preview" }));
+
+    // Then
+    const previewUrl =
+      "http://localhost:3000/icons?icons=typescript%2Cnextjs%2Ctailwindcss%2Cvercel&columns=16&gap=8&theme=dark";
+
+    expect(screen.getByLabelText("Dark")).toBeChecked();
+    expect(screen.getByLabelText("Include dark theme source")).not.toBeChecked();
+    expect(screen.getByLabelText("SVG URL")).toHaveValue(previewUrl);
+    expect(screen.getByLabelText("README HTML")).toHaveValue(`<picture>
+  <img src="http://localhost:3000/icons?icons=typescript%2Cnextjs%2Ctailwindcss%2Cvercel&amp;columns=16&amp;gap=8&amp;theme=light" alt="TypeScript, Next.js, Tailwind CSS, Vercel" title="TypeScript, Next.js, Tailwind CSS, Vercel" width="184" height="40" />
+</picture>`);
+  });
+
+  it("should refresh the generated preview when the preview theme changes", () => {
+    // Given
+    render(
+      <StackIconsEditor initialState={DEFAULT_STACK_ICONS_EDITOR_STATE} />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Generate Preview" }));
+
+    const lightPreviewUrl =
+      "http://localhost:3000/icons?icons=typescript%2Cnextjs%2Ctailwindcss%2Cvercel&columns=16&gap=8&theme=light";
+    const darkPreviewUrl =
+      "http://localhost:3000/icons?icons=typescript%2Cnextjs%2Ctailwindcss%2Cvercel&columns=16&gap=8&theme=dark";
+
+    expect(screen.getByLabelText("SVG URL")).toHaveValue(lightPreviewUrl);
+
+    // When
+    fireEvent.click(screen.getByLabelText("Dark"));
+
+    // Then
+    expect(screen.getByLabelText("SVG URL")).toHaveValue(darkPreviewUrl);
+    expect(
+      screen.getByRole("img", { name: "Generated stack icons preview" }),
+    ).toHaveAttribute("src", darkPreviewUrl);
+
+    // When
+    fireEvent.click(screen.getByLabelText("Light"));
+
+    // Then
+    expect(screen.getByLabelText("SVG URL")).toHaveValue(lightPreviewUrl);
+    expect(
+      screen.getByRole("img", { name: "Generated stack icons preview" }),
+    ).toHaveAttribute("src", lightPreviewUrl);
+  });
+
+  it("should use a dark preview box background when dark preview theme is selected", () => {
+    // Given
+    render(
+      <StackIconsEditor initialState={DEFAULT_STACK_ICONS_EDITOR_STATE} />,
+    );
+    const previewBox = screen.getByTestId("preview-box");
+
+    expect(previewBox).toHaveClass("bg-background");
+    expect(previewBox).not.toHaveClass("bg-[#0d1117]");
+
+    // When
+    fireEvent.click(screen.getByLabelText("Dark"));
+
+    // Then
+    expect(previewBox).toHaveClass("bg-[#0d1117]");
+    expect(previewBox).not.toHaveClass("bg-background");
   });
 
   it("should show validation errors when generated input is invalid", () => {
@@ -340,14 +448,56 @@ describe("StackIconsEditor", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("should not refresh the generated preview when form fields are edited", () => {
+  it("should not show validation errors until preview generation is attempted", () => {
+    // Given
+    render(
+      <StackIconsEditor initialState={DEFAULT_STACK_ICONS_EDITOR_STATE} />,
+    );
+
+    // When
+    fireEvent.change(screen.getByLabelText("Icon slugs"), {
+      target: { value: "not-real" },
+    });
+
+    // Then
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(screen.getByLabelText("SVG URL")).toHaveValue("");
+  });
+
+  it("should clear stale validation errors after successful preview generation", () => {
+    // Given
+    render(
+      <StackIconsEditor initialState={DEFAULT_STACK_ICONS_EDITOR_STATE} />,
+    );
+    fireEvent.change(screen.getByLabelText("Icon slugs"), {
+      target: { value: "not-real" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Generate Preview" }));
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Unknown icon slug: not-real.",
+    );
+
+    // When
+    fireEvent.change(screen.getByLabelText("Icon slugs"), {
+      target: { value: "react" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Generate Preview" }));
+
+    // Then
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(screen.getByLabelText("SVG URL")).toHaveValue(
+      "http://localhost:3000/icons?icons=react&columns=16&gap=8&theme=light",
+    );
+  });
+
+  it("should not refresh the generated preview when edit form fields are changed", () => {
     // Given
     render(
       <StackIconsEditor initialState={DEFAULT_STACK_ICONS_EDITOR_STATE} />,
     );
     fireEvent.click(screen.getByRole("button", { name: "Generate Preview" }));
     const generatedUrl =
-      "http://localhost:3000/icons?icons=typescript%2Cnextjs%2Ctailwindcss%2Cvercel&columns=16&gap=8";
+      "http://localhost:3000/icons?icons=typescript%2Cnextjs%2Ctailwindcss%2Cvercel&columns=16&gap=8&theme=light";
 
     expect(screen.getByLabelText("SVG URL")).toHaveValue(generatedUrl);
 
@@ -401,6 +551,7 @@ describe("StackIconsEditor", () => {
       icons: "solid,typescript",
       includeDarkTheme: true,
       mobileColumns: "8",
+      previewTheme: "light",
       responsive: true,
     });
   });
@@ -424,6 +575,7 @@ describe("StackIconsEditor", () => {
       icons: "solid,typescript",
       includeDarkTheme: false,
       mobileColumns: "10",
+      previewTheme: "light",
       responsive: false,
     });
   });
