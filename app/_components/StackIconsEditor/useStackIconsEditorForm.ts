@@ -2,13 +2,15 @@
 
 import React from "react";
 
-import { getIconGridDimensions } from "@/lib/icons/layout";
 import { parseIconRequest } from "@/lib/icons/parse-request";
 import { escapeXml } from "@/lib/utils";
 
 import type { StackIconsEditorState } from "./state";
 
 type CopyGeneratedHtmlStatus = "failed" | "idle" | "succeeded";
+
+const desktopBreakpointMediaQuery = "(min-width: 768px)";
+const mobileBreakpointMediaQuery = "(max-width: 769px)";
 
 function buildPageQuery(state: StackIconsEditorState): string {
   const params = new URLSearchParams();
@@ -103,12 +105,6 @@ function buildReadmeHtml(
   const labels = isAllIconState(state)
     ? "All stack icons"
     : parsedRequest.data.icons.map((icon) => icon.label).join(", ");
-  const { height, width } = getIconGridDimensions({
-    columns: parsedRequest.data.columns,
-    gap: parsedRequest.data.gap,
-    iconCount: parsedRequest.data.icons.length,
-  });
-
   const darkSourceUrl = state.includeDarkTheme
     ? buildReadmeImageUrl(state, currentOrigin, "dark")
     : "";
@@ -131,18 +127,22 @@ function buildReadmeHtml(
       );
 
       sources.push(
-        `  <source media="(max-width: 520px) and (prefers-color-scheme: dark)" srcset="${escapeXml(mobileDarkSourceUrl)}" />`,
+        `  <source media="${mobileBreakpointMediaQuery} and (prefers-color-scheme: dark)" srcset="${escapeXml(mobileDarkSourceUrl)}" />`,
       );
     }
 
     sources.push(
-      `  <source media="(max-width: 520px)" srcset="${escapeXml(mobileLightSourceUrl)}" />`,
+      `  <source media="${mobileBreakpointMediaQuery}" srcset="${escapeXml(mobileLightSourceUrl)}" />`,
     );
   }
 
   if (darkSourceUrl !== "") {
+    const darkSourceMedia = state.responsive
+      ? `${desktopBreakpointMediaQuery} and (prefers-color-scheme: dark)`
+      : "(prefers-color-scheme: dark)";
+
     sources.push(
-      `  <source media="(prefers-color-scheme: dark)" srcset="${escapeXml(darkSourceUrl)}" />`,
+      `  <source media="${darkSourceMedia}" srcset="${escapeXml(darkSourceUrl)}" />`,
     );
   }
 
@@ -150,7 +150,7 @@ function buildReadmeHtml(
     sources.length === 0 ? "" : `${sources.join("\n")}\n`;
 
   return `<picture>
-${sourceMarkup}  <img src="${escapeXml(fallbackUrl)}" alt="${escapeXml(labels)}" title="${escapeXml(labels)}" width="${width}" height="${height}" />
+${sourceMarkup}  <img src="${escapeXml(fallbackUrl)}" alt="${escapeXml(labels)}" title="${escapeXml(labels)}" width="100%" />
 </picture>`;
 }
 
