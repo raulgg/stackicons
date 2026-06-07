@@ -18,6 +18,7 @@ type LayoutMemoryState = {
   singleColumnLayout: ColumnLayout;
   responsiveColumnLayouts: ColumnLayout[];
 };
+type ParsedColumnLayout = { columns: number; minWidthPx: number | null };
 
 function getBaseColumnLayout(state: StackIconsEditorState) {
   return state.columnLayouts[0];
@@ -130,14 +131,47 @@ function buildReadmeHtml(
   const labels = isAllIconState(state)
     ? "All stack icons"
     : parsedRequest.data.icons.map((icon) => icon.label).join(", ");
-  const darkSourceUrl = state.includeDarkTheme
-    ? buildReadmeImageUrl(state, currentOrigin, "dark")
-    : "";
   const sources: string[] = [];
+  const breakpointLayouts = state.columnLayouts
+    .filter(
+      (layout): layout is ColumnLayout & { minWidthPx: string } =>
+        layout.minWidthPx !== null,
+    )
+    .sort((a, b) => Number(b.minWidthPx) - Number(a.minWidthPx));
 
-  if (darkSourceUrl !== "") {
+  for (const layout of breakpointLayouts) {
+    const media = `(min-width: ${layout.minWidthPx}px)`;
+
+    if (state.includeDarkTheme) {
+      const darkSourceUrl = buildReadmeImageUrl(
+        state,
+        currentOrigin,
+        "dark",
+        layout.columns,
+      );
+
+      sources.push(
+        `  <source media="${media} and (prefers-color-scheme: dark)" srcset="${escapeXml(darkSourceUrl)}" />`,
+      );
+    }
+
+    const lightSourceUrl = buildReadmeImageUrl(
+      state,
+      currentOrigin,
+      "light",
+      layout.columns,
+    );
+
     sources.push(
-      `  <source media="(prefers-color-scheme: dark)" srcset="${escapeXml(darkSourceUrl)}" />`,
+      `  <source media="${media}" srcset="${escapeXml(lightSourceUrl)}" />`,
+    );
+  }
+
+  if (state.includeDarkTheme) {
+    const darkFallbackUrl = buildReadmeImageUrl(state, currentOrigin, "dark");
+
+    sources.push(
+      `  <source media="(prefers-color-scheme: dark)" srcset="${escapeXml(darkFallbackUrl)}" />`,
     );
   }
 
@@ -146,6 +180,91 @@ function buildReadmeHtml(
   return `<picture>
 ${sourceMarkup}  <img src="${escapeXml(fallbackUrl)}" alt="${escapeXml(labels)}" title="${escapeXml(labels)}" width="100%" />
 </picture>`;
+}
+
+function validateColumnLayouts(state: StackIconsEditorState): string[] {
+  const errors: string[] = [];
+  const parsedLayouts = state.columnLayouts.map(parseColumnLayout);
+  const baseLayoutCount = parsedLayouts.filter(
+    (layout) => layout.minWidthPx === null,
+  ).length;
+  const breakpointLayouts = parsedLayouts.filter(
+    (layout): layout is ParsedColumnLayout & { minWidthPx: number } =>
+      layout.minWidthPx !== null,
+  );
+
+  if (state.columnLayouts.length === 0) {
+    errors.push("At least one column layout is required.");
+  }
+
+  if (baseLayoutCount !== 1) {
+    errors.push("Exactly one base column layout is required.");
+  }
+
+  if (
+    parsedLayouts.some(
+      (layout) =>
+        !Number.isInteger(layout.columns) ||
+        layout.columns < 2 ||
+        layout.columns > 20,
+    )
+  ) {
+    errors.push("Each column layout must use 2 to 20 columns.");
+  }
+
+  if (
+    breakpointLayouts.some(
+      (layout) =>
+        !Number.isInteger(layout.minWidthPx) ||
+        layout.minWidthPx < 1 ||
+        layout.minWidthPx > 3840,
+    )
+  ) {
+    errors.push("Breakpoint min width must be an integer from 1 to 3840.");
+  }
+
+  if (
+    new Set(breakpointLayouts.map((layout) => layout.minWidthPx)).size !==
+    breakpointLayouts.length
+  ) {
+    errors.push("Breakpoint min width values must be unique.");
+  }
+
+  if (state.layoutMode === "single") {
+    if (
+      state.columnLayouts.length !== 1 ||
+      parsedLayouts[0]?.minWidthPx !== null
+    ) {
+      errors.push("Single layout mode must have exactly one base layout.");
+    }
+  } else if (state.columnLayouts.length < 2 || breakpointLayouts.length === 0) {
+    errors.push(
+      "Responsive layout mode must have a base layout and at least one breakpoint layout.",
+    );
+  }
+
+  return errors;
+}
+
+function normalizeColumnLayouts(columnLayouts: ColumnLayout[]): ColumnLayout[] {
+  const baseLayout = columnLayouts.find((layout) => layout.minWidthPx === null);
+  const breakpointLayouts = columnLayouts
+    .filter(
+      (layout): layout is ColumnLayout & { minWidthPx: string } =>
+        layout.minWidthPx !== null,
+    )
+    .sort((a, b) => Number(a.minWidthPx) - Number(b.minWidthPx));
+
+  return baseLayout === undefined
+    ? columnLayouts
+    : [baseLayout, ...breakpointLayouts];
+}
+
+function parseColumnLayout(layout: ColumnLayout): ParsedColumnLayout {
+  return {
+    columns: Number(layout.columns),
+    minWidthPx: layout.minWidthPx === null ? null : Number(layout.minWidthPx),
+  };
 }
 
 function subscribeToCurrentOrigin() {
@@ -292,16 +411,28 @@ export function useStackIconsEditorForm(initialState: StackIconsEditorState) {
   function generatePreview() {
     previewGenerationId.current += 1;
 
-    const parsedRequest = parseIconRequest(buildIconRequestParams(editorState));
+    const parsedRequest = parseIconRequest(
+      buildIconRequestParams(
+        editorState,
+        editorState.columnLayouts[0]?.columns ?? "",
+      ),
+    );
+    const columnLayoutErrors = validateColumnLayouts(editorState);
 
-    if (!parsedRequest.success) {
+    if (!parsedRequest.success || columnLayoutErrors.length > 0) {
       setPreviewState(null);
-      setValidationErrors(parsedRequest.errors);
+      setValidationErrors([
+        ...(!parsedRequest.success ? parsedRequest.errors : []),
+        ...columnLayoutErrors,
+      ]);
       setCopyGeneratedHtmlStatus("idle");
       return;
     }
 
-    setPreviewState(editorState);
+    setPreviewState({
+      ...editorState,
+      columnLayouts: normalizeColumnLayouts(editorState.columnLayouts),
+    });
     setValidationErrors([]);
     setCopyGeneratedHtmlStatus("idle");
   }

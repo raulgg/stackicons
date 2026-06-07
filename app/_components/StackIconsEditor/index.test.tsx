@@ -347,6 +347,262 @@ describe("StackIconsEditor", () => {
     );
   });
 
+  it("should generate responsive README HTML with dark breakpoint sources before light sources", () => {
+    render(
+      <StackIconsEditor
+        initialState={{
+          ...DEFAULT_STACK_ICONS_EDITOR_STATE,
+          columnLayouts: [
+            { columns: "4", minWidthPx: null },
+            { columns: "8", minWidthPx: "640" },
+            { columns: "12", minWidthPx: "1024" },
+          ],
+          gap: "10",
+          icons: "react,nextjs",
+          layoutMode: "responsive",
+        }}
+      />,
+    );
+
+    generatePreview();
+
+    expect(screen.getByLabelText("README HTML")).toHaveValue(`<picture>
+  <source media="(min-width: 1024px) and (prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?icons=react%2Cnextjs&amp;columns=12&amp;gap=10&amp;theme=dark" />
+  <source media="(min-width: 1024px)" srcset="http://localhost:3000/icons?icons=react%2Cnextjs&amp;columns=12&amp;gap=10&amp;theme=light" />
+  <source media="(min-width: 640px) and (prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?icons=react%2Cnextjs&amp;columns=8&amp;gap=10&amp;theme=dark" />
+  <source media="(min-width: 640px)" srcset="http://localhost:3000/icons?icons=react%2Cnextjs&amp;columns=8&amp;gap=10&amp;theme=light" />
+  <source media="(prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?icons=react%2Cnextjs&amp;columns=4&amp;gap=10&amp;theme=dark" />
+  <img src="http://localhost:3000/icons?icons=react%2Cnextjs&amp;columns=4&amp;gap=10&amp;theme=light" alt="React, Next.js" title="React, Next.js" width="100%" />
+</picture>`);
+  });
+
+  it("should generate responsive README HTML without dark sources when dark theme is disabled", () => {
+    render(
+      <StackIconsEditor
+        initialState={{
+          ...DEFAULT_STACK_ICONS_EDITOR_STATE,
+          columnLayouts: [
+            { columns: "4", minWidthPx: null },
+            { columns: "8", minWidthPx: "640" },
+          ],
+          icons: "react,nextjs",
+          includeDarkTheme: false,
+          layoutMode: "responsive",
+        }}
+      />,
+    );
+
+    generatePreview();
+
+    const readmeHtml = screen.getByLabelText("README HTML");
+
+    expect(readmeHtml).toHaveValue(`<picture>
+  <source media="(min-width: 640px)" srcset="http://localhost:3000/icons?icons=react%2Cnextjs&amp;columns=8&amp;gap=8&amp;theme=light" />
+  <img src="http://localhost:3000/icons?icons=react%2Cnextjs&amp;columns=4&amp;gap=8&amp;theme=light" alt="React, Next.js" title="React, Next.js" width="100%" />
+</picture>`);
+    expect((readmeHtml as HTMLTextAreaElement).value).not.toContain(
+      "theme=dark",
+    );
+  });
+
+  it("should sort responsive README breakpoint sources by descending min width", () => {
+    render(
+      <StackIconsEditor
+        initialState={{
+          ...DEFAULT_STACK_ICONS_EDITOR_STATE,
+          columnLayouts: [
+            { columns: "4", minWidthPx: null },
+            { columns: "8", minWidthPx: "640" },
+            { columns: "16", minWidthPx: "1440" },
+            { columns: "12", minWidthPx: "1024" },
+          ],
+          includeDarkTheme: false,
+          layoutMode: "responsive",
+        }}
+      />,
+    );
+
+    generatePreview();
+
+    const value = (screen.getByLabelText("README HTML") as HTMLTextAreaElement)
+      .value;
+
+    expect(value.indexOf("(min-width: 1440px)")).toBeLessThan(
+      value.indexOf("(min-width: 1024px)"),
+    );
+    expect(value.indexOf("(min-width: 1024px)")).toBeLessThan(
+      value.indexOf("(min-width: 640px)"),
+    );
+  });
+
+  it("should normalize valid responsive layouts before generating README HTML", () => {
+    render(
+      <StackIconsEditor
+        initialState={{
+          ...DEFAULT_STACK_ICONS_EDITOR_STATE,
+          columnLayouts: [
+            { columns: "12", minWidthPx: "1024" },
+            { columns: "4", minWidthPx: null },
+            { columns: "8", minWidthPx: "640" },
+          ],
+          includeDarkTheme: false,
+          layoutMode: "responsive",
+        }}
+      />,
+    );
+
+    generatePreview();
+
+    expect(screen.getByLabelText("SVG URL")).toHaveValue(
+      "http://localhost:3000/icons?icons=typescript%2Cnextjs%2Ctailwindcss%2Cvercel&columns=4&gap=8&theme=light",
+    );
+    expect(screen.getByLabelText("README HTML")).toHaveValue(`<picture>
+  <source media="(min-width: 1024px)" srcset="http://localhost:3000/icons?icons=typescript%2Cnextjs%2Ctailwindcss%2Cvercel&amp;columns=12&amp;gap=8&amp;theme=light" />
+  <source media="(min-width: 640px)" srcset="http://localhost:3000/icons?icons=typescript%2Cnextjs%2Ctailwindcss%2Cvercel&amp;columns=8&amp;gap=8&amp;theme=light" />
+  <img src="http://localhost:3000/icons?icons=typescript%2Cnextjs%2Ctailwindcss%2Cvercel&amp;columns=4&amp;gap=8&amp;theme=light" alt="TypeScript, Next.js, Tailwind CSS, Vercel" title="TypeScript, Next.js, Tailwind CSS, Vercel" width="100%" />
+</picture>`);
+  });
+
+  it("should use the base responsive layout for the SVG URL and preview image", () => {
+    render(
+      <StackIconsEditor
+        initialState={{
+          ...DEFAULT_STACK_ICONS_EDITOR_STATE,
+          columnLayouts: [
+            { columns: "4", minWidthPx: null },
+            { columns: "12", minWidthPx: "1024" },
+          ],
+          icons: "react,nextjs",
+          layoutMode: "responsive",
+          previewTheme: "dark",
+        }}
+      />,
+    );
+
+    generatePreview();
+
+    const expectedUrl =
+      "http://localhost:3000/icons?icons=react%2Cnextjs&columns=4&gap=8&theme=dark";
+
+    expect(screen.getByLabelText("SVG URL")).toHaveValue(expectedUrl);
+    expect(
+      screen.getByRole("img", { name: "Generated stack icons preview" }),
+    ).toHaveAttribute("src", expectedUrl);
+  });
+
+  it("should reject duplicate responsive breakpoint min widths", () => {
+    render(
+      <StackIconsEditor
+        initialState={{
+          ...DEFAULT_STACK_ICONS_EDITOR_STATE,
+          columnLayouts: [
+            { columns: "4", minWidthPx: null },
+            { columns: "8", minWidthPx: "640" },
+            { columns: "12", minWidthPx: "640" },
+          ],
+          layoutMode: "responsive",
+        }}
+      />,
+    );
+
+    generatePreview();
+
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Breakpoint min width values must be unique.",
+    );
+    expect(screen.getByLabelText("SVG URL")).toHaveValue("");
+    expect(screen.getByLabelText("README HTML")).toHaveValue("");
+  });
+
+  it("should reject invalid responsive breakpoint min width on generation", () => {
+    render(
+      <StackIconsEditor
+        initialState={{
+          ...DEFAULT_STACK_ICONS_EDITOR_STATE,
+          columnLayouts: [
+            { columns: "4", minWidthPx: null },
+            { columns: "8", minWidthPx: "0" },
+          ],
+          layoutMode: "responsive",
+        }}
+      />,
+    );
+
+    generatePreview();
+
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Breakpoint min width must be an integer from 1 to 3840.",
+    );
+    expect(screen.getByLabelText("README HTML")).toHaveValue("");
+  });
+
+  it("should reject invalid column layout columns on generation", () => {
+    render(
+      <StackIconsEditor
+        initialState={{
+          ...DEFAULT_STACK_ICONS_EDITOR_STATE,
+          columnLayouts: [
+            { columns: "4", minWidthPx: null },
+            { columns: "21", minWidthPx: "640" },
+          ],
+          layoutMode: "responsive",
+        }}
+      />,
+    );
+
+    generatePreview();
+
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Each column layout must use 2 to 20 columns.",
+    );
+    expect(screen.getByLabelText("SVG URL")).toHaveValue("");
+    expect(screen.getByLabelText("README HTML")).toHaveValue("");
+  });
+
+  it("should reject missing base layout in single mode on generation", () => {
+    render(
+      <StackIconsEditor
+        initialState={{
+          ...DEFAULT_STACK_ICONS_EDITOR_STATE,
+          columnLayouts: [{ columns: "4", minWidthPx: "640" }],
+        }}
+      />,
+    );
+
+    generatePreview();
+
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Exactly one base column layout is required.",
+    );
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Single layout mode must have exactly one base layout.",
+    );
+    expect(screen.getByLabelText("README HTML")).toHaveValue("");
+  });
+
+  it("should clear stale generated output when column layout generation fails", () => {
+    renderEditor();
+    generatePreview();
+
+    expect(screen.getByLabelText("SVG URL")).not.toHaveValue("");
+    expect(screen.getByLabelText("README HTML")).not.toHaveValue("");
+
+    fireEvent.click(screen.getByLabelText("Responsive layout"));
+    fireEvent.change(screen.getByLabelText("Breakpoint columns"), {
+      target: { value: "1" },
+    });
+    generatePreview();
+
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Each column layout must use 2 to 20 columns.",
+    );
+    expect(screen.getByLabelText("SVG URL")).toHaveValue("");
+    expect(screen.getByLabelText("README HTML")).toHaveValue("");
+    expect(
+      screen.queryByRole("img", { name: "Generated stack icons preview" }),
+    ).not.toBeInTheDocument();
+  });
+
   it("should generate basic README HTML without icons param for explicit all icons", async () => {
     // Given
     render(
