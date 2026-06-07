@@ -91,6 +91,7 @@ export const iconRegistry = {
   hasura: {
     label: "Hasura",
     light: "assets/icons/hasura.svg",
+    dark: "assets/icons/hasura-dark.svg",
   },
   prisma: {
     label: "Prisma",
