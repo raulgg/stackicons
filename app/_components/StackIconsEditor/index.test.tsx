@@ -360,10 +360,10 @@ describe("StackIconsEditor", () => {
 
     expect(screen.getByLabelText("Columns")).toBeDisabled();
     expect(readmeHtml).toHaveValue(`<picture>
-  <source media="(min-width: 1280px)" srcset="http://localhost:3000/icons?icons=typescript%2Creact%2Cnextjs&amp;columns=16&amp;gap=8&amp;theme=light" />
+  <source media="(min-width: 1280px)" srcset="http://localhost:3000/icons?icons=typescript%2Creact%2Cnextjs&amp;columns=18&amp;gap=8&amp;theme=light" />
   <source media="(min-width: 1024px)" srcset="http://localhost:3000/icons?icons=typescript%2Creact%2Cnextjs&amp;columns=14&amp;gap=8&amp;theme=light" />
-  <source media="(min-width: 768px)" srcset="http://localhost:3000/icons?icons=typescript%2Creact%2Cnextjs&amp;columns=12&amp;gap=8&amp;theme=light" />
-  <source media="(min-width: 481px) and (max-width: 769px)" srcset="http://localhost:3000/icons?icons=typescript%2Creact%2Cnextjs&amp;columns=10&amp;gap=8&amp;theme=light" />
+  <source media="(min-width: 768px)" srcset="http://localhost:3000/icons?icons=typescript%2Creact%2Cnextjs&amp;columns=10&amp;gap=8&amp;theme=light" />
+  <source media="(min-width: 481px) and (max-width: 769px)" srcset="http://localhost:3000/icons?icons=typescript%2Creact%2Cnextjs&amp;columns=12&amp;gap=8&amp;theme=light" />
   <source media="(max-width: 480px)" srcset="http://localhost:3000/icons?icons=typescript%2Creact%2Cnextjs&amp;columns=8&amp;gap=8&amp;theme=light" />
   <img src="http://localhost:3000/icons?icons=typescript%2Creact%2Cnextjs&amp;columns=16&amp;gap=8&amp;theme=light" alt="TypeScript, React, Next.js" title="TypeScript, React, Next.js" width="100%" />
 </picture>`);
@@ -394,14 +394,14 @@ describe("StackIconsEditor", () => {
 
     // Then
     expect(screen.getByLabelText("README HTML")).toHaveValue(`<picture>
-  <source media="(min-width: 1280px) and (prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?icons=typescript%2Creact%2Cnextjs&amp;columns=16&amp;gap=8&amp;theme=dark" />
-  <source media="(min-width: 1280px)" srcset="http://localhost:3000/icons?icons=typescript%2Creact%2Cnextjs&amp;columns=16&amp;gap=8&amp;theme=light" />
+  <source media="(min-width: 1280px) and (prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?icons=typescript%2Creact%2Cnextjs&amp;columns=18&amp;gap=8&amp;theme=dark" />
+  <source media="(min-width: 1280px)" srcset="http://localhost:3000/icons?icons=typescript%2Creact%2Cnextjs&amp;columns=18&amp;gap=8&amp;theme=light" />
   <source media="(min-width: 1024px) and (prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?icons=typescript%2Creact%2Cnextjs&amp;columns=14&amp;gap=8&amp;theme=dark" />
   <source media="(min-width: 1024px)" srcset="http://localhost:3000/icons?icons=typescript%2Creact%2Cnextjs&amp;columns=14&amp;gap=8&amp;theme=light" />
-  <source media="(min-width: 768px) and (prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?icons=typescript%2Creact%2Cnextjs&amp;columns=12&amp;gap=8&amp;theme=dark" />
-  <source media="(min-width: 768px)" srcset="http://localhost:3000/icons?icons=typescript%2Creact%2Cnextjs&amp;columns=12&amp;gap=8&amp;theme=light" />
-  <source media="(min-width: 481px) and (max-width: 769px) and (prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?icons=typescript%2Creact%2Cnextjs&amp;columns=10&amp;gap=8&amp;theme=dark" />
-  <source media="(min-width: 481px) and (max-width: 769px)" srcset="http://localhost:3000/icons?icons=typescript%2Creact%2Cnextjs&amp;columns=10&amp;gap=8&amp;theme=light" />
+  <source media="(min-width: 768px) and (prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?icons=typescript%2Creact%2Cnextjs&amp;columns=10&amp;gap=8&amp;theme=dark" />
+  <source media="(min-width: 768px)" srcset="http://localhost:3000/icons?icons=typescript%2Creact%2Cnextjs&amp;columns=10&amp;gap=8&amp;theme=light" />
+  <source media="(min-width: 481px) and (max-width: 769px) and (prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?icons=typescript%2Creact%2Cnextjs&amp;columns=12&amp;gap=8&amp;theme=dark" />
+  <source media="(min-width: 481px) and (max-width: 769px)" srcset="http://localhost:3000/icons?icons=typescript%2Creact%2Cnextjs&amp;columns=12&amp;gap=8&amp;theme=light" />
   <source media="(max-width: 480px) and (prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?icons=typescript%2Creact%2Cnextjs&amp;columns=8&amp;gap=8&amp;theme=dark" />
   <source media="(max-width: 480px)" srcset="http://localhost:3000/icons?icons=typescript%2Creact%2Cnextjs&amp;columns=8&amp;gap=8&amp;theme=light" />
   <img src="http://localhost:3000/icons?icons=typescript%2Creact%2Cnextjs&amp;columns=16&amp;gap=8&amp;theme=light" alt="TypeScript, React, Next.js" title="TypeScript, React, Next.js" width="100%" />

@@ -10,10 +10,10 @@ import type { StackIconsEditorState } from "./state";
 type CopyGeneratedHtmlStatus = "failed" | "idle" | "succeeded";
 
 const responsiveBreakpointTiers = [
-  { columns: "16", mediaQuery: "(min-width: 1280px)" }, // desktop
+  { columns: "18", mediaQuery: "(min-width: 1280px)" }, // desktop
   { columns: "14", mediaQuery: "(min-width: 1024px)" }, // desktop-md
-  { columns: "12", mediaQuery: "(min-width: 768px)" }, // desktop-sm
-  { columns: "10", mediaQuery: "(min-width: 481px) and (max-width: 769px)" }, // mobile
+  { columns: "10", mediaQuery: "(min-width: 768px)" }, // desktop-sm
+  { columns: "12", mediaQuery: "(min-width: 481px) and (max-width: 769px)" }, // mobile
   { columns: "8", mediaQuery: "(max-width: 480px)" }, // mobile-sm
 ] as const;
 
@@ -148,8 +148,7 @@ function buildReadmeHtml(
     );
   }
 
-  const sourceMarkup =
-    sources.length === 0 ? "" : `${sources.join("\n")}\n`;
+  const sourceMarkup = sources.length === 0 ? "" : `${sources.join("\n")}\n`;
 
   return `<picture>
 ${sourceMarkup}  <img src="${escapeXml(fallbackUrl)}" alt="${escapeXml(labels)}" title="${escapeXml(labels)}" width="100%" />
