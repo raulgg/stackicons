@@ -588,7 +588,7 @@ describe("StackIconsEditor", () => {
     expect(screen.getByLabelText("README HTML")).not.toHaveValue("");
 
     fireEvent.click(screen.getByLabelText("Responsive layout"));
-    fireEvent.change(screen.getByLabelText("Breakpoint columns"), {
+    fireEvent.change(screen.getByLabelText("Columns"), {
       target: { value: "1" },
     });
     generatePreview();
@@ -895,9 +895,9 @@ describe("StackIconsEditor", () => {
       );
     });
     expect(screen.getByLabelText("Responsive layout")).toBeChecked();
-    expect(screen.getByLabelText("Base columns")).toHaveValue(12);
-    expect(screen.getByLabelText("Breakpoint columns")).toHaveValue(18);
-    expect(screen.getByLabelText("Breakpoint min width")).toHaveValue(768);
+    expect(screen.getByLabelText("Mobile columns")).toHaveValue(12);
+    expect(screen.getByLabelText("Columns")).toHaveValue(18);
+    expect(screen.getByLabelText("Breakpoint px")).toHaveValue(768);
   });
 
   it("should restore previous single and responsive layouts in the current editor session", async () => {
@@ -907,13 +907,13 @@ describe("StackIconsEditor", () => {
       target: { value: "6" },
     });
     fireEvent.click(screen.getByLabelText("Responsive layout"));
-    fireEvent.change(screen.getByLabelText("Base columns"), {
+    fireEvent.change(screen.getByLabelText("Mobile columns"), {
       target: { value: "10" },
     });
-    fireEvent.change(screen.getByLabelText("Breakpoint columns"), {
+    fireEvent.change(screen.getByLabelText("Columns"), {
       target: { value: "16" },
     });
-    fireEvent.change(screen.getByLabelText("Breakpoint min width"), {
+    fireEvent.change(screen.getByLabelText("Breakpoint px"), {
       target: { value: "1024" },
     });
     fireEvent.click(screen.getByLabelText("Single layout"));
@@ -930,9 +930,9 @@ describe("StackIconsEditor", () => {
 
     fireEvent.click(screen.getByLabelText("Responsive layout"));
 
-    expect(screen.getByLabelText("Base columns")).toHaveValue(10);
-    expect(screen.getByLabelText("Breakpoint columns")).toHaveValue(16);
-    expect(screen.getByLabelText("Breakpoint min width")).toHaveValue(1024);
+    expect(screen.getByLabelText("Mobile columns")).toHaveValue(10);
+    expect(screen.getByLabelText("Columns")).toHaveValue(16);
+    expect(screen.getByLabelText("Breakpoint px")).toHaveValue(1024);
     await waitFor(() => {
       const params = new URLSearchParams(window.location.search);
 
@@ -944,6 +944,183 @@ describe("StackIconsEditor", () => {
         ]),
       );
     });
+  });
+
+  it("should render and edit all responsive breakpoint layouts in ascending order", async () => {
+    render(
+      <StackIconsEditor
+        initialState={{
+          ...DEFAULT_STACK_ICONS_EDITOR_STATE,
+          columnLayouts: [
+            { columns: "9", minWidthPx: "1024" },
+            { columns: "6", minWidthPx: null },
+            { columns: "4", minWidthPx: "640" },
+          ],
+          layoutMode: "responsive",
+        }}
+      />,
+    );
+
+    expect(screen.getByLabelText("Mobile columns")).toHaveValue(6);
+    expect(screen.getAllByLabelText("Columns")).toHaveLength(2);
+    expect(screen.getAllByLabelText("Columns")[0]).toHaveValue(4);
+    expect(screen.getAllByLabelText("Breakpoint px")[0]).toHaveValue(640);
+    expect(screen.getAllByLabelText("Columns")[1]).toHaveValue(9);
+    expect(screen.getAllByLabelText("Breakpoint px")[1]).toHaveValue(1024);
+
+    fireEvent.change(screen.getByLabelText("Mobile columns"), {
+      target: { value: "7" },
+    });
+    fireEvent.change(screen.getAllByLabelText("Columns")[0], {
+      target: { value: "8" },
+    });
+    fireEvent.change(screen.getAllByLabelText("Breakpoint px")[0], {
+      target: { value: "768" },
+    });
+    fireEvent.change(screen.getAllByLabelText("Columns")[1], {
+      target: { value: "12" },
+    });
+    fireEvent.change(screen.getAllByLabelText("Breakpoint px")[1], {
+      target: { value: "1280" },
+    });
+
+    await waitFor(() => {
+      const params = new URLSearchParams(window.location.search);
+
+      expect(params.get("column-layouts")).toBe(
+        JSON.stringify([
+          { columns: "7", minWidthPx: null },
+          { columns: "8", minWidthPx: "768" },
+          { columns: "12", minWidthPx: "1280" },
+        ]),
+      );
+    });
+  });
+
+  it("should keep breakpoint rows stable while breakpoint px is temporarily invalid", async () => {
+    render(
+      <StackIconsEditor
+        initialState={{
+          ...DEFAULT_STACK_ICONS_EDITOR_STATE,
+          columnLayouts: [
+            { columns: "6", minWidthPx: null },
+            { columns: "8", minWidthPx: "640" },
+            { columns: "12", minWidthPx: "1024" },
+          ],
+          layoutMode: "responsive",
+        }}
+      />,
+    );
+
+    fireEvent.change(screen.getAllByLabelText("Breakpoint px")[0], {
+      target: { value: "" },
+    });
+    fireEvent.change(screen.getAllByLabelText("Columns")[0], {
+      target: { value: "9" },
+    });
+
+    expect(screen.getAllByLabelText("Columns")[0]).toHaveValue(9);
+    expect(screen.getAllByLabelText("Breakpoint px")[0]).toHaveValue(null);
+    expect(screen.getAllByLabelText("Columns")[1]).toHaveValue(12);
+    expect(screen.getAllByLabelText("Breakpoint px")[1]).toHaveValue(1024);
+
+    await waitFor(() => {
+      const params = new URLSearchParams(window.location.search);
+
+      expect(params.get("column-layouts")).toBe(
+        JSON.stringify([
+          { columns: "6", minWidthPx: null },
+          { columns: "9", minWidthPx: "" },
+          { columns: "12", minWidthPx: "1024" },
+        ]),
+      );
+    });
+  });
+
+  it("should restore edited responsive memory with multiple breakpoints", async () => {
+    render(
+      <StackIconsEditor
+        initialState={{
+          ...DEFAULT_STACK_ICONS_EDITOR_STATE,
+          columnLayouts: [
+            { columns: "12", minWidthPx: null },
+            { columns: "16", minWidthPx: "768" },
+            { columns: "20", minWidthPx: "1280" },
+          ],
+          layoutMode: "responsive",
+        }}
+      />,
+    );
+
+    fireEvent.change(screen.getByLabelText("Mobile columns"), {
+      target: { value: "10" },
+    });
+    fireEvent.change(screen.getAllByLabelText("Columns")[0], {
+      target: { value: "14" },
+    });
+    fireEvent.change(screen.getAllByLabelText("Breakpoint px")[0], {
+      target: { value: "700" },
+    });
+    fireEvent.change(screen.getAllByLabelText("Columns")[1], {
+      target: { value: "18" },
+    });
+    fireEvent.change(screen.getAllByLabelText("Breakpoint px")[1], {
+      target: { value: "1100" },
+    });
+    fireEvent.click(screen.getByLabelText("Single layout"));
+    fireEvent.click(screen.getByLabelText("Responsive layout"));
+
+    expect(screen.getByLabelText("Mobile columns")).toHaveValue(10);
+    expect(screen.getAllByLabelText("Columns")[0]).toHaveValue(14);
+    expect(screen.getAllByLabelText("Breakpoint px")[0]).toHaveValue(700);
+    expect(screen.getAllByLabelText("Columns")[1]).toHaveValue(18);
+    expect(screen.getAllByLabelText("Breakpoint px")[1]).toHaveValue(1100);
+  });
+
+  it("should generate responsive README HTML from edited breakpoint rows", () => {
+    render(
+      <StackIconsEditor
+        initialState={{
+          ...DEFAULT_STACK_ICONS_EDITOR_STATE,
+          columnLayouts: [
+            { columns: "12", minWidthPx: null },
+            { columns: "16", minWidthPx: "768" },
+            { columns: "20", minWidthPx: "1280" },
+          ],
+          icons: "react,nextjs",
+          layoutMode: "responsive",
+        }}
+      />,
+    );
+
+    fireEvent.change(screen.getByLabelText("Mobile columns"), {
+      target: { value: "6" },
+    });
+    fireEvent.change(screen.getAllByLabelText("Columns")[0], {
+      target: { value: "9" },
+    });
+    fireEvent.change(screen.getAllByLabelText("Breakpoint px")[0], {
+      target: { value: "700" },
+    });
+    fireEvent.change(screen.getAllByLabelText("Columns")[1], {
+      target: { value: "15" },
+    });
+    fireEvent.change(screen.getAllByLabelText("Breakpoint px")[1], {
+      target: { value: "1100" },
+    });
+    generatePreview();
+
+    expect(screen.getByLabelText("SVG URL")).toHaveValue(
+      "http://localhost:3000/icons?icons=react%2Cnextjs&columns=6&gap=8&theme=light",
+    );
+    expect(screen.getByLabelText("README HTML")).toHaveValue(`<picture>
+  <source media="(min-width: 1100px) and (prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?icons=react%2Cnextjs&amp;columns=15&amp;gap=8&amp;theme=dark" />
+  <source media="(min-width: 1100px)" srcset="http://localhost:3000/icons?icons=react%2Cnextjs&amp;columns=15&amp;gap=8&amp;theme=light" />
+  <source media="(min-width: 700px) and (prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?icons=react%2Cnextjs&amp;columns=9&amp;gap=8&amp;theme=dark" />
+  <source media="(min-width: 700px)" srcset="http://localhost:3000/icons?icons=react%2Cnextjs&amp;columns=9&amp;gap=8&amp;theme=light" />
+  <source media="(prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?icons=react%2Cnextjs&amp;columns=6&amp;gap=8&amp;theme=dark" />
+  <img src="http://localhost:3000/icons?icons=react%2Cnextjs&amp;columns=6&amp;gap=8&amp;theme=light" alt="React, Next.js" title="React, Next.js" width="100%" />
+</picture>`);
   });
 
   it("should initialize inactive responsive memory to defaults from a single layout URL", async () => {
@@ -967,8 +1144,8 @@ describe("StackIconsEditor", () => {
         JSON.stringify(DEFAULT_RESPONSIVE_COLUMN_LAYOUTS),
       );
     });
-    expect(screen.getByLabelText("Base columns")).toHaveValue(12);
-    expect(screen.getByLabelText("Breakpoint columns")).toHaveValue(18);
+    expect(screen.getByLabelText("Mobile columns")).toHaveValue(12);
+    expect(screen.getByLabelText("Columns")).toHaveValue(18);
   });
 
   it("should initialize inactive single memory to defaults from a responsive layout URL", async () => {
@@ -984,8 +1161,8 @@ describe("StackIconsEditor", () => {
       />,
     );
 
-    expect(screen.getByLabelText("Base columns")).toHaveValue(8);
-    expect(screen.getByLabelText("Breakpoint columns")).toHaveValue(14);
+    expect(screen.getByLabelText("Mobile columns")).toHaveValue(8);
+    expect(screen.getByLabelText("Columns")).toHaveValue(14);
 
     fireEvent.click(screen.getByLabelText("Single layout"));
 
@@ -1155,7 +1332,7 @@ describe("StackIconsEditor", () => {
     });
   });
 
-  it("should fall back to default state when responsive breakpoint is out of range", () => {
+  it("should preserve editable responsive state when breakpoint px is out of range", () => {
     const initialState = getStackIconsEditorInitialState({
       "column-layouts": JSON.stringify([
         { columns: "6", minWidthPx: null },
@@ -1167,10 +1344,13 @@ describe("StackIconsEditor", () => {
     });
 
     expect(initialState).toMatchObject({
-      columnLayouts: DEFAULT_STACK_ICONS_EDITOR_STATE.columnLayouts,
+      columnLayouts: [
+        { columns: "6", minWidthPx: null },
+        { columns: "4", minWidthPx: "3841" },
+      ],
       gap: "10",
       icons: "solid,typescript",
-      layoutMode: "single",
+      layoutMode: "responsive",
     });
   });
 });

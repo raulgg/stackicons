@@ -13,7 +13,7 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import type { StackIconsEditorState } from "./state";
+import type { ColumnLayout, StackIconsEditorState } from "./state";
 import { useStackIconsEditorForm } from "./useStackIconsEditorForm";
 
 export type { StackIconsEditorState } from "./state";
@@ -32,14 +32,16 @@ export function StackIconsEditor({ initialState }: StackIconsEditorProps) {
     state,
     switchLayoutMode,
     updateBaseColumns,
+    updateColumnLayout,
     updateField,
-    updateFirstBreakpointLayout,
     validationErrors,
   } = useStackIconsEditorForm(initialState);
 
   const hasValidationErrors = validationErrors.length > 0;
-  const baseColumnLayout = state.columnLayouts[0];
-  const firstBreakpointLayout = state.columnLayouts[1];
+  const baseColumnLayout = state.columnLayouts.find(
+    (layout) => layout.minWidthPx === null,
+  );
+  const breakpointLayouts = getOrderedBreakpointLayouts(state.columnLayouts);
 
   return (
     <div className="rounded-lg border bg-card p-5 shadow-sm">
@@ -92,7 +94,7 @@ export function StackIconsEditor({ initialState }: StackIconsEditorProps) {
             className="font-mono text-xs text-muted-foreground"
             htmlFor="columns"
           >
-            {state.layoutMode === "single" ? "Columns" : "Base columns"}
+            {state.layoutMode === "single" ? "Columns" : "Mobile columns"}
           </label>
           <input
             className="mt-1 w-full rounded-md border bg-background px-3 py-2 font-mono text-sm outline-none ring-ring transition focus:ring-2"
@@ -101,7 +103,7 @@ export function StackIconsEditor({ initialState }: StackIconsEditorProps) {
             min={2}
             onChange={(event) => updateBaseColumns(event.target.value)}
             type="number"
-            value={baseColumnLayout.columns}
+            value={baseColumnLayout?.columns ?? ""}
           />
         </div>
         <div>
@@ -123,48 +125,61 @@ export function StackIconsEditor({ initialState }: StackIconsEditorProps) {
         </div>
       </div>
 
-      {state.layoutMode === "responsive" && firstBreakpointLayout ? (
-        <div className="mt-4 grid gap-3 sm:grid-cols-2">
-          <div>
-            <label
-              className="font-mono text-xs text-muted-foreground"
-              htmlFor="breakpoint-columns"
+      {state.layoutMode === "responsive"
+        ? breakpointLayouts.map(({ layout, originalIndex }) => (
+            <div
+              className="mt-4 grid gap-3 sm:grid-cols-2"
+              key={originalIndex}
             >
-              Breakpoint columns
-            </label>
-            <input
-              className="mt-1 w-full rounded-md border bg-background px-3 py-2 font-mono text-sm outline-none ring-ring transition focus:ring-2"
-              id="breakpoint-columns"
-              max={20}
-              min={2}
-              onChange={(event) =>
-                updateFirstBreakpointLayout("columns", event.target.value)
-              }
-              type="number"
-              value={firstBreakpointLayout.columns}
-            />
-          </div>
-          <div>
-            <label
-              className="font-mono text-xs text-muted-foreground"
-              htmlFor="breakpoint-min-width"
-            >
-              Breakpoint min width
-            </label>
-            <input
-              className="mt-1 w-full rounded-md border bg-background px-3 py-2 font-mono text-sm outline-none ring-ring transition focus:ring-2"
-              id="breakpoint-min-width"
-              max={3840}
-              min={1}
-              onChange={(event) =>
-                updateFirstBreakpointLayout("minWidthPx", event.target.value)
-              }
-              type="number"
-              value={firstBreakpointLayout.minWidthPx ?? ""}
-            />
-          </div>
-        </div>
-      ) : null}
+              <div>
+                <label
+                  className="font-mono text-xs text-muted-foreground"
+                  htmlFor={`breakpoint-columns-${originalIndex}`}
+                >
+                  Columns
+                </label>
+                <input
+                  className="mt-1 w-full rounded-md border bg-background px-3 py-2 font-mono text-sm outline-none ring-ring transition focus:ring-2"
+                  id={`breakpoint-columns-${originalIndex}`}
+                  max={20}
+                  min={2}
+                  onChange={(event) =>
+                    updateColumnLayout(
+                      originalIndex,
+                      "columns",
+                      event.target.value,
+                    )
+                  }
+                  type="number"
+                  value={layout.columns}
+                />
+              </div>
+              <div>
+                <label
+                  className="font-mono text-xs text-muted-foreground"
+                  htmlFor={`breakpoint-min-width-${originalIndex}`}
+                >
+                  Breakpoint px
+                </label>
+                <input
+                  className="mt-1 w-full rounded-md border bg-background px-3 py-2 font-mono text-sm outline-none ring-ring transition focus:ring-2"
+                  id={`breakpoint-min-width-${originalIndex}`}
+                  max={3840}
+                  min={1}
+                  onChange={(event) =>
+                    updateColumnLayout(
+                      originalIndex,
+                      "minWidthPx",
+                      event.target.value,
+                    )
+                  }
+                  type="number"
+                  value={layout.minWidthPx ?? ""}
+                />
+              </div>
+            </div>
+          ))
+        : null}
 
       <div className="mt-4 rounded-md border bg-background px-3 py-2">
         <label
@@ -335,4 +350,34 @@ export function StackIconsEditor({ initialState }: StackIconsEditorProps) {
       </div>
     </div>
   );
+}
+
+function getOrderedBreakpointLayouts(columnLayouts: ColumnLayout[]) {
+  return columnLayouts
+    .map((layout, originalIndex) => ({ layout, originalIndex }))
+    .filter(({ layout }) => layout.minWidthPx !== null)
+    .sort((a, b) => {
+      const aMinWidth = getValidBreakpointMinWidth(a.layout.minWidthPx);
+      const bMinWidth = getValidBreakpointMinWidth(b.layout.minWidthPx);
+
+      if (aMinWidth !== null && bMinWidth !== null) {
+        return aMinWidth - bMinWidth;
+      }
+
+      return a.originalIndex - b.originalIndex;
+    });
+}
+
+function getValidBreakpointMinWidth(minWidthPx: string | null): number | null {
+  if (minWidthPx === null || minWidthPx.trim() !== minWidthPx || minWidthPx === "") {
+    return null;
+  }
+
+  const parsedMinWidth = Number(minWidthPx);
+
+  return Number.isInteger(parsedMinWidth) &&
+    parsedMinWidth >= 1 &&
+    parsedMinWidth <= 3840
+    ? parsedMinWidth
+    : null;
 }

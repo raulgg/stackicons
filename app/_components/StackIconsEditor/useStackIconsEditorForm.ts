@@ -21,7 +21,10 @@ type LayoutMemoryState = {
 type ParsedColumnLayout = { columns: number; minWidthPx: number | null };
 
 function getBaseColumnLayout(state: StackIconsEditorState) {
-  return state.columnLayouts[0];
+  return (
+    state.columnLayouts.find((layout) => layout.minWidthPx === null) ??
+    state.columnLayouts[0]
+  );
 }
 
 function buildPageQuery(state: StackIconsEditorState): string {
@@ -253,11 +256,48 @@ function normalizeColumnLayouts(columnLayouts: ColumnLayout[]): ColumnLayout[] {
       (layout): layout is ColumnLayout & { minWidthPx: string } =>
         layout.minWidthPx !== null,
     )
-    .sort((a, b) => Number(a.minWidthPx) - Number(b.minWidthPx));
+    .sort(compareBreakpointLayouts);
 
   return baseLayout === undefined
     ? columnLayouts
     : [baseLayout, ...breakpointLayouts];
+}
+
+function normalizeColumnLayoutsWhenBreakpointsAreValid(
+  columnLayouts: ColumnLayout[],
+): ColumnLayout[] {
+  const breakpointLayouts = columnLayouts.filter(
+    (layout): layout is ColumnLayout & { minWidthPx: string } =>
+      layout.minWidthPx !== null,
+  );
+  const hasInvalidBreakpoint = breakpointLayouts.some(
+    (layout) => getValidBreakpointMinWidth(layout.minWidthPx) === null,
+  );
+
+  return hasInvalidBreakpoint
+    ? columnLayouts
+    : normalizeColumnLayouts(columnLayouts);
+}
+
+function updateLayoutMemory(
+  layoutMemory: LayoutMemoryState,
+  state: StackIconsEditorState,
+): LayoutMemoryState {
+  if (state.layoutMode === "single") {
+    return {
+      ...layoutMemory,
+      singleColumnLayout: { ...getBaseColumnLayout(state) },
+    };
+  }
+
+  return {
+    ...layoutMemory,
+    responsiveColumnLayouts: normalizeColumnLayoutsWhenBreakpointsAreValid(
+      state.columnLayouts,
+    ).map((layout) => ({
+      ...layout,
+    })),
+  };
 }
 
 function parseColumnLayout(layout: ColumnLayout): ParsedColumnLayout {
@@ -265,6 +305,42 @@ function parseColumnLayout(layout: ColumnLayout): ParsedColumnLayout {
     columns: Number(layout.columns),
     minWidthPx: layout.minWidthPx === null ? null : Number(layout.minWidthPx),
   };
+}
+
+function compareBreakpointLayouts(
+  a: ColumnLayout & { minWidthPx: string },
+  b: ColumnLayout & { minWidthPx: string },
+) {
+  const aMinWidth = getValidBreakpointMinWidth(a.minWidthPx);
+  const bMinWidth = getValidBreakpointMinWidth(b.minWidthPx);
+
+  if (aMinWidth !== null && bMinWidth !== null) {
+    return aMinWidth - bMinWidth;
+  }
+
+  if (aMinWidth !== null) {
+    return -1;
+  }
+
+  if (bMinWidth !== null) {
+    return 1;
+  }
+
+  return 0;
+}
+
+function getValidBreakpointMinWidth(minWidthPx: string): number | null {
+  if (minWidthPx.trim() !== minWidthPx || minWidthPx === "") {
+    return null;
+  }
+
+  const parsedMinWidth = Number(minWidthPx);
+
+  return Number.isInteger(parsedMinWidth) &&
+    parsedMinWidth >= 1 &&
+    parsedMinWidth <= 3840
+    ? parsedMinWidth
+    : null;
 }
 
 function subscribeToCurrentOrigin() {
@@ -302,6 +378,18 @@ export function useStackIconsEditorForm(initialState: StackIconsEditorState) {
   const generatedHtml =
     previewState === null ? "" : buildReadmeHtml(previewState, currentOrigin);
 
+  function commitEditorState(nextState: StackIconsEditorState) {
+    setEditorState(nextState);
+    setLayoutMemory((currentLayoutMemory) =>
+      updateLayoutMemory(currentLayoutMemory, nextState),
+    );
+
+    const nextQuery = buildPageQuery(nextState);
+    const nextUrl = `${window.location.pathname}?${nextQuery}`;
+
+    window.history.replaceState(null, "", nextUrl);
+  }
+
   function updateField<Field extends keyof StackIconsEditorState>(
     field: Field,
     value: StackIconsEditorState[Field],
@@ -333,45 +421,37 @@ export function useStackIconsEditorForm(initialState: StackIconsEditorState) {
   function updateBaseColumns(columns: string) {
     const nextState: StackIconsEditorState = {
       ...editorState,
-      columnLayouts: [
-        { ...getBaseColumnLayout(editorState), columns },
-        ...editorState.columnLayouts.slice(1),
-      ],
+      columnLayouts: normalizeColumnLayoutsWhenBreakpointsAreValid(
+        editorState.columnLayouts.map((layout) =>
+          layout.minWidthPx === null ? { ...layout, columns } : layout,
+        ),
+      ),
     };
 
-    setEditorState(nextState);
-
-    const nextQuery = buildPageQuery(nextState);
-    const nextUrl = `${window.location.pathname}?${nextQuery}`;
-
-    window.history.replaceState(null, "", nextUrl);
+    commitEditorState(nextState);
   }
 
-  function updateFirstBreakpointLayout(
+  function updateColumnLayout(
+    layoutIndex: number,
     field: keyof ColumnLayout,
     value: string,
   ) {
-    const firstBreakpointLayout = editorState.columnLayouts[1];
+    const targetLayout = editorState.columnLayouts[layoutIndex];
 
-    if (firstBreakpointLayout === undefined) {
+    if (targetLayout === undefined) {
       return;
     }
 
     const nextState: StackIconsEditorState = {
       ...editorState,
-      columnLayouts: [
-        getBaseColumnLayout(editorState),
-        { ...firstBreakpointLayout, [field]: value },
-        ...editorState.columnLayouts.slice(2),
-      ],
+      columnLayouts: normalizeColumnLayoutsWhenBreakpointsAreValid(
+        editorState.columnLayouts.map((layout, currentIndex) =>
+          currentIndex === layoutIndex ? { ...layout, [field]: value } : layout,
+        ),
+      ),
     };
 
-    setEditorState(nextState);
-
-    const nextQuery = buildPageQuery(nextState);
-    const nextUrl = `${window.location.pathname}?${nextQuery}`;
-
-    window.history.replaceState(null, "", nextUrl);
+    commitEditorState(nextState);
   }
 
   function switchLayoutMode(layoutMode: LayoutMode) {
@@ -469,8 +549,8 @@ export function useStackIconsEditorForm(initialState: StackIconsEditorState) {
     state: editorState,
     switchLayoutMode,
     updateBaseColumns,
+    updateColumnLayout,
     updateField,
-    updateFirstBreakpointLayout,
     validationErrors,
   };
 }

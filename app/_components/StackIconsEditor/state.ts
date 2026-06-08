@@ -126,24 +126,41 @@ function getValidResponsiveColumnLayouts(
     return null;
   }
 
-  const [baseLayout, ...breakpointLayouts] = parsed;
+  const baseLayouts = parsed.filter(
+    (layout): layout is ColumnLayout =>
+      isColumnLayout(layout) && layout.minWidthPx === null,
+  );
+  const breakpointLayouts = parsed.filter(
+    (layout): layout is ColumnLayout & { minWidthPx: string } =>
+      isColumnLayout(layout) && layout.minWidthPx !== null,
+  );
 
-  if (!isColumnLayout(baseLayout) || baseLayout.minWidthPx !== null) {
+  if (baseLayouts.length !== 1 || breakpointLayouts.length === 0) {
     return null;
   }
 
-  if (
-    breakpointLayouts.some(
-      (layout) =>
-        !isColumnLayout(layout) ||
-        typeof layout.minWidthPx !== "string" ||
-        !isValidBreakpointPx(layout.minWidthPx),
-    )
-  ) {
+  if (breakpointLayouts.length !== parsed.length - baseLayouts.length) {
     return null;
   }
 
-  return parsed as ColumnLayout[];
+  return [
+    baseLayouts[0],
+    ...breakpointLayouts.sort(compareEditableBreakpointLayouts),
+  ];
+}
+
+function compareEditableBreakpointLayouts(
+  a: ColumnLayout & { minWidthPx: string },
+  b: ColumnLayout & { minWidthPx: string },
+) {
+  const aMinWidth = getValidBreakpointPx(a.minWidthPx);
+  const bMinWidth = getValidBreakpointPx(b.minWidthPx);
+
+  if (aMinWidth !== null && bMinWidth !== null) {
+    return aMinWidth - bMinWidth;
+  }
+
+  return 0;
 }
 
 function isColumnLayout(value: unknown): value is ColumnLayout {
@@ -167,16 +184,18 @@ function isValidColumns(value: unknown): value is string {
   return Number.isInteger(columns) && columns >= 2 && columns <= 20;
 }
 
-function isValidBreakpointPx(value: string): boolean {
+function getValidBreakpointPx(value: string): number | null {
   if (value.trim() !== value || value === "") {
-    return false;
+    return null;
   }
 
   const breakpointPx = Number(value);
 
-  return (
-    Number.isInteger(breakpointPx) && breakpointPx >= 1 && breakpointPx <= 3840
-  );
+  return Number.isInteger(breakpointPx) &&
+    breakpointPx >= 1 &&
+    breakpointPx <= 3840
+    ? breakpointPx
+    : null;
 }
 
 function getSearchParamValue(value: SearchParamValue): string | undefined {
