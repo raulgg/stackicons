@@ -63,6 +63,21 @@ export function getStackIconsEditorInitialState(
   };
 }
 
+export function buildStackIconsEditorPageQuery(
+  state: StackIconsEditorState,
+): string {
+  const params = new URLSearchParams();
+
+  params.set("icons", state.icons);
+  params.set("layout", state.layoutMode);
+  params.set("column-layouts", JSON.stringify(state.columnLayouts));
+  params.set("gap", state.gap);
+  params.set("include-dark-theme", String(state.includeDarkTheme));
+  params.set("preview-theme", state.previewTheme);
+
+  return params.toString();
+}
+
 function getLayoutMode(
   searchParams: Record<string, SearchParamValue>,
 ): LayoutMode | null {

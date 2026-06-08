@@ -12,6 +12,7 @@ import { parseIconRequest } from "@/lib/icons/parse-request";
 import { buildReadmeEmbedHtml } from "@/lib/icons/readme-embed";
 
 import {
+  buildStackIconsEditorPageQuery,
   DEFAULT_STACK_ICONS_EDITOR_STATE,
   type ColumnLayout,
   type LayoutMode,
@@ -26,19 +27,6 @@ type LayoutMemoryState = {
 
 function getBaseColumnLayout(state: StackIconsEditorState) {
   return getEditableBaseColumnLayout(state.columnLayouts);
-}
-
-function buildPageQuery(state: StackIconsEditorState): string {
-  const params = new URLSearchParams();
-
-  params.set("icons", state.icons);
-  params.set("layout", state.layoutMode);
-  params.set("column-layouts", JSON.stringify(state.columnLayouts));
-  params.set("gap", state.gap);
-  params.set("include-dark-theme", String(state.includeDarkTheme));
-  params.set("preview-theme", state.previewTheme);
-
-  return params.toString();
 }
 
 function buildInitialLayoutMemory(
@@ -127,6 +115,13 @@ function getServerOriginSnapshot() {
   return "";
 }
 
+function replaceEditorUrl(state: StackIconsEditorState) {
+  const nextQuery = buildStackIconsEditorPageQuery(state);
+  const nextUrl = `${window.location.pathname}?${nextQuery}`;
+
+  window.history.replaceState(null, "", nextUrl);
+}
+
 export function useStackIconsEditorForm(initialState: StackIconsEditorState) {
   const currentOrigin = React.useSyncExternalStore(
     subscribeToCurrentOrigin,
@@ -156,10 +151,7 @@ export function useStackIconsEditorForm(initialState: StackIconsEditorState) {
       updateLayoutMemory(currentLayoutMemory, nextState),
     );
 
-    const nextQuery = buildPageQuery(nextState);
-    const nextUrl = `${window.location.pathname}?${nextQuery}`;
-
-    window.history.replaceState(null, "", nextUrl);
+    replaceEditorUrl(nextState);
   }
 
   function updateField<Field extends keyof StackIconsEditorState>(
@@ -172,11 +164,7 @@ export function useStackIconsEditorForm(initialState: StackIconsEditorState) {
     };
 
     setEditorState(nextState);
-
-    const nextQuery = buildPageQuery(nextState);
-    const nextUrl = `${window.location.pathname}?${nextQuery}`;
-
-    window.history.replaceState(null, "", nextUrl);
+    replaceEditorUrl(nextState);
 
     if (field === "previewTheme") {
       setPreviewState((currentPreviewState) =>
@@ -293,11 +281,7 @@ export function useStackIconsEditorForm(initialState: StackIconsEditorState) {
 
     setLayoutMemory(nextMemory);
     setEditorState(nextState);
-
-    const nextQuery = buildPageQuery(nextState);
-    const nextUrl = `${window.location.pathname}?${nextQuery}`;
-
-    window.history.replaceState(null, "", nextUrl);
+    replaceEditorUrl(nextState);
   }
 
   function generatePreview() {
