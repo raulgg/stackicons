@@ -6,11 +6,10 @@ import {
   copyEditableColumnLayouts,
   DEFAULT_RESPONSIVE_COLUMN_LAYOUTS,
   getEditableBaseColumnLayout,
-  getReadmeSourceColumnLayouts,
   validateColumnLayouts,
 } from "@/lib/icons/column-layout";
 import { parseIconRequest } from "@/lib/icons/parse-request";
-import { escapeXml } from "@/lib/utils";
+import { buildReadmeEmbedHtml } from "@/lib/icons/readme-embed";
 
 import {
   DEFAULT_STACK_ICONS_EDITOR_STATE,
@@ -70,12 +69,6 @@ function buildIconRequestParams(
   return params;
 }
 
-function isAllIconState(state: StackIconsEditorState): boolean {
-  const rawIcons = state.icons.trim();
-
-  return rawIcons === "all";
-}
-
 function buildIconsUrl(
   state: StackIconsEditorState,
   currentOrigin: string,
@@ -91,121 +84,18 @@ function buildIconsUrl(
   return url.toString();
 }
 
-function buildReadmeImageUrl(
-  state: StackIconsEditorState,
-  currentOrigin: string,
-  theme: "dark" | "light",
-  columns: number | string = getBaseColumnLayout(state).columns,
-): string {
-  if (currentOrigin === "") {
-    return "";
-  }
-
-  const url = new URL("/icons", currentOrigin);
-  const params = new URLSearchParams();
-
-  if (!isAllIconState(state)) {
-    params.set("icons", state.icons);
-  }
-
-  params.set("columns", String(columns));
-  params.set("gap", state.gap);
-  params.set("theme", theme);
-
-  url.search = params.toString();
-
-  return url.toString();
-}
-
 function buildReadmeHtml(
   state: StackIconsEditorState,
   currentOrigin: string,
 ): string {
-  const columnLayoutResult = validateColumnLayouts({
+  return buildReadmeEmbedHtml({
     columnLayouts: state.columnLayouts,
+    currentOrigin,
+    gap: state.gap,
+    icons: state.icons,
+    includeDarkTheme: state.includeDarkTheme,
     layoutMode: state.layoutMode,
   });
-
-  if (!columnLayoutResult.success) {
-    return "";
-  }
-
-  const parsedRequest = parseIconRequest(
-    buildIconRequestParams(state, columnLayoutResult.columnLayouts[0]?.columns),
-  );
-
-  if (!parsedRequest.success) {
-    return "";
-  }
-
-  const baseColumnLayout = columnLayoutResult.columnLayouts.find(
-    (layout) => layout.minWidthPx === null,
-  );
-  const fallbackUrl = buildReadmeImageUrl(
-    state,
-    currentOrigin,
-    "light",
-    baseColumnLayout?.columns,
-  );
-
-  if (fallbackUrl === "") {
-    return "";
-  }
-
-  const labels = isAllIconState(state)
-    ? "All stack icons"
-    : parsedRequest.data.icons.map((icon) => icon.label).join(", ");
-  const sources: string[] = [];
-  const breakpointLayouts = getReadmeSourceColumnLayouts(
-    columnLayoutResult.columnLayouts,
-  );
-
-  for (const layout of breakpointLayouts) {
-    const media = `(min-width: ${layout.minWidthPx}px)`;
-
-    if (state.includeDarkTheme) {
-      const darkSourceUrl = buildReadmeImageUrl(
-        state,
-        currentOrigin,
-        "dark",
-        layout.columns,
-      );
-
-      sources.push(
-        `  <source media="${media} and (prefers-color-scheme: dark)" srcset="${escapeXml(darkSourceUrl)}" />`,
-      );
-    }
-
-    const lightSourceUrl = buildReadmeImageUrl(
-      state,
-      currentOrigin,
-      "light",
-      layout.columns,
-    );
-
-    sources.push(
-      `  <source media="${media}" srcset="${escapeXml(lightSourceUrl)}" />`,
-    );
-  }
-
-  if (state.includeDarkTheme) {
-    const darkFallbackUrl = buildReadmeImageUrl(
-      state,
-      currentOrigin,
-      "dark",
-      baseColumnLayout?.columns,
-    );
-
-    sources.push(
-      `  <source media="(prefers-color-scheme: dark)" srcset="${escapeXml(darkFallbackUrl)}" />`,
-    );
-  }
-
-  const sourceMarkup = sources.length === 0 ? "" : `${sources.join("\n")}\n`;
-
-  return `<picture>
-${sourceMarkup}  <img src="${escapeXml(fallbackUrl)}" alt="${escapeXml(labels)}" title="${escapeXml(labels)}" width="100%" />
-</picture>`;
 }
 
 function updateLayoutMemory(
