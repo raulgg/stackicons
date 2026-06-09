@@ -6,10 +6,11 @@ import {
   copyEditableColumnLayouts,
   DEFAULT_RESPONSIVE_COLUMN_LAYOUTS,
   getEditableBaseColumnLayout,
-  validateColumnLayouts,
 } from "@/lib/icons/column-layout";
-import { parseIconRequest } from "@/lib/icons/parse-request";
-import { buildReadmeEmbedHtml } from "@/lib/icons/readme-embed";
+import {
+  generateReadmeImage,
+  type ReadmeImageGenerationResult,
+} from "@/lib/icons/readme-image";
 
 import {
   buildStackIconsEditorPageQuery,
@@ -24,6 +25,10 @@ type LayoutMemoryState = {
   singleColumnLayout: ColumnLayout;
   responsiveColumnLayouts: ColumnLayout[];
 };
+type GeneratedReadmeImage = Extract<
+  ReadmeImageGenerationResult,
+  { success: true }
+>;
 
 function getBaseColumnLayout(state: StackIconsEditorState) {
   return getEditableBaseColumnLayout(state.columnLayouts);
@@ -42,48 +47,6 @@ function buildInitialLayoutMemory(
         ? copyEditableColumnLayouts(initialState.columnLayouts)
         : copyEditableColumnLayouts(DEFAULT_RESPONSIVE_COLUMN_LAYOUTS),
   };
-}
-
-function buildIconRequestParams(
-  state: StackIconsEditorState,
-  columns: number | string = getBaseColumnLayout(state).columns,
-): URLSearchParams {
-  const params = new URLSearchParams();
-
-  params.set("icons", state.icons);
-  params.set("columns", String(columns));
-  params.set("gap", state.gap);
-
-  return params;
-}
-
-function buildIconsUrl(
-  state: StackIconsEditorState,
-  currentOrigin: string,
-): string {
-  if (currentOrigin === "") {
-    return "";
-  }
-
-  const url = new URL("/icons", currentOrigin);
-  url.search = buildIconRequestParams(state).toString();
-  url.searchParams.set("theme", state.previewTheme);
-
-  return url.toString();
-}
-
-function buildReadmeHtml(
-  state: StackIconsEditorState,
-  currentOrigin: string,
-): string {
-  return buildReadmeEmbedHtml({
-    columnLayouts: state.columnLayouts,
-    currentOrigin,
-    gap: state.gap,
-    icons: state.icons,
-    includeDarkTheme: state.includeDarkTheme,
-    layoutMode: state.layoutMode,
-  });
 }
 
 function updateLayoutMemory(
@@ -122,6 +85,27 @@ function replaceEditorUrl(state: StackIconsEditorState) {
   window.history.replaceState(null, "", nextUrl);
 }
 
+function getDisplayedSvgUrl({
+  generatedReadmeImage,
+  previewTheme,
+}: {
+  generatedReadmeImage: GeneratedReadmeImage | null;
+  previewTheme: StackIconsEditorState["previewTheme"];
+}): string {
+  if (generatedReadmeImage === null) {
+    return "";
+  }
+
+  const themedBaseSource = generatedReadmeImage.imageSources.find(
+    (source) => source.minWidthPx === null && source.theme === previewTheme,
+  );
+  const lightBaseSource = generatedReadmeImage.imageSources.find(
+    (source) => source.minWidthPx === null && source.theme === "light",
+  );
+
+  return themedBaseSource?.url ?? lightBaseSource?.url ?? "";
+}
+
 export function useStackIconsEditorForm(initialState: StackIconsEditorState) {
   const currentOrigin = React.useSyncExternalStore(
     subscribeToCurrentOrigin,
@@ -130,8 +114,8 @@ export function useStackIconsEditorForm(initialState: StackIconsEditorState) {
   );
   const [editorState, setEditorState] =
     React.useState<StackIconsEditorState>(initialState);
-  const [previewState, setPreviewState] =
-    React.useState<StackIconsEditorState | null>(null);
+  const [generatedReadmeImage, setGeneratedReadmeImage] =
+    React.useState<GeneratedReadmeImage | null>(null);
   const [validationErrors, setValidationErrors] = React.useState<string[]>([]);
   const [copyGeneratedHtmlStatus, setCopyGeneratedHtmlStatus] =
     React.useState<CopyGeneratedHtmlStatus>("idle");
@@ -140,10 +124,11 @@ export function useStackIconsEditorForm(initialState: StackIconsEditorState) {
   );
   const previewGenerationId = React.useRef(0);
 
-  const generatedUrl =
-    previewState === null ? "" : buildIconsUrl(previewState, currentOrigin);
-  const generatedHtml =
-    previewState === null ? "" : buildReadmeHtml(previewState, currentOrigin);
+  const generatedUrl = getDisplayedSvgUrl({
+    generatedReadmeImage,
+    previewTheme: editorState.previewTheme,
+  });
+  const generatedHtml = generatedReadmeImage?.readmeHtml ?? "";
 
   function commitEditorState(nextState: StackIconsEditorState) {
     setEditorState(nextState);
@@ -165,17 +150,6 @@ export function useStackIconsEditorForm(initialState: StackIconsEditorState) {
 
     setEditorState(nextState);
     replaceEditorUrl(nextState);
-
-    if (field === "previewTheme") {
-      setPreviewState((currentPreviewState) =>
-        currentPreviewState === null
-          ? null
-          : {
-              ...currentPreviewState,
-              previewTheme: value as StackIconsEditorState["previewTheme"],
-            },
-      );
-    }
   }
 
   function updateBaseColumns(columns: string) {
@@ -287,28 +261,23 @@ export function useStackIconsEditorForm(initialState: StackIconsEditorState) {
   function generatePreview() {
     previewGenerationId.current += 1;
 
-    const parsedRequest = parseIconRequest(
-      buildIconRequestParams(
-        editorState,
-        getBaseColumnLayout(editorState).columns,
-      ),
-    );
-    const columnLayoutResult = validateColumnLayouts({
+    const generatedReadmeImageResult = generateReadmeImage({
       columnLayouts: editorState.columnLayouts,
+      currentOrigin,
+      gap: editorState.gap,
+      icons: editorState.icons,
+      includeDarkTheme: editorState.includeDarkTheme,
       layoutMode: editorState.layoutMode,
     });
 
-    if (!parsedRequest.success || !columnLayoutResult.success) {
-      setPreviewState(null);
-      setValidationErrors([
-        ...(!parsedRequest.success ? parsedRequest.errors : []),
-        ...(!columnLayoutResult.success ? columnLayoutResult.errors : []),
-      ]);
+    if (!generatedReadmeImageResult.success) {
+      setGeneratedReadmeImage(null);
+      setValidationErrors(generatedReadmeImageResult.errors);
       setCopyGeneratedHtmlStatus("idle");
       return;
     }
 
-    setPreviewState(editorState);
+    setGeneratedReadmeImage(generatedReadmeImageResult);
     setValidationErrors([]);
     setCopyGeneratedHtmlStatus("idle");
   }

@@ -27,7 +27,7 @@ export default async function Home({ searchParams }: HomeProps = {}) {
           </h1>
           <p className="mt-6 max-w-2xl font-mono text-base leading-7 text-muted-foreground">
             Compose an ordered stack of technology slugs into one cached SVG
-            image for GitHub profile embeds.
+            image for GitHub READMEs.
           </p>
         </div>
 

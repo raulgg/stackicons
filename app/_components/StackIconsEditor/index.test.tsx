@@ -711,7 +711,7 @@ describe("StackIconsEditor", () => {
 </picture>`);
   });
 
-  it("should keep preview theme and include dark theme settings independent", () => {
+  it("should fall back to the light generated image source when dark sources are excluded", () => {
     // Given
     render(
       <StackIconsEditor initialState={DEFAULT_STACK_ICONS_EDITOR_STATE} />,
@@ -724,7 +724,7 @@ describe("StackIconsEditor", () => {
 
     // Then
     const previewUrl =
-      "http://localhost:3000/icons?icons=typescript%2Cnextjs%2Ctailwindcss%2Cvercel&columns=18&gap=8&theme=dark";
+      "http://localhost:3000/icons?icons=typescript%2Cnextjs%2Ctailwindcss%2Cvercel&columns=18&gap=8&theme=light";
 
     expect(screen.getByLabelText("Dark")).toBeChecked();
     expect(screen.getByLabelText("Include dark theme source")).not.toBeChecked();

@@ -1,6 +1,6 @@
 # readme-stack-icons
 
-Compose an ordered stack of technology slugs into one cached SVG image for GitHub profile embeds.
+Compose an ordered stack of technology slugs into one cached SVG image for GitHub READMEs.
 
 ## Editor
 
