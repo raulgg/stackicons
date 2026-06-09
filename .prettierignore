@@ -1,0 +1,8 @@
+.next
+.vercel
+node_modules
+dist
+coverage
+tsconfig.tsbuildinfo
+next-env.d.ts
+bun.lock
