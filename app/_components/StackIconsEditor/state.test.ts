@@ -15,7 +15,6 @@ describe("StackIconsEditor state", () => {
       ],
       gap: "10",
       icons: "react,nextjs",
-      includeDarkTheme: false,
       layoutMode: "responsive",
       previewTheme: "dark",
     };
@@ -31,7 +30,7 @@ describe("StackIconsEditor state", () => {
       ]),
     );
     expect(params.get("gap")).toBe("10");
-    expect(params.get("include-dark-theme")).toBe("false");
+    expect(params.has("include-dark-theme")).toBe(false);
     expect(params.get("preview-theme")).toBe("dark");
   });
 
@@ -40,7 +39,6 @@ describe("StackIconsEditor state", () => {
       columnLayouts: [{ columns: "4", minWidthPx: null }],
       gap: "12",
       icons: "typescript,react",
-      includeDarkTheme: true,
       layoutMode: "single",
       previewTheme: "light",
     };

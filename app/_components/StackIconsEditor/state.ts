@@ -9,7 +9,6 @@ import {
 
 const DEFAULT_ICONS = "typescript,nextjs,tailwindcss,vercel";
 const DEFAULT_GAP = "8";
-const DEFAULT_INCLUDE_DARK_THEME = true;
 const DEFAULT_PREVIEW_THEME = "light";
 
 export type StackIconsPreviewTheme = "dark" | "light";
@@ -21,7 +20,6 @@ type EditorState = {
   layoutMode: LayoutMode;
   columnLayouts: ColumnLayout[];
   gap: string;
-  includeDarkTheme: boolean;
   previewTheme: StackIconsPreviewTheme;
 };
 
@@ -32,7 +30,6 @@ export const DEFAULT_STACK_ICONS_EDITOR_STATE: StackIconsEditorState = {
   layoutMode: "single",
   columnLayouts: DEFAULT_SINGLE_COLUMN_LAYOUTS,
   gap: DEFAULT_GAP,
-  includeDarkTheme: DEFAULT_INCLUDE_DARK_THEME,
   previewTheme: DEFAULT_PREVIEW_THEME,
 };
 
@@ -43,9 +40,6 @@ type SearchParamValue = string | string[] | undefined;
 export function getStackIconsEditorInitialState(
   searchParams: Record<string, SearchParamValue>,
 ): StackIconsEditorState {
-  const includeDarkTheme =
-    getSearchParamValue(searchParams["include-dark-theme"]) ??
-    getSearchParamValue(searchParams.includeDarkTheme);
   const layoutMode = getLayoutMode(searchParams);
   const columnLayouts = getColumnLayouts(searchParams, layoutMode);
   const shouldUseDefaultLayout = layoutMode === null || columnLayouts === null;
@@ -58,7 +52,6 @@ export function getStackIconsEditorInitialState(
       ? DEFAULT_STACK_ICONS_EDITOR_STATE.columnLayouts
       : (columnLayouts ?? getDefaultColumnLayouts(activeLayoutMode)),
     gap: getSearchParamValue(searchParams.gap) ?? DEFAULT_GAP,
-    includeDarkTheme: includeDarkTheme !== "false",
     previewTheme: getPreviewTheme(searchParams),
   };
 }
@@ -72,7 +65,6 @@ export function buildStackIconsEditorPageQuery(
   params.set("layout", state.layoutMode);
   params.set("column-layouts", JSON.stringify(state.columnLayouts));
   params.set("gap", state.gap);
-  params.set("include-dark-theme", String(state.includeDarkTheme));
   params.set("preview-theme", state.previewTheme);
 
   return params.toString();

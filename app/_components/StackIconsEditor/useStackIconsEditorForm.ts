@@ -9,6 +9,7 @@ import {
 } from "@/lib/icons/column-layout";
 import {
   generateReadmeImage,
+  type GeneratedImageSource,
   type ReadmeImageGenerationResult,
 } from "@/lib/icons/readme-image";
 
@@ -21,6 +22,7 @@ import {
 } from "./state";
 
 type CopyGeneratedHtmlStatus = "failed" | "idle" | "succeeded";
+type CopyImageUrlStatus = "failed" | "idle" | "succeeded";
 type LayoutMemoryState = {
   singleColumnLayout: ColumnLayout;
   responsiveColumnLayouts: ColumnLayout[];
@@ -119,6 +121,9 @@ export function useStackIconsEditorForm(initialState: StackIconsEditorState) {
   const [validationErrors, setValidationErrors] = React.useState<string[]>([]);
   const [copyGeneratedHtmlStatus, setCopyGeneratedHtmlStatus] =
     React.useState<CopyGeneratedHtmlStatus>("idle");
+  const [copyImageUrlStatusByKey, setCopyImageUrlStatusByKey] = React.useState<
+    Record<string, CopyImageUrlStatus>
+  >({});
   const [layoutMemory, setLayoutMemory] = React.useState<LayoutMemoryState>(
     () => buildInitialLayoutMemory(initialState),
   );
@@ -129,6 +134,7 @@ export function useStackIconsEditorForm(initialState: StackIconsEditorState) {
     previewTheme: editorState.previewTheme,
   });
   const generatedHtml = generatedReadmeImage?.readmeHtml ?? "";
+  const generatedImageSources = generatedReadmeImage?.imageSources ?? [];
 
   function commitEditorState(nextState: StackIconsEditorState) {
     setEditorState(nextState);
@@ -266,7 +272,7 @@ export function useStackIconsEditorForm(initialState: StackIconsEditorState) {
       currentOrigin,
       gap: editorState.gap,
       icons: editorState.icons,
-      includeDarkTheme: editorState.includeDarkTheme,
+      includeDarkTheme: true,
       layoutMode: editorState.layoutMode,
     });
 
@@ -274,12 +280,14 @@ export function useStackIconsEditorForm(initialState: StackIconsEditorState) {
       setGeneratedReadmeImage(null);
       setValidationErrors(generatedReadmeImageResult.errors);
       setCopyGeneratedHtmlStatus("idle");
+      setCopyImageUrlStatusByKey({});
       return;
     }
 
     setGeneratedReadmeImage(generatedReadmeImageResult);
     setValidationErrors([]);
     setCopyGeneratedHtmlStatus("idle");
+    setCopyImageUrlStatusByKey({});
   }
 
   async function copyGeneratedHtml() {
@@ -305,12 +313,48 @@ export function useStackIconsEditorForm(initialState: StackIconsEditorState) {
     }
   }
 
+  async function copyImageUrl(source: GeneratedImageSource) {
+    const sourceKey = getGeneratedImageSourceKey(source);
+    const copyPreviewGenerationId = previewGenerationId.current;
+    const clipboard = navigator.clipboard;
+
+    if (clipboard === undefined) {
+      setCopyImageUrlStatusByKey((currentStatus) => ({
+        ...currentStatus,
+        [sourceKey]: "failed",
+      }));
+      return;
+    }
+
+    try {
+      await clipboard.writeText(source.url);
+      if (copyPreviewGenerationId !== previewGenerationId.current) {
+        return;
+      }
+      setCopyImageUrlStatusByKey((currentStatus) => ({
+        ...currentStatus,
+        [sourceKey]: "succeeded",
+      }));
+    } catch {
+      if (copyPreviewGenerationId !== previewGenerationId.current) {
+        return;
+      }
+      setCopyImageUrlStatusByKey((currentStatus) => ({
+        ...currentStatus,
+        [sourceKey]: "failed",
+      }));
+    }
+  }
+
   return {
     addBreakpointLayout,
     copyGeneratedHtml,
     copyGeneratedHtmlStatus,
+    copyImageUrl,
+    copyImageUrlStatusByKey,
     generatePreview,
     generatedHtml,
+    generatedImageSources,
     generatedUrl,
     removeBreakpointLayout,
     state: editorState,
@@ -320,4 +364,8 @@ export function useStackIconsEditorForm(initialState: StackIconsEditorState) {
     updateField,
     validationErrors,
   };
+}
+
+function getGeneratedImageSourceKey(source: GeneratedImageSource): string {
+  return `${source.minWidthPx ?? "default"}:${source.theme}`;
 }

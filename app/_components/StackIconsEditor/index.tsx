@@ -18,6 +18,7 @@ import {
   getEditableBaseColumnLayout,
   getEditableBreakpointColumnLayouts,
 } from "@/lib/icons/column-layout";
+import type { GeneratedImageSource } from "@/lib/icons/readme-image";
 import { cn } from "@/lib/utils";
 import type { StackIconsEditorState } from "./state";
 import { useStackIconsEditorForm } from "./useStackIconsEditorForm";
@@ -33,7 +34,10 @@ export function StackIconsEditor({ initialState }: StackIconsEditorProps) {
     addBreakpointLayout,
     copyGeneratedHtml,
     copyGeneratedHtmlStatus,
+    copyImageUrl,
+    copyImageUrlStatusByKey,
     generatedHtml,
+    generatedImageSources,
     generatedUrl,
     generatePreview,
     removeBreakpointLayout,
@@ -66,176 +70,223 @@ export function StackIconsEditor({ initialState }: StackIconsEditorProps) {
         value={state.icons}
       />
 
-      <fieldset className="mt-4">
-        <legend className="font-mono text-xs text-muted-foreground">
-          Layout mode
-        </legend>
-        <div className="mt-1 grid grid-cols-2 gap-2">
-          {(["single", "responsive"] as const).map((layoutMode) => (
-            <label
-              className={cn(
-                "flex items-center justify-center gap-2 rounded-md border px-3 py-2 font-mono text-xs text-card-foreground transition focus-within:ring-2 focus-within:ring-ring",
-                state.layoutMode === layoutMode
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "bg-background",
-              )}
-              htmlFor={`layout-mode-${layoutMode}`}
-              key={layoutMode}
-            >
-              <input
-                checked={state.layoutMode === layoutMode}
-                className="sr-only"
-                id={`layout-mode-${layoutMode}`}
-                name="layout-mode"
-                onChange={() => switchLayoutMode(layoutMode)}
-                type="radio"
-              />
-              {layoutMode === "single" ? "Single layout" : "Responsive layout"}
-            </label>
-          ))}
-        </div>
-      </fieldset>
+      <div className="mt-5 rounded-md border bg-background p-4">
+        <fieldset>
+          <legend className="font-mono text-xs text-muted-foreground">
+            Layout mode
+          </legend>
+          <div className="mt-1 grid grid-cols-2 gap-2">
+            {(["single", "responsive"] as const).map((layoutMode) => (
+              <label
+                className={cn(
+                  "flex items-center justify-center gap-2 rounded-md border px-3 py-2 font-mono text-xs text-card-foreground transition focus-within:ring-2 focus-within:ring-ring",
+                  state.layoutMode === layoutMode
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "bg-card",
+                )}
+                htmlFor={`layout-mode-${layoutMode}`}
+                key={layoutMode}
+              >
+                <input
+                  checked={state.layoutMode === layoutMode}
+                  className="sr-only"
+                  id={`layout-mode-${layoutMode}`}
+                  name="layout-mode"
+                  onChange={() => switchLayoutMode(layoutMode)}
+                  type="radio"
+                />
+                {layoutMode === "single"
+                  ? "Single layout"
+                  : "Responsive layout"}
+              </label>
+            ))}
+          </div>
+        </fieldset>
 
-      <div className="mt-4 grid gap-3 sm:grid-cols-2">
-        <div>
-          <label
-            className="font-mono text-xs text-muted-foreground"
-            htmlFor="columns"
-          >
-            {state.layoutMode === "single" ? "Columns" : "Base columns"}
-          </label>
-          <input
-            className="mt-1 w-full rounded-md border bg-background px-3 py-2 font-mono text-sm outline-none ring-ring transition focus:ring-2"
-            id="columns"
-            max={20}
-            min={2}
-            onChange={(event) => updateBaseColumns(event.target.value)}
-            type="number"
-            value={baseColumnLayout?.columns ?? ""}
-          />
-        </div>
-        <div>
-          <label
-            className="font-mono text-xs text-muted-foreground"
-            htmlFor="gap"
-          >
-            Gap
-          </label>
-          <input
-            className="mt-1 w-full rounded-md border bg-background px-3 py-2 font-mono text-sm outline-none ring-ring transition focus:ring-2"
-            id="gap"
-            max={24}
-            min={0}
-            onChange={(event) => updateField("gap", event.target.value)}
-            type="number"
-            value={state.gap}
-          />
+        <div className="mt-4">
+          <p className="font-mono text-xs text-muted-foreground">
+            {state.layoutMode === "single" ? "Layout" : "Breakpoints"}
+          </p>
+          <div className="mt-2 grid gap-3">
+            <div className="rounded-md border bg-card p-3">
+              <div className="flex flex-col gap-3 md:flex-row md:items-end">
+                <div className="min-w-0 flex-1">
+                  <div className="mb-2 flex flex-wrap items-center gap-2">
+                    <p className="font-mono text-sm font-medium text-card-foreground">
+                      {state.layoutMode === "single"
+                        ? "Default layout"
+                        : "Default breakpoint"}
+                    </p>
+                    <span className="rounded border bg-background px-2 py-1 font-mono text-xs text-muted-foreground">
+                      All widths
+                    </span>
+                  </div>
+                  <label
+                    className="font-mono text-xs text-muted-foreground"
+                    htmlFor="columns"
+                  >
+                    {state.layoutMode === "single"
+                      ? "Columns"
+                      : "Default columns"}
+                  </label>
+                  <input
+                    className="mt-1 w-full rounded-md border bg-background px-3 py-2 font-mono text-sm outline-none ring-ring transition focus:ring-2"
+                    id="columns"
+                    max={20}
+                    min={2}
+                    onChange={(event) => updateBaseColumns(event.target.value)}
+                    type="number"
+                    value={baseColumnLayout?.columns ?? ""}
+                  />
+                </div>
+                <ImageUrlCopyButtons
+                  copyImageUrl={copyImageUrl}
+                  copyImageUrlStatusByKey={copyImageUrlStatusByKey}
+                  label="default"
+                  minWidthPx={null}
+                  sources={generatedImageSources}
+                />
+              </div>
+            </div>
+            {state.layoutMode === "responsive"
+              ? breakpointLayouts.map(({ layout, originalIndex }) => {
+                  const isRemovable = breakpointLayouts.length > 1;
+                  const breakpointLabel =
+                    layout.minWidthPx === ""
+                      ? "empty breakpoint"
+                      : `${layout.minWidthPx}px breakpoint`;
+
+                  return (
+                    <div
+                      className="rounded-md border bg-card p-3"
+                      key={originalIndex}
+                    >
+                      <div className="mb-3 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                        <div className="min-w-0">
+                          <p className="font-mono text-sm font-medium text-card-foreground">
+                            Breakpoint
+                          </p>
+                          <p className="mt-1 font-mono text-xs text-muted-foreground">
+                            Applies at this width and above.
+                          </p>
+                        </div>
+                        <div className="flex flex-col gap-2 sm:flex-row">
+                          <ImageUrlCopyButtons
+                            copyImageUrl={copyImageUrl}
+                            copyImageUrlStatusByKey={copyImageUrlStatusByKey}
+                            label={`${layout.minWidthPx || "breakpoint"}px`}
+                            minWidthPx={layout.minWidthPx}
+                            sources={generatedImageSources}
+                          />
+                          {isRemovable ? (
+                            <Button
+                              aria-label={`Remove ${breakpointLabel}`}
+                              className="w-full sm:w-10"
+                              onClick={() =>
+                                removeBreakpointLayout(originalIndex)
+                              }
+                              size="icon"
+                              type="button"
+                              variant="outline"
+                            >
+                              <Trash2Icon
+                                className="h-4 w-4"
+                                aria-hidden="true"
+                              />
+                            </Button>
+                          ) : null}
+                        </div>
+                      </div>
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <div>
+                          <label
+                            className="font-mono text-xs text-muted-foreground"
+                            htmlFor={`breakpoint-columns-${originalIndex}`}
+                          >
+                            Columns
+                          </label>
+                          <input
+                            className="mt-1 w-full rounded-md border bg-background px-3 py-2 font-mono text-sm outline-none ring-ring transition focus:ring-2"
+                            id={`breakpoint-columns-${originalIndex}`}
+                            max={20}
+                            min={2}
+                            onChange={(event) =>
+                              updateColumnLayout(
+                                originalIndex,
+                                "columns",
+                                event.target.value,
+                              )
+                            }
+                            type="number"
+                            value={layout.columns}
+                          />
+                        </div>
+                        <div>
+                          <label
+                            className="font-mono text-xs text-muted-foreground"
+                            htmlFor={`breakpoint-min-width-${originalIndex}`}
+                          >
+                            Min width px
+                          </label>
+                          <input
+                            className="mt-1 w-full rounded-md border bg-background px-3 py-2 font-mono text-sm outline-none ring-ring transition focus:ring-2"
+                            id={`breakpoint-min-width-${originalIndex}`}
+                            max={3840}
+                            min={1}
+                            onChange={(event) =>
+                              updateColumnLayout(
+                                originalIndex,
+                                "minWidthPx",
+                                event.target.value,
+                              )
+                            }
+                            type="number"
+                            value={layout.minWidthPx ?? ""}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              : null}
+            {state.layoutMode === "responsive" ? (
+              <Button
+                className="w-full sm:w-fit"
+                onClick={addBreakpointLayout}
+                type="button"
+                variant="outline"
+              >
+                <PlusIcon className="h-4 w-4" aria-hidden="true" />
+                Add breakpoint
+              </Button>
+            ) : null}
+          </div>
         </div>
       </div>
 
-      {state.layoutMode === "responsive" ? (
-        <div className="mt-4 grid gap-3">
-          {breakpointLayouts.map(({ layout, originalIndex }) => {
-            const isRemovable = breakpointLayouts.length > 1;
-            const breakpointLabel =
-              layout.minWidthPx === ""
-                ? "empty breakpoint"
-                : `${layout.minWidthPx}px breakpoint`;
-
-            return (
-              <div
-                className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-end"
-                key={originalIndex}
-              >
-                <div>
-                  <label
-                    className="font-mono text-xs text-muted-foreground"
-                    htmlFor={`breakpoint-columns-${originalIndex}`}
-                  >
-                    Columns
-                  </label>
-                  <input
-                    className="mt-1 w-full rounded-md border bg-background px-3 py-2 font-mono text-sm outline-none ring-ring transition focus:ring-2"
-                    id={`breakpoint-columns-${originalIndex}`}
-                    max={20}
-                    min={2}
-                    onChange={(event) =>
-                      updateColumnLayout(
-                        originalIndex,
-                        "columns",
-                        event.target.value,
-                      )
-                    }
-                    type="number"
-                    value={layout.columns}
-                  />
-                </div>
-                <div>
-                  <label
-                    className="font-mono text-xs text-muted-foreground"
-                    htmlFor={`breakpoint-min-width-${originalIndex}`}
-                  >
-                    Breakpoint px
-                  </label>
-                  <input
-                    className="mt-1 w-full rounded-md border bg-background px-3 py-2 font-mono text-sm outline-none ring-ring transition focus:ring-2"
-                    id={`breakpoint-min-width-${originalIndex}`}
-                    max={3840}
-                    min={1}
-                    onChange={(event) =>
-                      updateColumnLayout(
-                        originalIndex,
-                        "minWidthPx",
-                        event.target.value,
-                      )
-                    }
-                    type="number"
-                    value={layout.minWidthPx ?? ""}
-                  />
-                </div>
-                {isRemovable ? (
-                  <Button
-                    aria-label={`Remove ${breakpointLabel}`}
-                    className="w-full sm:w-10"
-                    onClick={() => removeBreakpointLayout(originalIndex)}
-                    size="icon"
-                    type="button"
-                    variant="outline"
-                  >
-                    <Trash2Icon className="h-4 w-4" aria-hidden="true" />
-                  </Button>
-                ) : null}
-              </div>
-            );
-          })}
-          <Button
-            className="w-full sm:w-fit"
-            onClick={addBreakpointLayout}
-            type="button"
-            variant="outline"
-          >
-            <PlusIcon className="h-4 w-4" aria-hidden="true" />
-            Add breakpoint
-          </Button>
+      <div className="mt-5 rounded-md border bg-background p-4">
+        <p className="font-mono text-xs text-muted-foreground">
+          Global settings
+        </p>
+        <div className="mt-3 max-w-xs">
+          <div>
+            <label
+              className="font-mono text-xs text-muted-foreground"
+              htmlFor="gap"
+            >
+              Gap
+            </label>
+            <input
+              className="mt-1 w-full rounded-md border bg-card px-3 py-2 font-mono text-sm outline-none ring-ring transition focus:ring-2"
+              id="gap"
+              max={24}
+              min={0}
+              onChange={(event) => updateField("gap", event.target.value)}
+              type="number"
+              value={state.gap}
+            />
+          </div>
         </div>
-      ) : null}
-
-      <div className="mt-4 rounded-md border bg-background px-3 py-2">
-        <label
-          className="flex items-center gap-3 font-mono text-sm font-medium text-card-foreground"
-          htmlFor="include-dark-theme"
-        >
-          <input
-            checked={state.includeDarkTheme}
-            className="h-4 w-4 rounded border bg-background text-primary ring-ring transition focus:ring-2"
-            id="include-dark-theme"
-            onChange={(event) =>
-              updateField("includeDarkTheme", event.target.checked)
-            }
-            type="checkbox"
-          />
-          Include dark theme source
-        </label>
       </div>
 
       <Button className="mt-5 w-full" onClick={generatePreview} type="button">
@@ -256,24 +307,6 @@ export function StackIconsEditor({ initialState }: StackIconsEditorProps) {
           </ul>
         </div>
       ) : null}
-
-      <div className="mt-5">
-        <label
-          className="flex items-center gap-2 font-mono text-xs text-muted-foreground"
-          htmlFor="generated-url"
-        >
-          <LinkIcon className="h-3.5 w-3.5" aria-hidden="true" />
-          SVG URL
-        </label>
-        <input
-          className="mt-1 w-full rounded-md border bg-muted px-3 py-2 font-mono text-sm text-muted-foreground"
-          id="generated-url"
-          placeholder="Generate a preview to create the SVG URL"
-          readOnly
-          type="text"
-          value={generatedUrl}
-        />
-      </div>
 
       <div className="mt-5">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -389,4 +422,118 @@ export function StackIconsEditor({ initialState }: StackIconsEditorProps) {
       </div>
     </div>
   );
+}
+
+type ImageUrlCopyButtonsProps = {
+  copyImageUrl: (source: GeneratedImageSource) => void;
+  copyImageUrlStatusByKey: Record<string, "failed" | "idle" | "succeeded">;
+  label: string;
+  minWidthPx: string | number | null;
+  sources: GeneratedImageSource[];
+};
+
+function ImageUrlCopyButtons({
+  copyImageUrl,
+  copyImageUrlStatusByKey,
+  label,
+  minWidthPx,
+  sources,
+}: ImageUrlCopyButtonsProps) {
+  const normalizedMinWidthPx = normalizeMinWidthPx(minWidthPx);
+  const layoutSources = sources.filter(
+    (source) => source.minWidthPx === normalizedMinWidthPx,
+  );
+  const lightSource = layoutSources.find((source) => source.theme === "light");
+  const darkSource = layoutSources.find((source) => source.theme === "dark");
+  const hasGeneratedSources = sources.length > 0;
+
+  return (
+    <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center">
+      <ImageUrlCopyButton
+        copyImageUrl={copyImageUrl}
+        label={`Copy ${label} light image URL`}
+        source={lightSource}
+        status={
+          lightSource === undefined
+            ? "idle"
+            : copyImageUrlStatusByKey[getGeneratedImageSourceKey(lightSource)]
+        }
+        themeLabel="Light URL"
+        wasGenerated={hasGeneratedSources}
+      />
+      <ImageUrlCopyButton
+        copyImageUrl={copyImageUrl}
+        label={`Copy ${label} dark image URL`}
+        source={darkSource}
+        status={
+          darkSource === undefined
+            ? "idle"
+            : copyImageUrlStatusByKey[getGeneratedImageSourceKey(darkSource)]
+        }
+        themeLabel="Dark URL"
+        wasGenerated={hasGeneratedSources}
+      />
+    </div>
+  );
+}
+
+type ImageUrlCopyButtonProps = {
+  copyImageUrl: (source: GeneratedImageSource) => void;
+  label: string;
+  source: GeneratedImageSource | undefined;
+  status: "failed" | "idle" | "succeeded" | undefined;
+  themeLabel: string;
+  wasGenerated: boolean;
+};
+
+function ImageUrlCopyButton({
+  copyImageUrl,
+  label,
+  source,
+  status,
+  themeLabel,
+  wasGenerated,
+}: ImageUrlCopyButtonProps) {
+  const isDisabled = source === undefined;
+  const buttonLabel =
+    status === "succeeded"
+      ? "Copied"
+      : status === "failed"
+        ? "Failed"
+        : themeLabel;
+
+  return (
+    <Button
+      aria-label={label}
+      className="w-full sm:w-auto"
+      disabled={isDisabled}
+      onClick={() => {
+        if (source !== undefined) {
+          copyImageUrl(source);
+        }
+      }}
+      size="sm"
+      type="button"
+      variant="outline"
+    >
+      <CopyIcon className="h-4 w-4" aria-hidden="true" />
+      {isDisabled && wasGenerated ? "Unavailable" : buttonLabel}
+    </Button>
+  );
+}
+
+function normalizeMinWidthPx(
+  minWidthPx: string | number | null,
+): number | null {
+  if (minWidthPx === null) {
+    return null;
+  }
+
+  const parsedMinWidthPx = Number(minWidthPx);
+
+  return Number.isFinite(parsedMinWidthPx) ? parsedMinWidthPx : null;
+}
+
+function getGeneratedImageSourceKey(source: GeneratedImageSource): string {
+  return `${source.minWidthPx ?? "default"}:${source.theme}`;
 }
