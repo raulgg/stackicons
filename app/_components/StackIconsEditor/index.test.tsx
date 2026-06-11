@@ -292,7 +292,7 @@ describe("StackIconsEditor", () => {
     ).toBeEnabled();
 
     // When
-    fireEvent.click(
+    fireEvent.pointerDown(
       screen.getByRole("button", { name: "Copy base layout image URL" }),
     );
     fireEvent.click(
@@ -300,7 +300,8 @@ describe("StackIconsEditor", () => {
         name: "Copy base layout light image URL",
       }),
     );
-    fireEvent.click(
+    fireEvent.keyDown(screen.getByRole("menu"), { key: "Escape" });
+    fireEvent.pointerDown(
       screen.getByRole("button", { name: "Copy 768px image URL" }),
     );
     fireEvent.click(
@@ -326,7 +327,7 @@ describe("StackIconsEditor", () => {
     renderEditor();
 
     // When
-    fireEvent.click(
+    fireEvent.pointerDown(
       screen.getByRole("button", { name: "Copy base layout image URL" }),
     );
 
@@ -379,7 +380,7 @@ describe("StackIconsEditor", () => {
     mockClipboard(writeText);
     renderEditor();
 
-    fireEvent.click(
+    fireEvent.pointerDown(
       screen.getByRole("button", { name: "Copy base layout image URL" }),
     );
 

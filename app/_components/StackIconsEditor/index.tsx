@@ -864,9 +864,9 @@ function ImageUrlCopyMenuItem({
     <DropdownMenuItem
       aria-label={`Copy ${actionsLabel} ${theme} image URL`}
       className="font-mono text-xs"
-      closeOnSelect={false}
       disabled={source === undefined}
-      onClick={() => {
+      onSelect={(event) => {
+        event.preventDefault();
         if (source !== undefined) {
           copyImageUrl(source);
         }
