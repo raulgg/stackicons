@@ -50,6 +50,17 @@ function expectGeneratedPreviewUrl(url: string) {
   ).toHaveAttribute("src", url);
 }
 
+function getIconSlugsTextarea() {
+  if (screen.queryByLabelText("Icon slugs") === null) {
+    // `hidden: true` keeps the toggle reachable while a preview dialog is open.
+    fireEvent.click(
+      screen.getByRole("button", { name: "Edit slugs as text", hidden: true }),
+    );
+  }
+
+  return screen.getByLabelText("Icon slugs");
+}
+
 function getColumnInputs() {
   return screen.getAllByLabelText("Columns");
 }
@@ -91,7 +102,7 @@ describe("StackIconsEditor", () => {
     ).not.toBeInTheDocument();
 
     // When
-    fireEvent.change(screen.getByLabelText("Icon slugs"), {
+    fireEvent.change(getIconSlugsTextarea(), {
       target: { value: "react,nextjs" },
     });
     fireEvent.change(screen.getByLabelText("Columns"), {
@@ -149,10 +160,12 @@ describe("StackIconsEditor", () => {
     );
 
     // Then
+    const iconSlugsTextarea = getIconSlugsTextarea();
+
     expect(await screen.findByDisplayValue("solid,typescript")).toBe(
-      screen.getByLabelText("Icon slugs"),
+      iconSlugsTextarea,
     );
-    expect(screen.getByLabelText("Icon slugs")).toHaveValue("solid,typescript");
+    expect(iconSlugsTextarea).toHaveValue("solid,typescript");
     expect(screen.getByLabelText("Columns")).toHaveValue(6);
     expect(screen.getByLabelText("Gap")).toHaveValue(10);
     expect(
@@ -177,7 +190,7 @@ describe("StackIconsEditor", () => {
     expectNoGeneratedPreview();
 
     // When
-    fireEvent.change(screen.getByLabelText("Icon slugs"), {
+    fireEvent.change(getIconSlugsTextarea(), {
       target: { value: "" },
     });
     generatePreview();
@@ -190,10 +203,7 @@ describe("StackIconsEditor", () => {
     });
     expectNoGeneratedPreview();
     expect(screen.getByLabelText("README image code")).toHaveValue("");
-    expect(screen.getByLabelText("Icon slugs")).toHaveAttribute(
-      "aria-invalid",
-      "true",
-    );
+    expect(getIconSlugsTextarea()).toHaveAttribute("aria-invalid", "true");
     expect(
       screen.getByText("`icons` must include at least one icon slug."),
     ).toBeInTheDocument();
@@ -204,7 +214,7 @@ describe("StackIconsEditor", () => {
     render(
       <StackIconsEditor initialState={DEFAULT_STACK_ICONS_EDITOR_STATE} />,
     );
-    fireEvent.change(screen.getByLabelText("Icon slugs"), {
+    fireEvent.change(getIconSlugsTextarea(), {
       target: { value: "react,nextjs" },
     });
     fireEvent.change(screen.getByLabelText("Columns"), {
@@ -245,7 +255,7 @@ describe("StackIconsEditor", () => {
     const writeText = vi.fn().mockResolvedValue(undefined);
     mockClipboard(writeText);
     renderEditor();
-    fireEvent.change(screen.getByLabelText("Icon slugs"), {
+    fireEvent.change(getIconSlugsTextarea(), {
       target: { value: "react,nextjs" },
     });
     fireEvent.change(screen.getByLabelText("Columns"), {
@@ -463,7 +473,7 @@ describe("StackIconsEditor", () => {
     await screen.findByText("README image code copied.");
 
     // When
-    fireEvent.change(screen.getByLabelText("Icon slugs"), {
+    fireEvent.change(getIconSlugsTextarea(), {
       target: { value: "react" },
     });
     generatePreview();
@@ -495,7 +505,7 @@ describe("StackIconsEditor", () => {
     );
 
     // When
-    fireEvent.change(screen.getByLabelText("Icon slugs"), {
+    fireEvent.change(getIconSlugsTextarea(), {
       target: { value: "react" },
     });
     generatePreview();
@@ -814,7 +824,7 @@ describe("StackIconsEditor", () => {
     render(
       <StackIconsEditor initialState={DEFAULT_STACK_ICONS_EDITOR_STATE} />,
     );
-    fireEvent.change(screen.getByLabelText("Icon slugs"), {
+    fireEvent.change(getIconSlugsTextarea(), {
       target: { value: "all" },
     });
 
@@ -835,7 +845,7 @@ describe("StackIconsEditor", () => {
     render(
       <StackIconsEditor initialState={DEFAULT_STACK_ICONS_EDITOR_STATE} />,
     );
-    fireEvent.change(screen.getByLabelText("Icon slugs"), {
+    fireEvent.change(getIconSlugsTextarea(), {
       target: { value: "typescript,react,nextjs" },
     });
 
@@ -854,7 +864,7 @@ describe("StackIconsEditor", () => {
     render(
       <StackIconsEditor initialState={DEFAULT_STACK_ICONS_EDITOR_STATE} />,
     );
-    fireEvent.change(screen.getByLabelText("Icon slugs"), {
+    fireEvent.change(getIconSlugsTextarea(), {
       target: { value: "react,nextjs" },
     });
     fireEvent.change(screen.getByLabelText("Columns"), {
@@ -882,7 +892,7 @@ describe("StackIconsEditor", () => {
     render(
       <StackIconsEditor initialState={DEFAULT_STACK_ICONS_EDITOR_STATE} />,
     );
-    fireEvent.change(screen.getByLabelText("Icon slugs"), {
+    fireEvent.change(getIconSlugsTextarea(), {
       target: { value: "react,nextjs" },
     });
     fireEvent.change(screen.getByLabelText("Columns"), {
@@ -1002,7 +1012,7 @@ describe("StackIconsEditor", () => {
     render(
       <StackIconsEditor initialState={DEFAULT_STACK_ICONS_EDITOR_STATE} />,
     );
-    fireEvent.change(screen.getByLabelText("Icon slugs"), {
+    fireEvent.change(getIconSlugsTextarea(), {
       target: { value: "typescript,not-real" },
     });
 
@@ -1010,10 +1020,7 @@ describe("StackIconsEditor", () => {
     generatePreview();
 
     // Then
-    expect(screen.getByLabelText("Icon slugs")).toHaveAttribute(
-      "aria-invalid",
-      "true",
-    );
+    expect(getIconSlugsTextarea()).toHaveAttribute("aria-invalid", "true");
     expect(
       screen.getByText("Unknown icon slug: not-real."),
     ).toBeInTheDocument();
@@ -1030,15 +1037,12 @@ describe("StackIconsEditor", () => {
     );
 
     // When
-    fireEvent.change(screen.getByLabelText("Icon slugs"), {
+    fireEvent.change(getIconSlugsTextarea(), {
       target: { value: "not-real" },
     });
 
     // Then
-    expect(screen.getByLabelText("Icon slugs")).toHaveAttribute(
-      "aria-invalid",
-      "true",
-    );
+    expect(getIconSlugsTextarea()).toHaveAttribute("aria-invalid", "true");
     expect(
       screen.getByText("Unknown icon slug: not-real."),
     ).toBeInTheDocument();
@@ -1050,20 +1054,17 @@ describe("StackIconsEditor", () => {
     render(
       <StackIconsEditor initialState={DEFAULT_STACK_ICONS_EDITOR_STATE} />,
     );
-    fireEvent.change(screen.getByLabelText("Icon slugs"), {
+    fireEvent.change(getIconSlugsTextarea(), {
       target: { value: "not-real" },
     });
     generatePreview();
-    expect(screen.getByLabelText("Icon slugs")).toHaveAttribute(
-      "aria-invalid",
-      "true",
-    );
+    expect(getIconSlugsTextarea()).toHaveAttribute("aria-invalid", "true");
     expect(
       screen.getByText("Unknown icon slug: not-real."),
     ).toBeInTheDocument();
 
     // When
-    fireEvent.change(screen.getByLabelText("Icon slugs"), {
+    fireEvent.change(getIconSlugsTextarea(), {
       target: { value: "react" },
     });
     generatePreview();
@@ -1072,9 +1073,7 @@ describe("StackIconsEditor", () => {
     expect(
       screen.queryByText("Unknown icon slug: not-real."),
     ).not.toBeInTheDocument();
-    expect(screen.getByLabelText("Icon slugs")).not.toHaveAttribute(
-      "aria-invalid",
-    );
+    expect(getIconSlugsTextarea()).not.toHaveAttribute("aria-invalid");
     expectGeneratedPreviewUrl(
       "http://localhost:3000/icons?icons=react&columns=18&gap=8&theme=light",
     );
@@ -1092,7 +1091,7 @@ describe("StackIconsEditor", () => {
     expectGeneratedPreviewUrl(generatedUrl);
 
     // When
-    fireEvent.change(screen.getByLabelText("Icon slugs"), {
+    fireEvent.change(getIconSlugsTextarea(), {
       target: { value: "react,nextjs" },
     });
 
@@ -1115,7 +1114,7 @@ describe("StackIconsEditor", () => {
     render(
       <StackIconsEditor initialState={DEFAULT_STACK_ICONS_EDITOR_STATE} />,
     );
-    fireEvent.change(screen.getByLabelText("Icon slugs"), {
+    fireEvent.change(getIconSlugsTextarea(), {
       target: { value: "react" },
     });
 
@@ -1335,7 +1334,9 @@ describe("StackIconsEditor", () => {
       />,
     );
 
-    expect(screen.queryByRole("button", { name: /Remove/u })).toBeNull();
+    expect(
+      screen.queryByRole("button", { name: /Remove.*breakpoint/u }),
+    ).toBeNull();
     expect(getBaseColumnsInput()).toHaveValue(12);
   });
 
@@ -1354,7 +1355,9 @@ describe("StackIconsEditor", () => {
       />,
     );
 
-    expect(screen.getAllByRole("button", { name: /Remove/u })).toHaveLength(2);
+    expect(
+      screen.getAllByRole("button", { name: /Remove.*breakpoint/u }),
+    ).toHaveLength(2);
     expect(
       screen.queryByRole("button", { name: /Remove.*base/u }),
     ).not.toBeInTheDocument();
@@ -1383,7 +1386,9 @@ describe("StackIconsEditor", () => {
     expect(getBaseColumnsInput()).toHaveValue(12);
     expect(getBreakpointColumnsInput(0)).toHaveValue(20);
     expect(getMinWidthInputs()[0]).toHaveValue(1280);
-    expect(screen.queryByRole("button", { name: /Remove/u })).toBeNull();
+    expect(
+      screen.queryByRole("button", { name: /Remove.*breakpoint/u }),
+    ).toBeNull();
     await waitFor(() => {
       const params = new URLSearchParams(window.location.search);
 
@@ -1422,7 +1427,9 @@ describe("StackIconsEditor", () => {
     expect(getBaseColumnsInput()).toHaveValue(12);
     expect(getBreakpointColumnsInput(0)).toHaveValue(20);
     expect(getMinWidthInputs()[0]).toHaveValue(1280);
-    expect(screen.queryByRole("button", { name: /Remove/u })).toBeNull();
+    expect(
+      screen.queryByRole("button", { name: /Remove.*breakpoint/u }),
+    ).toBeNull();
   });
 
   it("should keep breakpoint rows stable while breakpoint px is temporarily invalid", async () => {
@@ -1801,6 +1808,171 @@ describe("StackIconsEditor", () => {
       gap: "10",
       icons: "solid,typescript",
       layoutMode: "responsive",
+    });
+  });
+
+  it("should append a picker-selected icon slug to state and the page query", async () => {
+    // Given
+    renderEditor();
+
+    // When
+    fireEvent.click(screen.getByRole("button", { name: "Add icons" }));
+    fireEvent.change(screen.getByLabelText("Search icons"), {
+      target: { value: "react" },
+    });
+    fireEvent.click(screen.getByRole("option", { name: "React react" }));
+
+    // Then
+    await waitFor(() => {
+      const params = new URLSearchParams(window.location.search);
+
+      expect(params.get("icons")).toBe(
+        "typescript,nextjs,tailwindcss,vercel,react",
+      );
+    });
+    expect(screen.getByRole("option", { name: "React react" })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
+    expect(
+      screen.getByRole("button", { name: "Remove React" }),
+    ).toBeInTheDocument();
+  });
+
+  it("should toggle off an already-selected icon from the picker", async () => {
+    // Given
+    renderEditor();
+    fireEvent.click(screen.getByRole("button", { name: "Add icons" }));
+    fireEvent.change(screen.getByLabelText("Search icons"), {
+      target: { value: "typescript" },
+    });
+
+    const option = screen.getByRole("option", {
+      name: "TypeScript typescript",
+    });
+
+    expect(option).toHaveAttribute("aria-selected", "true");
+
+    // When
+    fireEvent.click(option);
+
+    // Then
+    await waitFor(() => {
+      const params = new URLSearchParams(window.location.search);
+
+      expect(params.get("icons")).toBe("nextjs,tailwindcss,vercel");
+    });
+    expect(
+      screen.getByRole("option", { name: "TypeScript typescript" }),
+    ).toHaveAttribute("aria-selected", "false");
+    expect(
+      screen.queryByRole("button", { name: "Remove TypeScript" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("should filter picker options by label and slug", () => {
+    // Given
+    renderEditor();
+
+    // When
+    fireEvent.click(screen.getByRole("button", { name: "Add icons" }));
+    fireEvent.change(screen.getByLabelText("Search icons"), {
+      target: { value: "tailwind" },
+    });
+
+    // Then
+    expect(screen.getAllByRole("option")).toHaveLength(1);
+    expect(
+      screen.getByRole("option", { name: "Tailwind CSS tailwindcss" }),
+    ).toBeInTheDocument();
+  });
+
+  it("should remove a chip and preserve the remaining slug order", async () => {
+    // Given
+    renderEditor();
+
+    // When
+    fireEvent.click(screen.getByRole("button", { name: "Remove Next.js" }));
+
+    // Then
+    await waitFor(() => {
+      const params = new URLSearchParams(window.location.search);
+
+      expect(params.get("icons")).toBe("typescript,tailwindcss,vercel");
+    });
+    expect(
+      screen.queryByRole("button", { name: "Remove Next.js" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("should render unknown slugs as removable invalid chips", async () => {
+    // Given
+    render(
+      <StackIconsEditor
+        initialState={{
+          ...DEFAULT_STACK_ICONS_EDITOR_STATE,
+          icons: "typescript,not-real",
+        }}
+      />,
+    );
+
+    const unknownChip = screen.getByText("not-real").closest("div");
+
+    expect(unknownChip).toHaveClass("text-destructive");
+    expect(
+      screen.getByText("Unknown icon slug: not-real."),
+    ).toBeInTheDocument();
+
+    // When
+    fireEvent.click(screen.getByRole("button", { name: "Remove not-real" }));
+
+    // Then
+    await waitFor(() => {
+      const params = new URLSearchParams(window.location.search);
+
+      expect(params.get("icons")).toBe("typescript");
+    });
+    expect(screen.queryByText("not-real")).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("Unknown icon slug: not-real."),
+    ).not.toBeInTheDocument();
+  });
+
+  it("should keep chips, the picker, and the plain-text editor in sync", async () => {
+    // Given
+    renderEditor();
+
+    const iconSlugsTextarea = getIconSlugsTextarea();
+
+    // When
+    fireEvent.change(iconSlugsTextarea, {
+      target: { value: "react,bun" },
+    });
+
+    // Then
+    expect(
+      screen.getByRole("button", { name: "Remove React" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Remove Bun" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Remove TypeScript" }),
+    ).not.toBeInTheDocument();
+
+    // When
+    fireEvent.click(screen.getByRole("button", { name: "Add icons" }));
+    fireEvent.change(screen.getByLabelText("Search icons"), {
+      target: { value: "vite" },
+    });
+    fireEvent.click(screen.getByRole("option", { name: "Vite vite" }));
+
+    // Then
+    expect(iconSlugsTextarea).toHaveValue("react,bun,vite");
+    await waitFor(() => {
+      const params = new URLSearchParams(window.location.search);
+
+      expect(params.get("icons")).toBe("react,bun,vite");
     });
   });
 });
