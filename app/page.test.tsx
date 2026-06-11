@@ -15,6 +15,8 @@ describe("Home", () => {
     expect(
       screen.getByRole("heading", { name: "README Stack Icons" }),
     ).toBeInTheDocument();
-    expect(screen.getByLabelText("Icon slugs")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Add icons" }),
+    ).toBeInTheDocument();
   });
 });

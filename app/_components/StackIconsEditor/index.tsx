@@ -5,6 +5,7 @@ import React from "react";
 import {
   CheckIcon,
   ChevronDownIcon,
+  ChevronRightIcon,
   CopyIcon,
   EyeIcon,
   ImageIcon,
@@ -55,6 +56,11 @@ import {
 } from "@/lib/icons/column-layout";
 import type { GeneratedImageSource } from "@/lib/icons/readme-image";
 import { cn } from "@/lib/utils";
+import {
+  parseIconSlugs,
+  SelectedIconChips,
+  StackIconPicker,
+} from "./IconPicker";
 import type { StackIconsEditorState } from "./state";
 import { useStackIconsEditorForm } from "./useStackIconsEditorForm";
 
@@ -100,6 +106,10 @@ export function StackIconsEditor({ initialState }: StackIconsEditorProps) {
   const [copyPageLinkStatus, setCopyPageLinkStatus] = React.useState<
     "failed" | "idle" | "succeeded"
   >("idle");
+  const [isPlainTextSlugEditorOpen, setIsPlainTextSlugEditorOpen] =
+    React.useState(false);
+
+  const selectedIconSlugs = parseIconSlugs(state.icons);
 
   async function copyPageLink() {
     const clipboard = navigator.clipboard;
@@ -115,6 +125,21 @@ export function StackIconsEditor({ initialState }: StackIconsEditorProps) {
     } catch {
       setCopyPageLinkStatus("failed");
     }
+  }
+
+  function toggleIconSlug(slug: string) {
+    const nextSlugs = selectedIconSlugs.includes(slug)
+      ? selectedIconSlugs.filter((selectedSlug) => selectedSlug !== slug)
+      : [...selectedIconSlugs, slug];
+
+    updateField("icons", nextSlugs.join(","));
+  }
+
+  function removeIconSlugAt(slugIndex: number) {
+    updateField(
+      "icons",
+      selectedIconSlugs.filter((_slug, index) => index !== slugIndex).join(","),
+    );
   }
 
   const baseColumnLayout = getEditableBaseColumnLayout(state.columnLayouts);
@@ -172,22 +197,68 @@ export function StackIconsEditor({ initialState }: StackIconsEditorProps) {
           </CardHeader>
           <CardContent className="grid gap-5">
             <Field data-invalid={hasErrors(fieldValidation.icons) || undefined}>
-              <FieldLabel
-                className="font-mono text-sm text-card-foreground"
-                htmlFor="icons"
-              >
-                Icon slugs
-              </FieldLabel>
-              <Textarea
-                className="mt-3 min-h-40 resize-none font-mono"
-                aria-describedby={
+              <p className="font-mono text-sm font-medium text-card-foreground">
+                Icons
+              </p>
+              <FieldDescription className="font-mono">
+                Chip order is the icon order in the generated image.
+              </FieldDescription>
+              <SelectedIconChips
+                onRemoveSlug={removeIconSlugAt}
+                slugs={selectedIconSlugs}
+              />
+              <StackIconPicker
+                describedBy={
                   hasErrors(fieldValidation.icons) ? "icons-error" : undefined
                 }
-                aria-invalid={hasErrors(fieldValidation.icons) || undefined}
-                id="icons"
-                onChange={(event) => updateField("icons", event.target.value)}
-                value={state.icons}
+                onToggleSlug={toggleIconSlug}
+                selectedSlugs={selectedIconSlugs}
               />
+              <div>
+                <Button
+                  aria-controls="icons-plain-text-editor"
+                  aria-expanded={isPlainTextSlugEditorOpen}
+                  className="h-8 px-2 font-mono text-xs text-muted-foreground"
+                  onClick={() =>
+                    setIsPlainTextSlugEditorOpen(
+                      (isEditorOpen) => !isEditorOpen,
+                    )
+                  }
+                  size="sm"
+                  type="button"
+                  variant="ghost"
+                >
+                  {isPlainTextSlugEditorOpen ? (
+                    <ChevronDownIcon className="h-4 w-4" aria-hidden="true" />
+                  ) : (
+                    <ChevronRightIcon className="h-4 w-4" aria-hidden="true" />
+                  )}
+                  Edit slugs as text
+                </Button>
+                {isPlainTextSlugEditorOpen ? (
+                  <div id="icons-plain-text-editor">
+                    <FieldLabel className="sr-only" htmlFor="icons">
+                      Icon slugs
+                    </FieldLabel>
+                    <Textarea
+                      className="mt-2 min-h-24 resize-none font-mono"
+                      aria-describedby={
+                        hasErrors(fieldValidation.icons)
+                          ? "icons-error"
+                          : undefined
+                      }
+                      aria-invalid={
+                        hasErrors(fieldValidation.icons) || undefined
+                      }
+                      id="icons"
+                      onChange={(event) =>
+                        updateField("icons", event.target.value)
+                      }
+                      value={state.icons}
+                    />
+                  </div>
+                ) : null}
+              </div>
               <FieldError errors={fieldValidation.icons} id="icons-error" />
             </Field>
 
