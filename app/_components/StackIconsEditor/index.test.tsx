@@ -1007,16 +1007,16 @@ describe("StackIconsEditor", () => {
     expect(previewBox).not.toHaveClass("bg-background");
   });
 
-  it("should show validation errors when generated input is invalid", () => {
+  it("should flag unknown slugs inline while still generating README image code", () => {
     // Given
     render(
       <StackIconsEditor initialState={DEFAULT_STACK_ICONS_EDITOR_STATE} />,
     );
-    fireEvent.change(getIconSlugsTextarea(), {
-      target: { value: "typescript,not-real" },
-    });
 
     // When
+    fireEvent.change(getIconSlugsTextarea(), {
+      target: { value: "typescript,not-real,react" },
+    });
     generatePreview();
 
     // Then
@@ -1024,13 +1024,45 @@ describe("StackIconsEditor", () => {
     expect(
       screen.getByText("Unknown icon slug: not-real."),
     ).toBeInTheDocument();
-    expectNoGeneratedPreview();
-    expect(
-      screen.queryByRole("img", { name: "column layout preview" }),
-    ).not.toBeInTheDocument();
+    expect(screen.getByLabelText("README image code")).toHaveValue(`<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?icons=typescript%2Cnot-real%2Creact&amp;columns=18&amp;gap=8&amp;size=48&amp;theme=dark" />
+  <img src="http://localhost:3000/icons?icons=typescript%2Cnot-real%2Creact&amp;columns=18&amp;gap=8&amp;size=48&amp;theme=light" alt="TypeScript, React" title="TypeScript, React" />
+</picture>`);
   });
 
-  it("should show validation errors when edited input is invalid", () => {
+  it("should copy README image code carrying unknown slugs when copy is clicked", async () => {
+    // Given
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    mockClipboard(writeText);
+    renderEditor();
+    fireEvent.change(getIconSlugsTextarea(), {
+      target: { value: "typescript,not-real,react" },
+    });
+    generatePreview();
+
+    const copyButton = screen.getByRole("button", {
+      name: "Copy README image code",
+    });
+
+    expect(copyButton).toBeEnabled();
+
+    // When
+    fireEvent.click(copyButton);
+
+    // Then
+    await waitFor(() => {
+      expect(writeText).toHaveBeenCalledWith(
+        (screen.getByLabelText("README image code") as HTMLTextAreaElement)
+          .value,
+      );
+    });
+    expect(writeText.mock.calls[0]?.[0]).toContain(
+      "icons=typescript%2Cnot-real%2Creact",
+    );
+    expect(screen.getByText("README image code copied.")).toBeInTheDocument();
+  });
+
+  it("should show validation errors when every edited icon slug is unknown", () => {
     // Given
     render(
       <StackIconsEditor initialState={DEFAULT_STACK_ICONS_EDITOR_STATE} />,
@@ -1047,6 +1079,7 @@ describe("StackIconsEditor", () => {
       screen.getByText("Unknown icon slug: not-real."),
     ).toBeInTheDocument();
     expectNoGeneratedPreview();
+    expect(screen.getByLabelText("README image code")).toHaveValue("");
   });
 
   it("should clear stale validation errors after successful preview generation", () => {

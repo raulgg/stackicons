@@ -19,6 +19,7 @@ export type ReadmeImageGenerationResult =
       success: true;
       imageSources: GeneratedImageSource[];
       readmeHtml: string;
+      unknownSlugs: string[];
     }
   | {
       success: false;
@@ -89,6 +90,7 @@ export function generateReadmeImage({
     success: true,
     imageSources,
     readmeHtml: renderReadmeHtml({ imageSources, labels }),
+    unknownSlugs: parsedRequest.data.unknownSlugs,
   };
 }
 

@@ -122,9 +122,32 @@ describe("/icons route", () => {
     expect(body).toContain("Invalid icon request");
   });
 
-  it("should return an SVG error image when the icon request is invalid", async () => {
+  it("should skip unknown slugs and render the remaining icons in order when known slugs remain", async () => {
     // Given
-    const request = new Request("http://localhost/icons?icons=not-real");
+    const request = new Request(
+      "http://localhost/icons?icons=typescript,not-real,react&columns=2&gap=12",
+    );
+
+    // When
+    const response = await GET(request);
+    const body = await response.text();
+
+    // Then
+    expect(response.status).toBe(200);
+    expect(response.headers.get("Content-Type")).toBe("image/svg+xml");
+    expect(body).toContain('<title id="title">TypeScript, React</title>');
+    expect(body).not.toContain("not-real");
+    expect(body).not.toContain("Invalid icon request");
+    expect(body).toContain('<svg x="0" y="0" width="40" height="40"');
+    expect(body).toContain('<svg x="52" y="0" width="40" height="40"');
+    expect(body).not.toContain('<svg x="0" y="52"');
+  });
+
+  it("should return an SVG error image when every icon slug is unknown", async () => {
+    // Given
+    const request = new Request(
+      "http://localhost/icons?icons=not-real,also-fake",
+    );
 
     // When
     const response = await GET(request);
@@ -136,7 +159,7 @@ describe("/icons route", () => {
     expect(response.headers.get("Cache-Control")).toBe("no-store");
     expect(body).toContain("<svg");
     expect(body).toContain("Invalid icon request");
-    expect(body).toContain("Unknown icon slug: not-real.");
+    expect(body).toContain("Unknown icon slugs: not-real, also-fake.");
     expect(body).not.toMatch(/\b(?:href|src)=/);
   });
 

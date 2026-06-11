@@ -16,6 +16,7 @@ describe("README image", () => {
   it("should generate single layout README image code with generated image sources", () => {
     expect(generateReadmeImage(baseInput)).toEqual({
       success: true,
+      unknownSlugs: [],
       imageSources: [
         {
           columns: 4,
@@ -45,6 +46,7 @@ describe("README image", () => {
       }),
     ).toEqual({
       success: true,
+      unknownSlugs: [],
       imageSources: [
         {
           columns: 4,
@@ -206,7 +208,42 @@ describe("README image", () => {
     });
   });
 
-  it("should return all relevant validation errors", () => {
+  it("should carry unknown slugs in generated image source URLs while labeling only known icons", () => {
+    // Given
+    const input = {
+      ...baseInput,
+      icons: "react,not-real,nextjs",
+    };
+
+    // When
+    const result = generateReadmeImage(input);
+
+    // Then
+    expect(result).toEqual({
+      success: true,
+      unknownSlugs: ["not-real"],
+      imageSources: [
+        {
+          columns: 4,
+          minWidthPx: null,
+          theme: "light",
+          url: "http://localhost:3000/icons?icons=react%2Cnot-real%2Cnextjs&columns=4&gap=8&size=48&theme=light",
+        },
+        {
+          columns: 4,
+          minWidthPx: null,
+          theme: "dark",
+          url: "http://localhost:3000/icons?icons=react%2Cnot-real%2Cnextjs&columns=4&gap=8&size=48&theme=dark",
+        },
+      ],
+      readmeHtml: `<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?icons=react%2Cnot-real%2Cnextjs&amp;columns=4&amp;gap=8&amp;size=48&amp;theme=dark" />
+  <img src="http://localhost:3000/icons?icons=react%2Cnot-real%2Cnextjs&amp;columns=4&amp;gap=8&amp;size=48&amp;theme=light" alt="React, Next.js" title="React, Next.js" />
+</picture>`,
+    });
+  });
+
+  it("should return validation errors when every icon slug is unknown", () => {
     expect(
       generateReadmeImage({
         ...baseInput,

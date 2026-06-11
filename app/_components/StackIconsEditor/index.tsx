@@ -54,6 +54,7 @@ import {
   getEditableBaseColumnLayout,
   getEditableBreakpointColumnLayouts,
 } from "@/lib/icons/column-layout";
+import { formatUnknownSlugsMessage } from "@/lib/icons/parse-request";
 import type { GeneratedImageSource } from "@/lib/icons/readme-image";
 import { cn } from "@/lib/utils";
 import {
@@ -96,6 +97,7 @@ export function StackIconsEditor({ initialState }: StackIconsEditorProps) {
     removeBreakpointLayout,
     state,
     switchLayoutMode,
+    unknownSlugs,
     updateBaseColumns,
     updateColumnLayout,
     updateField,
@@ -148,6 +150,7 @@ export function StackIconsEditor({ initialState }: StackIconsEditorProps) {
   );
   const fieldValidation = getStackIconsEditorFieldValidation({
     state,
+    unknownSlugs,
     validationErrors,
   });
 
@@ -661,9 +664,11 @@ function FieldError({ errors, id }: FieldErrorProps) {
 
 function getStackIconsEditorFieldValidation({
   state,
+  unknownSlugs,
   validationErrors,
 }: {
   state: StackIconsEditorState;
+  unknownSlugs: readonly string[];
   validationErrors: readonly string[];
 }): StackIconsEditorFieldValidation {
   const fieldValidation: StackIconsEditorFieldValidation = {
@@ -671,7 +676,12 @@ function getStackIconsEditorFieldValidation({
     breakpointColumnsByIndex: {},
     breakpointMinWidthByIndex: {},
     gap: validationErrors.filter(isGapValidationError),
-    icons: validationErrors.filter(isIconsValidationError),
+    icons: [
+      ...validationErrors.filter(isIconsValidationError),
+      ...(unknownSlugs.length > 0
+        ? [formatUnknownSlugsMessage(unknownSlugs)]
+        : []),
+    ],
     layout: validationErrors.filter(isLayoutValidationError),
   };
   const minWidthLayoutsByValue = new Map<string, number[]>();

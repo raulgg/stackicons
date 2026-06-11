@@ -8,6 +8,7 @@ export type IconRequestTheme = "light" | "dark";
 export type ParsedIconRequest = {
   icons: RegisteredIcon[];
   slugs: IconSlug[];
+  unknownSlugs: string[];
   columns: number;
   gap: number;
   size: number;
@@ -90,33 +91,37 @@ export function parseIconRequest(
   }
 
   const requestedAllIcons = slugs.length === 1 && slugs[0] === "all";
-  const resolvedSlugs = requestedAllIcons ? listIconSlugs() : slugs;
+  const resolvedSlugs = requestedAllIcons ? [...listIconSlugs()] : slugs;
   const unknownSlugs = resolvedSlugs.filter((slug) => !isIconSlug(slug));
+  const registeredSlugs = resolvedSlugs.filter(isIconSlug);
 
-  if (unknownSlugs.length > 0) {
+  if (registeredSlugs.length === 0) {
     return {
       success: false,
-      errors: [
-        `Unknown icon slug${unknownSlugs.length === 1 ? "" : "s"}: ${unknownSlugs.join(
-          ", ",
-        )}.`,
-      ],
+      errors: [formatUnknownSlugsMessage(unknownSlugs)],
     };
   }
-
-  const registeredSlugs = resolvedSlugs as IconSlug[];
 
   return {
     success: true,
     data: {
       icons: registeredSlugs.map((slug) => getIconBySlug(slug)).filter(isIcon),
       slugs: registeredSlugs,
+      unknownSlugs,
       columns: rawRequest.data.columns,
       gap: rawRequest.data.gap,
       size: rawRequest.data.size,
       theme: rawRequest.data.theme,
     },
   };
+}
+
+export function formatUnknownSlugsMessage(
+  unknownSlugs: readonly string[],
+): string {
+  return `Unknown icon slug${unknownSlugs.length === 1 ? "" : "s"}: ${unknownSlugs.join(
+    ", ",
+  )}.`;
 }
 
 function parseRawIconSlugs(icons: string): string[] {

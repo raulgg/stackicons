@@ -19,6 +19,7 @@ function request(overrides: Partial<ParsedIconRequest>): ParsedIconRequest {
   return {
     icons: [icon("typescript")],
     slugs: ["typescript"],
+    unknownSlugs: [],
     columns: 16,
     gap: 8,
     size: 40,

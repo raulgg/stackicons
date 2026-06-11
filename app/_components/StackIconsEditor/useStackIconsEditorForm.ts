@@ -131,6 +131,7 @@ export function useStackIconsEditorForm(initialState: StackIconsEditorState) {
     : null;
   const generatedHtml = generatedReadmeImage?.readmeHtml ?? "";
   const generatedImageSources = generatedReadmeImage?.imageSources ?? [];
+  const unknownSlugs = generatedReadmeImage?.unknownSlugs ?? [];
   const hasGeneratedOutput = generatedReadmeImage !== null;
   const validationErrors = generatedReadmeImageResult.success
     ? []
@@ -357,6 +358,7 @@ export function useStackIconsEditorForm(initialState: StackIconsEditorState) {
     removeBreakpointLayout,
     state: editorState,
     switchLayoutMode,
+    unknownSlugs,
     updateBaseColumns,
     updateColumnLayout,
     updateField,

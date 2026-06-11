@@ -76,9 +76,47 @@ describe("icon request parser", () => {
     });
   });
 
-  it("should reject unknown slugs when icon input is parsed", () => {
+  it("should skip unknown slugs while preserving the order of known slugs when icon input is parsed", () => {
     // Given
-    const searchParams = params("icons=typescript,not-real,also-fake");
+    const searchParams = params("icons=typescript,not-real,react");
+
+    // When
+    const result = parseIconRequest(searchParams);
+
+    // Then
+    expect(result.success).toBe(true);
+    expect(result).toMatchObject({
+      data: {
+        slugs: ["typescript", "react"],
+        unknownSlugs: ["not-real"],
+        icons: [
+          { slug: "typescript", label: "TypeScript" },
+          { slug: "react", label: "React" },
+        ],
+      },
+    });
+  });
+
+  it("should report no unknown slugs when every parsed slug is registered", () => {
+    // Given
+    const searchParams = params("icons=typescript,react");
+
+    // When
+    const result = parseIconRequest(searchParams);
+
+    // Then
+    expect(result.success).toBe(true);
+    expect(result).toMatchObject({
+      data: {
+        slugs: ["typescript", "react"],
+        unknownSlugs: [],
+      },
+    });
+  });
+
+  it("should reject the request when every parsed slug is unknown", () => {
+    // Given
+    const searchParams = params("icons=not-real,also-fake");
 
     // When
     const result = parseIconRequest(searchParams);
