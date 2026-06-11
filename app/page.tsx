@@ -24,10 +24,10 @@ export default async function Home({ searchParams }: HomeProps = {}) {
         <div className="flex items-center gap-3">
           <BrandMark />
           <div>
-            <p className="text-[18px] font-semibold leading-[1.05] tracking-[-0.02em] text-foreground">
+            <p className="text-[23px] font-semibold leading-[1.05] tracking-[-0.02em] text-foreground">
               Stack<span className="text-accent-ink">Icons</span>
             </p>
-            <p className="mt-px font-mono text-[11px] text-ink-3">
+            <p className="mt-px font-mono text-[14px] text-ink-3">
               readme image composer
             </p>
           </div>

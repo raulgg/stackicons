@@ -16,7 +16,7 @@ export function BrandMark({ className }: BrandMarkProps) {
       className={className}
       fill="none"
       height={44}
-      viewBox="3 3 30 30"
+      viewBox="0 0 36 36"
       width={44}
     >
       <rect
