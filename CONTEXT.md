@@ -1,8 +1,10 @@
-# Readme Stack Icons
+# StackIcons
 
-Readme Stack Icons lets users compose technology icon slugs into README image code with configurable layout.
+StackIcons (formerly Readme Stack Icons) lets users compose technology icon slugs into README image code with configurable layout.
 
 ## Language
+
+The terms below govern code identifiers, tests, and documentation. User-facing UI copy is wordsmithed freely and may diverge from canonical terms (including avoid-listed phrasings) when it reads better.
 
 **Breakpoint**:
 A viewport width threshold that changes the generated icon layout at and above a specific pixel width. Breakpoints are represented as `min-width` thresholds with their own column count.
@@ -17,8 +19,8 @@ A configurable icon grid layout with a column count and an optional breakpoint. 
 _Avoid_: Layout rule, column preset, responsive layout
 
 **Column layout preview**:
-A visual inspection of one generated image source for a specific column layout and color theme. It does not simulate the full responsive README image selection behavior.
-_Avoid_: Responsive preview, full preview, image preview
+A live visual recreation of one generated image source for a specific column layout and color theme, shown in the README image editor. It mirrors what the generated image source will look like but is not the source itself, and it does not simulate the full responsive README image selection behavior. Unknown slugs do not appear in it, matching how generated image sources render.
+_Avoid_: Responsive preview, full preview, image preview, live preview
 
 Generated README HTML emits breakpoint-specific sources from widest to narrowest so the browser selects the first matching source.
 
@@ -29,8 +31,16 @@ A README image code shape with exactly one base column layout and no breakpoints
 _Avoid_: Non-responsive layout, simple mode
 
 **Responsive layout**:
-A README image code shape with a base column layout plus one or more breakpoint-specific column layouts. The default responsive layout uses 12 base columns and 18 columns from 768px upward.
+A README image code shape with a base column layout plus one or more breakpoint-specific column layouts. The default responsive layout uses 4 base columns, 8 columns from 768px upward, and 12 columns from 1200px upward.
 _Avoid_: Breakpoint mode, advanced layout
+
+**Unknown slug**:
+An icon slug that is not in the icon registry. Unknown slugs keep their place in the user's icon order and are carried in README image code, but generated image sources render without them until the registry recognizes them. The README image editor flags them for correction without blocking the user.
+_Avoid_: Invalid slug, bad icon, unsupported icon
+
+**Icon size**:
+The square pixel dimension at which each stack icon renders inside a generated image source. One icon size applies to the entire README image; it is not configured per column layout. Icons display at their true pixel size in the README — the image is not stretched to the container.
+_Avoid_: Scale, zoom, resolution, icon width
 
 **README image**:
 The stack icon image setup generated for a GitHub README, consisting of generated image sources and README image code.
