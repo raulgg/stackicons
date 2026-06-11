@@ -23,7 +23,7 @@ export default async function Home({ searchParams }: HomeProps = {}) {
             Public editor placeholder
           </p>
           <h1 className="mt-4 font-serif text-5xl font-semibold leading-none text-foreground sm:text-6xl">
-            README Stack Icons
+            StackIcons
           </h1>
           <p className="mx-auto mt-6 max-w-2xl font-mono text-base leading-7 text-muted-foreground">
             Compose an ordered stack of technology slugs into one cached SVG

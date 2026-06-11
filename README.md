@@ -1,4 +1,4 @@
-# readme-stack-icons
+# StackIcons
 
 Compose an ordered stack of technology slugs into one cached SVG image for GitHub READMEs.
 

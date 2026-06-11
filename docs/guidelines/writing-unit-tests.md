@@ -52,7 +52,7 @@ import { describe, expect, it } from "vitest";
 import Home from "./page";
 
 describe("Home", () => {
-  it("should show the README Stack Icons heading when the root page renders", () => {
+  it("should show the StackIcons heading when the root page renders", () => {
     // Given
     render(<Home />);
 
@@ -60,7 +60,7 @@ describe("Home", () => {
 
     // Then
     expect(
-      screen.getByRole("heading", { name: "README Stack Icons" }),
+      screen.getByRole("heading", { name: "StackIcons" }),
     ).toBeInTheDocument();
     expect(screen.getByLabelText("Icon slugs")).toBeInTheDocument();
   });

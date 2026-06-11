@@ -1,6 +1,6 @@
-# Readme Stack Icons
+# StackIcons
 
-Readme Stack Icons lets users compose technology icon slugs into README image code with configurable layout.
+StackIcons (formerly Readme Stack Icons) lets users compose technology icon slugs into README image code with configurable layout.
 
 ## Language
 

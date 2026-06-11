@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "README Stack Icons",
+  title: "StackIcons",
   description: "Generate cached SVG stack icon images for GitHub READMEs.",
 };
 

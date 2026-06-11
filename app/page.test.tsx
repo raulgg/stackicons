@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 import Home from "./page";
 
 describe("Home", () => {
-  it("should show the README Stack Icons heading when the root page renders", async () => {
+  it("should show the StackIcons heading when the root page renders", async () => {
     // Given
     render(await Home({ searchParams: Promise.resolve({}) }));
 
@@ -13,7 +13,7 @@ describe("Home", () => {
 
     // Then
     expect(
-      screen.getByRole("heading", { name: "README Stack Icons" }),
+      screen.getByRole("heading", { name: "StackIcons" }),
     ).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "Add icons" }),
