@@ -407,36 +407,6 @@ describe("StackIconsEditor", () => {
     });
   });
 
-  it("should copy the current page URL when the Copy link button is clicked", async () => {
-    // Given
-    const writeText = vi.fn().mockResolvedValue(undefined);
-    mockClipboard(writeText);
-    renderEditor();
-
-    // When
-    fireEvent.click(screen.getByRole("button", { name: "Copy link" }));
-
-    // Then
-    await waitFor(() => {
-      expect(writeText).toHaveBeenCalledWith(window.location.href);
-    });
-    expect(writeText).toHaveBeenCalledTimes(1);
-    expect(screen.getByText("Link copied.")).toBeInTheDocument();
-  });
-
-  it("should show copy link failure feedback when the clipboard is unavailable", async () => {
-    // Given clipboard is undefined from beforeEach
-    renderEditor();
-
-    // When
-    fireEvent.click(screen.getByRole("button", { name: "Copy link" }));
-
-    // Then
-    await waitFor(() => {
-      expect(screen.getByText("Could not copy link.")).toBeInTheDocument();
-    });
-  });
-
   it("should show copy failure feedback when clipboard writing fails", async () => {
     // Given
     const writeText = vi.fn().mockRejectedValue(new Error("Denied"));

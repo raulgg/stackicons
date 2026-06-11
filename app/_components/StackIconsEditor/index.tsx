@@ -105,29 +105,10 @@ export function StackIconsEditor({ initialState }: StackIconsEditorProps) {
   } = useStackIconsEditorForm(initialState);
   const [previewTarget, setPreviewTarget] =
     React.useState<PreviewTarget | null>(null);
-  const [copyPageLinkStatus, setCopyPageLinkStatus] = React.useState<
-    "failed" | "idle" | "succeeded"
-  >("idle");
   const [isPlainTextSlugEditorOpen, setIsPlainTextSlugEditorOpen] =
     React.useState(false);
 
   const selectedIconSlugs = parseIconSlugs(state.icons);
-
-  async function copyPageLink() {
-    const clipboard = navigator.clipboard;
-
-    if (clipboard === undefined) {
-      setCopyPageLinkStatus("failed");
-      return;
-    }
-
-    try {
-      await clipboard.writeText(window.location.href);
-      setCopyPageLinkStatus("succeeded");
-    } catch {
-      setCopyPageLinkStatus("failed");
-    }
-  }
 
   function toggleIconSlug(slug: string) {
     const nextSlugs = selectedIconSlugs.includes(slug)
@@ -159,44 +140,12 @@ export function StackIconsEditor({ initialState }: StackIconsEditorProps) {
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start">
         <Card>
           <CardHeader>
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-              <div className="space-y-1.5">
-                <CardTitle className="font-mono text-base">
-                  README image editor
-                </CardTitle>
-                <CardDescription className="font-mono">
-                  Compose icon slugs and configure column layouts.
-                </CardDescription>
-              </div>
-              <Button
-                className="w-fit"
-                onClick={copyPageLink}
-                size="sm"
-                type="button"
-                variant="outline"
-              >
-                <LinkIcon className="h-4 w-4" aria-hidden="true" />
-                Copy link
-              </Button>
-            </div>
-            {copyPageLinkStatus === "succeeded" ? (
-              <p
-                aria-live="polite"
-                className="flex items-center gap-2 font-mono text-xs text-card-foreground sm:justify-end"
-              >
-                <CheckIcon className="h-3.5 w-3.5" aria-hidden="true" />
-                Link copied.
-              </p>
-            ) : null}
-            {copyPageLinkStatus === "failed" ? (
-              <p
-                aria-live="polite"
-                className="flex items-center gap-2 font-mono text-xs text-destructive sm:justify-end"
-              >
-                <XIcon className="h-3.5 w-3.5" aria-hidden="true" />
-                Could not copy link.
-              </p>
-            ) : null}
+            <CardTitle className="font-mono text-base">
+              README image editor
+            </CardTitle>
+            <CardDescription className="font-mono">
+              Compose icon slugs and configure column layouts.
+            </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-5">
             <Field data-invalid={hasErrors(fieldValidation.icons) || undefined}>
