@@ -62,7 +62,7 @@ export function renderIconRequestErrorSvg(errors: readonly string[]): string {
   );
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="640" height="120" viewBox="0 0 640 120" role="img" aria-labelledby="title desc">
-  <title id="title">Invalid README Stack Icons request</title>
+  <title id="title">Invalid StackIcons request</title>
   <desc id="desc">${escapedMessage}</desc>
   <rect width="640" height="120" fill="#ffffff"/>
   <g transform="translate(32 28) scale(3)" fill="#64748b">
