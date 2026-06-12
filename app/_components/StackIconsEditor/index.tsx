@@ -4,7 +4,6 @@ import React from "react";
 import {
   CheckIcon,
   ChevronDownIcon,
-  ChevronRightIcon,
   CopyIcon,
   LinkIcon,
   PlusIcon,
@@ -32,11 +31,8 @@ import { formatUnknownSlugsMessage } from "@/lib/icons/parse-request";
 import { getIconLabel } from "@/lib/icons/registry";
 import { cn } from "@/lib/utils";
 import { EditorSection, type EditorSectionKey } from "./EditorSection";
-import {
-  parseIconSlugs,
-  SelectedIconChips,
-  StackIconPicker,
-} from "./IconPicker";
+import { parseIconSlugs, StackIconPicker } from "./IconPicker";
+import { SelectedIconTiles } from "./SelectedIconTiles";
 import {
   ICON_SIZE_STEP,
   MAX_ICON_SIZE,
@@ -77,6 +73,7 @@ export function StackIconsEditor({ initialState }: StackIconsEditorProps) {
   } = useStackIconsEditorForm(initialState);
   const [isPlainTextSlugEditorOpen, setIsPlainTextSlugEditorOpen] =
     React.useState(false);
+  const pickerSearchInputRef = React.useRef<HTMLInputElement | null>(null);
   const [openSections, setOpenSections] = React.useState<
     Record<EditorSectionKey, boolean>
   >({
@@ -106,6 +103,18 @@ export function StackIconsEditor({ initialState }: StackIconsEditorProps) {
     );
   }
 
+  function reorderIconSlug(fromIndex: number, toIndex: number) {
+    const nextSlugs = [...selectedIconSlugs];
+    const [movedSlug] = nextSlugs.splice(fromIndex, 1);
+
+    nextSlugs.splice(toIndex, 0, movedSlug);
+    updateField("icons", nextSlugs.join(","));
+  }
+
+  function focusIconPickerSearch() {
+    pickerSearchInputRef.current?.focus();
+  }
+
   const baseColumnLayout = getEditableBaseColumnLayout(state.columnLayouts);
   const breakpointLayouts = getEditableBreakpointColumnLayouts(
     state.columnLayouts,
@@ -132,10 +141,13 @@ export function StackIconsEditor({ initialState }: StackIconsEditorProps) {
             Icons
           </p>
           <FieldDescription className="font-mono">
-            Chip order is the icon order in the generated image.
+            Tile order is the icon order in the generated image. Drag tiles to
+            reorder.
           </FieldDescription>
-          <SelectedIconChips
+          <SelectedIconTiles
+            onAddIconRequest={focusIconPickerSearch}
             onRemoveSlug={removeIconSlugAt}
+            onReorderSlug={reorderIconSlug}
             slugs={selectedIconSlugs}
           />
           <StackIconPicker
@@ -143,34 +155,37 @@ export function StackIconsEditor({ initialState }: StackIconsEditorProps) {
               hasErrors(fieldValidation.icons) ? "icons-error" : undefined
             }
             onToggleSlug={toggleIconSlug}
+            searchInputRef={pickerSearchInputRef}
             selectedSlugs={selectedIconSlugs}
           />
           <div>
-            <Button
+            <button
               aria-controls="icons-plain-text-editor"
               aria-expanded={isPlainTextSlugEditorOpen}
-              className="h-8 px-2 font-mono text-xs text-muted-foreground"
+              className="inline-flex items-center gap-1 text-[13px] font-semibold text-accent-ink"
               onClick={() =>
                 setIsPlainTextSlugEditorOpen((isEditorOpen) => !isEditorOpen)
               }
-              size="sm"
               type="button"
-              variant="ghost"
             >
-              {isPlainTextSlugEditorOpen ? (
-                <ChevronDownIcon className="h-4 w-4" aria-hidden="true" />
-              ) : (
-                <ChevronRightIcon className="h-4 w-4" aria-hidden="true" />
-              )}
-              Edit slugs as text
-            </Button>
+              <ChevronDownIcon
+                aria-hidden="true"
+                className={cn(
+                  "h-[13px] w-[13px]",
+                  isPlainTextSlugEditorOpen && "rotate-180",
+                )}
+              />
+              {isPlainTextSlugEditorOpen
+                ? "Hide slugs as text"
+                : "Edit slugs as text"}
+            </button>
             {isPlainTextSlugEditorOpen ? (
               <div id="icons-plain-text-editor">
                 <FieldLabel className="sr-only" htmlFor="icons">
                   Icon slugs
                 </FieldLabel>
                 <Textarea
-                  className="mt-2 min-h-24 resize-none font-mono"
+                  className="mt-2 min-h-[72px] w-full resize-none rounded-[6px] bg-surface-2 font-mono text-[13px]"
                   aria-describedby={
                     hasErrors(fieldValidation.icons) ? "icons-error" : undefined
                   }

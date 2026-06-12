@@ -1,5 +1,11 @@
 import React from "react";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { StackIconsEditor, type StackIconsEditorState } from ".";
@@ -1673,7 +1679,7 @@ describe("StackIconsEditor", () => {
     ).toBeInTheDocument();
   });
 
-  it("should remove a chip and preserve the remaining slug order", async () => {
+  it("should remove a tile and preserve the remaining slug order", async () => {
     // Given
     renderEditor();
 
@@ -1691,7 +1697,45 @@ describe("StackIconsEditor", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("should render unknown slugs as removable invalid chips", async () => {
+  it("should reorder icons in the page query and README image code when a tile is dropped on another tile", async () => {
+    // Given — typescript,nextjs,tailwindcss,vercel
+    renderEditor();
+
+    const [typescriptTile, , , vercelTile] = within(
+      screen.getByLabelText("Selected icons"),
+    )
+      .getAllByRole("listitem")
+      .slice(0, -1);
+
+    // When — drag the first tile onto the last tile
+    fireEvent.dragStart(typescriptTile);
+    fireEvent.dragOver(vercelTile);
+    fireEvent.drop(vercelTile);
+
+    // Then
+    await waitFor(() => {
+      const params = new URLSearchParams(window.location.search);
+
+      expect(params.get("icons")).toBe("nextjs,tailwindcss,vercel,typescript");
+    });
+    expectGeneratedImageSourceUrl(
+      "icons=nextjs%2Ctailwindcss%2Cvercel%2Ctypescript",
+    );
+  });
+
+  it("should focus the picker search input when the Add tile is clicked", () => {
+    // Given
+    renderEditor();
+
+    // When
+    fireEvent.click(screen.getByRole("button", { name: "Add" }));
+
+    // Then
+    expect(screen.getByLabelText("Search icons")).toHaveFocus();
+    expect(screen.getByRole("listbox")).toBeInTheDocument();
+  });
+
+  it("should render unknown slugs as removable danger tiles", async () => {
     // Given
     render(
       <StackIconsEditor
@@ -1702,9 +1746,10 @@ describe("StackIconsEditor", () => {
       />,
     );
 
-    const unknownChip = screen.getByText("not-real").closest("div");
+    const unknownTile = screen.getByText("not-real").closest("li");
 
-    expect(unknownChip).toHaveClass("text-destructive");
+    expect(unknownTile).toHaveClass("border-destructive");
+    expect(unknownTile).toHaveTextContent("unknown");
     expect(
       screen.getByText("Unknown icon slug: not-real."),
     ).toBeInTheDocument();
@@ -1724,7 +1769,7 @@ describe("StackIconsEditor", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("should keep chips, the picker, and the plain-text editor in sync", async () => {
+  it("should keep tiles, the picker, and the plain-text editor in sync", async () => {
     // Given
     renderEditor();
 

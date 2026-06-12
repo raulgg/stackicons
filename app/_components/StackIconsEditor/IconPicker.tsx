@@ -1,12 +1,9 @@
 "use client";
 
 import React from "react";
-import { CheckIcon, SearchIcon, XIcon } from "lucide-react";
+import { CheckIcon, SearchIcon } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
 import {
-  getIconLabel,
-  isIconSlug,
   listIconCategories,
   listRegisteredIcons,
   type IconCategory,
@@ -36,12 +33,14 @@ type CategoryFilter = "All" | IconCategory;
 type StackIconPickerProps = {
   describedBy?: string;
   onToggleSlug: (slug: string) => void;
+  searchInputRef?: React.Ref<HTMLInputElement>;
   selectedSlugs: readonly string[];
 };
 
 export function StackIconPicker({
   describedBy,
   onToggleSlug,
+  searchInputRef,
   selectedSlugs,
 }: StackIconPickerProps) {
   const [isOpen, setIsOpen] = React.useState(false);
@@ -149,6 +148,7 @@ export function StackIconPicker({
           onFocus={openPicker}
           onKeyDown={handleSearchKeyDown}
           placeholder='Search 40+ tech icons — "react", "postgres", "docker"…'
+          ref={searchInputRef}
           role="combobox"
           type="text"
           value={query}
@@ -248,69 +248,5 @@ export function StackIconPicker({
         </div>
       ) : null}
     </div>
-  );
-}
-
-type SelectedIconChipsProps = {
-  onRemoveSlug: (slugIndex: number) => void;
-  slugs: readonly string[];
-};
-
-export function SelectedIconChips({
-  onRemoveSlug,
-  slugs,
-}: SelectedIconChipsProps) {
-  if (slugs.length === 0) {
-    return (
-      <p className="font-mono text-xs text-muted-foreground">
-        No icons selected yet.
-      </p>
-    );
-  }
-
-  return (
-    <ul aria-label="Selected icons" className="flex flex-wrap gap-2">
-      {slugs.map((slug, index) => {
-        const isKnownSlug = isIconSlug(slug);
-        const label = getIconLabel(slug) ?? slug;
-
-        return (
-          <li key={`${slug}-${index}`}>
-            <Badge
-              className={cn(
-                "gap-1.5 rounded-md py-1 font-mono text-xs font-normal",
-                isKnownSlug
-                  ? "bg-background text-muted-foreground"
-                  : "border-destructive bg-destructive/10 text-destructive",
-              )}
-              variant="outline"
-            >
-              {isKnownSlug ? (
-                /* eslint-disable-next-line @next/next/no-img-element */
-                <img
-                  alt=""
-                  aria-hidden="true"
-                  className="h-4 w-4"
-                  loading="lazy"
-                  src={getIconThumbnailUrl(slug)}
-                />
-              ) : null}
-              <span>{label}</span>
-              {isKnownSlug ? null : (
-                <span className="sr-only">(unknown icon slug)</span>
-              )}
-              <button
-                aria-label={`Remove ${label}`}
-                className="rounded-sm opacity-70 transition-opacity hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                onClick={() => onRemoveSlug(index)}
-                type="button"
-              >
-                <XIcon className="h-3 w-3" aria-hidden="true" />
-              </button>
-            </Badge>
-          </li>
-        );
-      })}
-    </ul>
   );
 }
