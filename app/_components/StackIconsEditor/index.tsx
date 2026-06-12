@@ -1,26 +1,10 @@
 "use client";
 
 import React from "react";
-import {
-  CheckIcon,
-  ChevronDownIcon,
-  CopyIcon,
-  LinkIcon,
-  PlusIcon,
-  Trash2Icon,
-  XIcon,
-} from "lucide-react";
+import { ChevronDownIcon, PlusIcon, Trash2Icon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
-import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -33,6 +17,7 @@ import { cn } from "@/lib/utils";
 import { ColumnLayoutPreview } from "./ColumnLayoutPreview";
 import { EditorSection, type EditorSectionKey } from "./EditorSection";
 import { parseIconSlugs, StackIconPicker } from "./IconPicker";
+import { ReadmeImageCodePanel } from "./ReadmeImageCodePanel";
 import { SelectedIconTiles } from "./SelectedIconTiles";
 import {
   ICON_SIZE_STEP,
@@ -60,8 +45,7 @@ type StackIconsEditorFieldValidation = {
 export function StackIconsEditor({ initialState }: StackIconsEditorProps) {
   const {
     addBreakpointLayout,
-    copyGeneratedHtml,
-    copyGeneratedHtmlStatus,
+    copyReadmeImageCode,
     generatedHtml,
     removeBreakpointLayout,
     state,
@@ -414,6 +398,13 @@ export function StackIconsEditor({ initialState }: StackIconsEditorProps) {
       </EditorSection>
 
       <ColumnLayoutPreview
+        codePanel={
+          <ReadmeImageCodePanel
+            hasSelectedIcons={selectedIconSlugs.length > 0}
+            onCopy={copyReadmeImageCode}
+            readmeImageCode={generatedHtml}
+          />
+        }
         columnLayouts={state.columnLayouts}
         gap={state.gap}
         iconSize={state.iconSize}
@@ -424,67 +415,6 @@ export function StackIconsEditor({ initialState }: StackIconsEditorProps) {
         previewTheme={state.previewTheme}
         slugs={selectedIconSlugs}
       />
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="font-mono text-base">
-            Generated README image code
-          </CardTitle>
-          <CardDescription className="font-mono">
-            Generated from the current valid editor settings.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-4">
-          <div>
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between lg:flex-col lg:items-stretch xl:flex-row xl:items-center">
-              <Label
-                className="flex items-center gap-2 font-mono text-xs text-muted-foreground"
-                htmlFor="generated-readme-html"
-              >
-                <LinkIcon className="h-3.5 w-3.5" aria-hidden="true" />
-                README image code
-              </Label>
-              {generatedHtml === "" ? null : (
-                <Button
-                  className="w-full sm:w-auto lg:w-full xl:w-auto"
-                  onClick={copyGeneratedHtml}
-                  size="sm"
-                  type="button"
-                  variant="outline"
-                >
-                  <CopyIcon className="h-4 w-4" aria-hidden="true" />
-                  Copy README image code
-                </Button>
-              )}
-            </div>
-            <Textarea
-              className="mt-2 min-h-48 resize-none bg-muted font-mono text-muted-foreground"
-              id="generated-readme-html"
-              placeholder="Fix validation errors to create README image code."
-              readOnly
-              value={generatedHtml}
-            />
-            {copyGeneratedHtmlStatus === "succeeded" ? (
-              <p
-                aria-live="polite"
-                className="mt-2 flex items-center gap-2 font-mono text-xs text-green-700"
-              >
-                <CheckIcon className="h-3.5 w-3.5" aria-hidden="true" />
-                README image code copied.
-              </p>
-            ) : null}
-            {copyGeneratedHtmlStatus === "failed" ? (
-              <p
-                aria-live="polite"
-                className="mt-2 flex items-center gap-2 font-mono text-xs text-destructive"
-              >
-                <XIcon className="h-3.5 w-3.5" aria-hidden="true" />
-                Could not copy README image code.
-              </p>
-            ) : null}
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }

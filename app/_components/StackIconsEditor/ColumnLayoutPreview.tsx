@@ -182,6 +182,7 @@ function getPreviewIconUrl({
 }
 
 type ColumnLayoutPreviewProps = {
+  codePanel?: React.ReactNode;
   columnLayouts: readonly EditableColumnLayout[];
   gap: string;
   iconSize: string;
@@ -198,6 +199,7 @@ type ColumnLayoutPreviewProps = {
 // otherwise the stage shows the base column layout. Unknown slugs are skipped
 // entirely, matching how generated image sources render (ADR 0002).
 export function ColumnLayoutPreview({
+  codePanel,
   columnLayouts,
   gap,
   iconSize,
@@ -344,6 +346,7 @@ export function ColumnLayoutPreview({
           </div>
         </div>
       ) : null}
+      {codePanel}
     </section>
   );
 }

@@ -96,6 +96,12 @@ const config: Config = {
           "bg-2": "hsl(var(--code-bg-2))",
           ink: "hsl(var(--code-ink))",
         },
+        syntax: {
+          tag: "hsl(var(--syntax-tag))",
+          attribute: "hsl(var(--syntax-attribute))",
+          string: "hsl(var(--syntax-string))",
+          punctuation: "hsl(var(--syntax-punctuation))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",

@@ -7,6 +7,7 @@ import {
   DEFAULT_RESPONSIVE_COLUMN_LAYOUTS,
   getEditableBaseColumnLayout,
 } from "@/lib/icons/column-layout";
+import { showToast } from "@/components/ui/sonner";
 import { generateReadmeImage } from "@/lib/icons/readme-image";
 
 import {
@@ -20,11 +21,6 @@ import {
 
 export { DEFAULT_ICON_SIZE };
 
-type CopyGeneratedHtmlStatus = "failed" | "idle" | "succeeded";
-type CopyGeneratedHtmlState = {
-  signature: string;
-  status: CopyGeneratedHtmlStatus;
-};
 type LayoutMemoryState = {
   singleColumnLayout: ColumnLayout;
   responsiveColumnLayouts: ColumnLayout[];
@@ -93,11 +89,6 @@ export function useStackIconsEditorForm(initialState: StackIconsEditorState) {
   );
   const [editorState, setEditorState] =
     React.useState<StackIconsEditorState>(initialState);
-  const [copyGeneratedHtmlState, setCopyGeneratedHtmlState] =
-    React.useState<CopyGeneratedHtmlState>({
-      signature: "",
-      status: "idle",
-    });
   const [layoutMemory, setLayoutMemory] = React.useState<LayoutMemoryState>(
     () => buildInitialLayoutMemory(initialState),
   );
@@ -120,16 +111,6 @@ export function useStackIconsEditorForm(initialState: StackIconsEditorState) {
   const validationErrors = generatedReadmeImageResult.success
     ? []
     : generatedReadmeImageResult.errors;
-  const generatedOutputSignature = JSON.stringify({
-    generatedHtml,
-    generatedImageSources,
-    validationErrors,
-  });
-  const copyGeneratedHtmlStatus =
-    copyGeneratedHtmlState.signature === generatedOutputSignature
-      ? copyGeneratedHtmlState.status
-      : "idle";
-
   function commitEditorState(nextState: StackIconsEditorState) {
     setEditorState(nextState);
     setLayoutMemory((currentLayoutMemory) =>
@@ -263,36 +244,30 @@ export function useStackIconsEditorForm(initialState: StackIconsEditorState) {
     replaceEditorUrl(nextState);
   }
 
-  async function copyGeneratedHtml() {
-    const copyGeneratedOutputSignature = generatedOutputSignature;
-    const clipboard = navigator.clipboard;
-
-    if (generatedHtml === "" || clipboard === undefined) {
-      setCopyGeneratedHtmlState({
-        signature: copyGeneratedOutputSignature,
-        status: "failed",
-      });
+  // Copies the exact generated README image code string — the same string the
+  // highlighted code panel renders — and reports the outcome via toast.
+  async function copyReadmeImageCode() {
+    if (generatedHtml === "") {
       return;
     }
 
+    const clipboard = navigator.clipboard;
+
     try {
+      if (clipboard === undefined) {
+        throw new Error("Clipboard is unavailable");
+      }
+
       await clipboard.writeText(generatedHtml);
-      setCopyGeneratedHtmlState({
-        signature: copyGeneratedOutputSignature,
-        status: "succeeded",
-      });
+      showToast("README code copied");
     } catch {
-      setCopyGeneratedHtmlState({
-        signature: copyGeneratedOutputSignature,
-        status: "failed",
-      });
+      showToast("Copy failed — select and copy manually");
     }
   }
 
   return {
     addBreakpointLayout,
-    copyGeneratedHtml,
-    copyGeneratedHtmlStatus,
+    copyReadmeImageCode,
     generatedHtml,
     generatedImageSources,
     hasGeneratedOutput,
