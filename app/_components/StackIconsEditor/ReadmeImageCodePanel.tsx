@@ -143,7 +143,7 @@ export function ReadmeImageCodePanel({
       {isCodeVisible ? (
         <pre
           aria-label="README image code"
-          className="mt-3 overflow-x-auto whitespace-pre rounded-[6px] border border-code-bg-2 bg-code-bg px-4 py-[15px] font-mono text-[12.5px] leading-[1.75]"
+          className="mt-3 max-w-full overflow-x-auto whitespace-pre rounded-[6px] border border-code-bg-2 bg-code-bg px-4 py-[15px] font-mono text-[12.5px] leading-[1.75]"
           id="readme-image-code-block"
         >
           {hasReadmeImageCode ? (

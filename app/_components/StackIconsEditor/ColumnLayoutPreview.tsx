@@ -282,7 +282,7 @@ export function ColumnLayoutPreview({
         </div>
       </div>
       <div
-        className="mx-5 flex items-center justify-center overflow-x-auto rounded-[6px] border px-4 py-[22px] sm:px-[26px] sm:py-[30px]"
+        className="mx-5 flex max-w-full items-center justify-center overflow-x-auto rounded-[6px] border px-4 py-[22px] sm:px-[26px] sm:py-[30px]"
         data-preview-theme={previewTheme}
         style={STAGE_COLORS[previewTheme]}
       >
