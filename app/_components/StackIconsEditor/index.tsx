@@ -30,6 +30,7 @@ import {
 import { formatUnknownSlugsMessage } from "@/lib/icons/parse-request";
 import { getIconLabel } from "@/lib/icons/registry";
 import { cn } from "@/lib/utils";
+import { ColumnLayoutPreview } from "./ColumnLayoutPreview";
 import { EditorSection, type EditorSectionKey } from "./EditorSection";
 import { parseIconSlugs, StackIconPicker } from "./IconPicker";
 import { SelectedIconTiles } from "./SelectedIconTiles";
@@ -411,6 +412,17 @@ export function StackIconsEditor({ initialState }: StackIconsEditorProps) {
           <FieldError errors={fieldValidation.gap} id="gap-error" />
         </div>
       </EditorSection>
+
+      <ColumnLayoutPreview
+        baseColumns={baseColumnLayout?.columns ?? ""}
+        gap={state.gap}
+        iconSize={state.iconSize}
+        onPreviewThemeChange={(previewTheme) =>
+          updateField("previewTheme", previewTheme)
+        }
+        previewTheme={state.previewTheme}
+        slugs={selectedIconSlugs}
+      />
 
       <Card>
         <CardHeader>

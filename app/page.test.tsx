@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import Home from "./page";
@@ -26,8 +26,14 @@ describe("Home", () => {
 
     // Then
     expect(screen.getByText("Tech Stack Icons Composer")).toBeInTheDocument();
-    expect(screen.getByRole("group", { name: "UI theme" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Light" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Dark" })).toBeInTheDocument();
+    const uiThemeToggle = screen.getByRole("group", { name: "UI theme" });
+
+    expect(uiThemeToggle).toBeInTheDocument();
+    expect(
+      within(uiThemeToggle).getByRole("button", { name: "Light" }),
+    ).toBeInTheDocument();
+    expect(
+      within(uiThemeToggle).getByRole("button", { name: "Dark" }),
+    ).toBeInTheDocument();
   });
 });

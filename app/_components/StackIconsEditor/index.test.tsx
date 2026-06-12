@@ -1973,4 +1973,90 @@ describe("StackIconsEditor", () => {
       ).toBeInTheDocument();
     });
   });
+
+  describe("column layout preview", () => {
+    function getPreviewThemeGroup() {
+      return screen.getByRole("group", { name: "Preview theme" });
+    }
+
+    function getSectionToggle(sectionKey: "icons" | "layout" | "spacing") {
+      return screen.getByTestId(`editor-section-toggle-${sectionKey}`);
+    }
+
+    it("should keep the column layout preview visible when all sections are collapsed", () => {
+      // Given
+      renderEditor();
+
+      // When
+      fireEvent.click(getSectionToggle("icons"));
+      fireEvent.click(getSectionToggle("layout"));
+      fireEvent.click(getSectionToggle("spacing"));
+
+      // Then
+      expect(
+        screen.getByRole("region", { name: "Column layout preview" }),
+      ).toBeInTheDocument();
+    });
+
+    it("should persist the preview theme in the preview-theme URL param when toggled", async () => {
+      // Given
+      renderEditor();
+
+      // When
+      fireEvent.click(
+        within(getPreviewThemeGroup()).getByRole("button", { name: "Dark" }),
+      );
+
+      // Then
+      await waitFor(() => {
+        const params = new URLSearchParams(window.location.search);
+
+        expect(params.get("preview-theme")).toBe("dark");
+      });
+      expect(
+        within(getPreviewThemeGroup()).getByRole("button", { name: "Dark" }),
+      ).toHaveAttribute("aria-pressed", "true");
+    });
+
+    it("should keep the preview theme independent of the UI chrome theme when toggled", () => {
+      // Given — the UI chrome theme is whatever the document carries
+      renderEditor();
+
+      const documentClassName = document.documentElement.className;
+
+      // When — the IMAGE preview theme switches to dark
+      fireEvent.click(
+        within(getPreviewThemeGroup()).getByRole("button", { name: "Dark" }),
+      );
+
+      // Then — stage icons use the dark image theme, UI chrome is untouched
+      const stageIcon = screen.getByRole("img", {
+        name: "typescript",
+      }) as HTMLImageElement;
+
+      expect(stageIcon.src).toContain("theme=dark");
+      expect(document.documentElement.className).toBe(documentClassName);
+    });
+
+    it("should re-render the stage and caption when layout settings change", () => {
+      // Given
+      renderSingleLayoutEditor();
+
+      // When
+      fireEvent.change(getBaseColumnsInput(), { target: { value: "2" } });
+      setIconSizeSliderValue(56);
+      setGapSliderValue(12);
+
+      // Then
+      expect(
+        screen.getByRole("list", { name: "Column layout preview icons" }).style
+          .gridTemplateColumns,
+      ).toBe("repeat(2, 56px)");
+      expect(
+        screen.getByText(
+          "2 columns · 56px icons · gap 12px · base layout — exactly what the README shows",
+        ),
+      ).toBeInTheDocument();
+    });
+  });
 });
