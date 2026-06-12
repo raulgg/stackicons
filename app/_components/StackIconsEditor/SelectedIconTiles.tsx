@@ -6,9 +6,7 @@ import { PlusIcon, XIcon } from "lucide-react";
 import { getIconLabel, isIconSlug } from "@/lib/icons/registry";
 import { cn } from "@/lib/utils";
 
-function getIconThumbnailUrl(slug: string): string {
-  return `/icons?icons=${encodeURIComponent(slug)}`;
-}
+import { IconThumbnail } from "./IconThumbnail";
 
 type SelectedIconTilesProps = {
   onAddIconRequest: () => void;
@@ -130,14 +128,10 @@ function SelectedIconTile({
           {slug.slice(0, 2)}
         </span>
       ) : (
-        /* eslint-disable-next-line @next/next/no-img-element */
-        <img
-          alt=""
-          aria-hidden="true"
+        <IconThumbnail
           className="h-[38px] w-[38px]"
-          loading="lazy"
           onError={() => setHasThumbnailError(true)}
-          src={getIconThumbnailUrl(slug)}
+          slug={slug}
         />
       )}
       <span className="mt-2 max-w-full truncate text-center text-[12.5px] font-semibold">

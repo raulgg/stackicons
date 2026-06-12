@@ -1,5 +1,5 @@
 import { BrandMark } from "@/components/BrandMark";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import { UiThemeMenu } from "@/components/UiThemeMenu";
 
 import { StackIconsEditor } from "./_components/StackIconsEditor";
 import { getStackIconsEditorInitialState } from "./_components/StackIconsEditor/state";
@@ -30,7 +30,7 @@ export default async function Home({ searchParams }: HomeProps = {}) {
             </p>
           </div>
         </div>
-        <ThemeToggle />
+        <UiThemeMenu />
       </header>
 
       <section className="mb-[26px]">

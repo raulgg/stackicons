@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen, within } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import Home from "./page";
@@ -18,7 +18,7 @@ describe("Home", () => {
     expect(screen.getByLabelText("Search icons")).toBeInTheDocument();
   });
 
-  it("should show the brand and the UI theme toggle when the root page renders", async () => {
+  it("should show the brand and the UI theme menu when the root page renders", async () => {
     // Given
     render(await Home({ searchParams: Promise.resolve({}) }));
 
@@ -26,14 +26,8 @@ describe("Home", () => {
 
     // Then
     expect(screen.getByText("Tech Stack Icons Composer")).toBeInTheDocument();
-    const uiThemeToggle = screen.getByRole("group", { name: "UI theme" });
-
-    expect(uiThemeToggle).toBeInTheDocument();
     expect(
-      within(uiThemeToggle).getByRole("button", { name: "Light" }),
-    ).toBeInTheDocument();
-    expect(
-      within(uiThemeToggle).getByRole("button", { name: "Dark" }),
+      screen.getByRole("button", { name: "UI theme" }),
     ).toBeInTheDocument();
   });
 });

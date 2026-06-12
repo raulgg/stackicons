@@ -45,7 +45,7 @@ describe("SelectedIconTiles", () => {
     expect(reactTile).toHaveTextContent("React");
     expect(typescriptTile.querySelector("img")).toHaveAttribute(
       "src",
-      "/icons?icons=typescript",
+      "/icons?icons=typescript&theme=light",
     );
     expect(
       screen.getByRole("button", { name: "Remove TypeScript" }),

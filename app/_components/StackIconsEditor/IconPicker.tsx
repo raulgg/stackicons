@@ -11,6 +11,8 @@ import {
 } from "@/lib/icons/registry";
 import { cn } from "@/lib/utils";
 
+import { IconThumbnail } from "./IconThumbnail";
+
 const registeredIcons = listRegisteredIcons();
 const iconCategories = listIconCategories();
 
@@ -19,10 +21,6 @@ export function parseIconSlugs(icons: string): string[] {
     .split(",")
     .map((slug) => slug.trim())
     .filter(Boolean);
-}
-
-function getIconThumbnailUrl(slug: string): string {
-  return `/icons?icons=${encodeURIComponent(slug)}`;
 }
 
 function getIconOptionId(slug: string): string {
@@ -263,13 +261,9 @@ export function StackIconPicker({
                             onMouseEnter={() => setActiveIndex(index)}
                             role="option"
                           >
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                              alt=""
-                              aria-hidden="true"
+                            <IconThumbnail
                               className="h-[22px] w-[22px]"
-                              loading="lazy"
-                              src={getIconThumbnailUrl(icon.slug)}
+                              slug={icon.slug}
                             />
                             <span className="truncate text-sm font-medium">
                               {icon.label}

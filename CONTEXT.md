@@ -26,6 +26,10 @@ Generated README HTML emits breakpoint-specific sources from widest to narrowest
 
 Column layout identity belongs to the layout values themselves, not to generated IDs. UI-only keys may be used while editing, but generated IDs are not part of the column layout language.
 
+**Preview theme**:
+The color theme (light or dark) a column layout preview displays. It lives in the shareable editor URL and is independent of the UI theme, so a user can edit in a dark interface while previewing the light rendering.
+_Avoid_: Page theme, color scheme, dark mode
+
 **Single layout**:
 A README image code shape with exactly one base column layout and no breakpoints.
 _Avoid_: Non-responsive layout, simple mode
@@ -49,6 +53,10 @@ _Avoid_: Embed, picture code, preview
 **README image editor**:
 The user-facing workspace for composing icon slugs, configuring column layouts, generating a README image, and copying README image code.
 _Avoid_: Editor, generator, builder
+
+**UI theme**:
+The appearance preference for the README image editor interface: light, dark, or system. System follows the operating system's color scheme. The UI theme is persisted locally per user and is never part of README image code, generated image sources, or shareable URLs.
+_Avoid_: App theme, site theme, chrome theme, dark mode
 
 **README image code**:
 Copy-pasteable HTML for a GitHub README that displays stack icon images, optionally with different sources for breakpoints and color schemes.
