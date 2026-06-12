@@ -41,7 +41,6 @@ import {
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
@@ -56,14 +55,19 @@ import {
 } from "@/lib/icons/column-layout";
 import { formatUnknownSlugsMessage } from "@/lib/icons/parse-request";
 import type { GeneratedImageSource } from "@/lib/icons/readme-image";
+import { getIconLabel } from "@/lib/icons/registry";
 import { cn } from "@/lib/utils";
+import { EditorSection, type EditorSectionKey } from "./EditorSection";
 import {
   parseIconSlugs,
   SelectedIconChips,
   StackIconPicker,
 } from "./IconPicker";
 import type { StackIconsEditorState } from "./state";
-import { useStackIconsEditorForm } from "./useStackIconsEditorForm";
+import {
+  DEFAULT_ICON_SIZE,
+  useStackIconsEditorForm,
+} from "./useStackIconsEditorForm";
 
 export type { StackIconsEditorState } from "./state";
 
@@ -107,6 +111,17 @@ export function StackIconsEditor({ initialState }: StackIconsEditorProps) {
     React.useState<PreviewTarget | null>(null);
   const [isPlainTextSlugEditorOpen, setIsPlainTextSlugEditorOpen] =
     React.useState(false);
+  const [openSections, setOpenSections] = React.useState<
+    Record<EditorSectionKey, boolean>
+  >({
+    icons: true,
+    layout: true,
+    spacing: true,
+  });
+
+  function toggleSection(sectionKey: EditorSectionKey) {
+    setOpenSections((open) => ({ ...open, [sectionKey]: !open[sectionKey] }));
+  }
 
   const selectedIconSlugs = parseIconSlugs(state.icons);
 
@@ -137,85 +152,89 @@ export function StackIconsEditor({ initialState }: StackIconsEditorProps) {
 
   return (
     <TooltipProvider>
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start">
-        <Card>
-          <CardHeader>
-            <CardTitle className="font-mono text-base">
-              README image editor
-            </CardTitle>
-            <CardDescription className="font-mono">
-              Compose icon slugs and configure column layouts.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-5">
-            <Field data-invalid={hasErrors(fieldValidation.icons) || undefined}>
-              <p className="font-mono text-sm font-medium text-card-foreground">
-                Icons
-              </p>
-              <FieldDescription className="font-mono">
-                Chip order is the icon order in the generated image.
-              </FieldDescription>
-              <SelectedIconChips
-                onRemoveSlug={removeIconSlugAt}
-                slugs={selectedIconSlugs}
-              />
-              <StackIconPicker
-                describedBy={
-                  hasErrors(fieldValidation.icons) ? "icons-error" : undefined
+      <div className="grid gap-4">
+        <EditorSection
+          isDone={selectedIconSlugs.length > 0}
+          isOpen={openSections.icons}
+          onToggle={() => toggleSection("icons")}
+          sectionKey="icons"
+          stepNumber={1}
+          summary={getIconsSummary(selectedIconSlugs)}
+          title="Icons"
+        >
+          <Field data-invalid={hasErrors(fieldValidation.icons) || undefined}>
+            <p className="font-mono text-sm font-medium text-card-foreground">
+              Icons
+            </p>
+            <FieldDescription className="font-mono">
+              Chip order is the icon order in the generated image.
+            </FieldDescription>
+            <SelectedIconChips
+              onRemoveSlug={removeIconSlugAt}
+              slugs={selectedIconSlugs}
+            />
+            <StackIconPicker
+              describedBy={
+                hasErrors(fieldValidation.icons) ? "icons-error" : undefined
+              }
+              onToggleSlug={toggleIconSlug}
+              selectedSlugs={selectedIconSlugs}
+            />
+            <div>
+              <Button
+                aria-controls="icons-plain-text-editor"
+                aria-expanded={isPlainTextSlugEditorOpen}
+                className="h-8 px-2 font-mono text-xs text-muted-foreground"
+                onClick={() =>
+                  setIsPlainTextSlugEditorOpen((isEditorOpen) => !isEditorOpen)
                 }
-                onToggleSlug={toggleIconSlug}
-                selectedSlugs={selectedIconSlugs}
-              />
-              <div>
-                <Button
-                  aria-controls="icons-plain-text-editor"
-                  aria-expanded={isPlainTextSlugEditorOpen}
-                  className="h-8 px-2 font-mono text-xs text-muted-foreground"
-                  onClick={() =>
-                    setIsPlainTextSlugEditorOpen(
-                      (isEditorOpen) => !isEditorOpen,
-                    )
-                  }
-                  size="sm"
-                  type="button"
-                  variant="ghost"
-                >
-                  {isPlainTextSlugEditorOpen ? (
-                    <ChevronDownIcon className="h-4 w-4" aria-hidden="true" />
-                  ) : (
-                    <ChevronRightIcon className="h-4 w-4" aria-hidden="true" />
-                  )}
-                  Edit slugs as text
-                </Button>
+                size="sm"
+                type="button"
+                variant="ghost"
+              >
                 {isPlainTextSlugEditorOpen ? (
-                  <div id="icons-plain-text-editor">
-                    <FieldLabel className="sr-only" htmlFor="icons">
-                      Icon slugs
-                    </FieldLabel>
-                    <Textarea
-                      className="mt-2 min-h-24 resize-none font-mono"
-                      aria-describedby={
-                        hasErrors(fieldValidation.icons)
-                          ? "icons-error"
-                          : undefined
-                      }
-                      aria-invalid={
-                        hasErrors(fieldValidation.icons) || undefined
-                      }
-                      id="icons"
-                      onChange={(event) =>
-                        updateField("icons", event.target.value)
-                      }
-                      value={state.icons}
-                    />
-                  </div>
-                ) : null}
-              </div>
-              <FieldError errors={fieldValidation.icons} id="icons-error" />
-            </Field>
+                  <ChevronDownIcon className="h-4 w-4" aria-hidden="true" />
+                ) : (
+                  <ChevronRightIcon className="h-4 w-4" aria-hidden="true" />
+                )}
+                Edit slugs as text
+              </Button>
+              {isPlainTextSlugEditorOpen ? (
+                <div id="icons-plain-text-editor">
+                  <FieldLabel className="sr-only" htmlFor="icons">
+                    Icon slugs
+                  </FieldLabel>
+                  <Textarea
+                    className="mt-2 min-h-24 resize-none font-mono"
+                    aria-describedby={
+                      hasErrors(fieldValidation.icons)
+                        ? "icons-error"
+                        : undefined
+                    }
+                    aria-invalid={hasErrors(fieldValidation.icons) || undefined}
+                    id="icons"
+                    onChange={(event) =>
+                      updateField("icons", event.target.value)
+                    }
+                    value={state.icons}
+                  />
+                </div>
+              ) : null}
+            </div>
+            <FieldError errors={fieldValidation.icons} id="icons-error" />
+          </Field>
+        </EditorSection>
 
-            <Separator />
-
+        <EditorSection
+          isDone
+          isOpen={openSections.layout}
+          onToggle={() => toggleSection("layout")}
+          sectionKey="layout"
+          stepNumber={2}
+          summary={getLayoutSummary(state)}
+          title="Layout"
+        >
+          <div className="grid gap-5">
             <fieldset>
               <legend className="font-mono text-xs text-muted-foreground">
                 Layout mode
@@ -478,99 +497,105 @@ export function StackIconsEditor({ initialState }: StackIconsEditorProps) {
                 </Button>
               ) : null}
             </div>
+          </div>
+        </EditorSection>
 
-            <Separator />
-
-            <Field
-              className="max-w-xs"
-              data-invalid={hasErrors(fieldValidation.gap) || undefined}
+        <EditorSection
+          isDone
+          isOpen={openSections.spacing}
+          onToggle={() => toggleSection("spacing")}
+          sectionKey="spacing"
+          stepNumber={3}
+          summary={`${DEFAULT_ICON_SIZE}px · gap ${state.gap}px`}
+          title="Spacing & size"
+        >
+          <Field
+            className="max-w-xs"
+            data-invalid={hasErrors(fieldValidation.gap) || undefined}
+          >
+            <FieldLabel
+              className="font-mono text-xs text-muted-foreground"
+              htmlFor="gap"
             >
-              <FieldLabel
-                className="font-mono text-xs text-muted-foreground"
-                htmlFor="gap"
-              >
-                Gap
-              </FieldLabel>
-              <Input
-                className="mt-1 font-mono"
-                aria-describedby={
-                  hasErrors(fieldValidation.gap) ? "gap-error" : undefined
-                }
-                aria-invalid={hasErrors(fieldValidation.gap) || undefined}
-                id="gap"
-                max={24}
-                min={0}
-                onChange={(event) => updateField("gap", event.target.value)}
-                type="number"
-                value={state.gap}
+              Gap
+            </FieldLabel>
+            <Input
+              className="mt-1 font-mono"
+              aria-describedby={
+                hasErrors(fieldValidation.gap) ? "gap-error" : undefined
+              }
+              aria-invalid={hasErrors(fieldValidation.gap) || undefined}
+              id="gap"
+              max={24}
+              min={0}
+              onChange={(event) => updateField("gap", event.target.value)}
+              type="number"
+              value={state.gap}
+            />
+            <FieldError errors={fieldValidation.gap} id="gap-error" />
+          </Field>
+        </EditorSection>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-mono text-base">
+              Generated README image code
+            </CardTitle>
+            <CardDescription className="font-mono">
+              Generated from the current valid editor settings.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-4">
+            <div>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between lg:flex-col lg:items-stretch xl:flex-row xl:items-center">
+                <Label
+                  className="flex items-center gap-2 font-mono text-xs text-muted-foreground"
+                  htmlFor="generated-readme-html"
+                >
+                  <LinkIcon className="h-3.5 w-3.5" aria-hidden="true" />
+                  README image code
+                </Label>
+                {generatedHtml === "" ? null : (
+                  <Button
+                    className="w-full sm:w-auto lg:w-full xl:w-auto"
+                    onClick={copyGeneratedHtml}
+                    size="sm"
+                    type="button"
+                    variant="outline"
+                  >
+                    <CopyIcon className="h-4 w-4" aria-hidden="true" />
+                    Copy README image code
+                  </Button>
+                )}
+              </div>
+              <Textarea
+                className="mt-2 min-h-48 resize-none bg-muted font-mono text-muted-foreground"
+                id="generated-readme-html"
+                placeholder="Fix validation errors to create README image code."
+                readOnly
+                value={generatedHtml}
               />
-              <FieldError errors={fieldValidation.gap} id="gap-error" />
-            </Field>
+              {copyGeneratedHtmlStatus === "succeeded" ? (
+                <p
+                  aria-live="polite"
+                  className="mt-2 flex items-center gap-2 font-mono text-xs text-green-700"
+                >
+                  <CheckIcon className="h-3.5 w-3.5" aria-hidden="true" />
+                  README image code copied.
+                </p>
+              ) : null}
+              {copyGeneratedHtmlStatus === "failed" ? (
+                <p
+                  aria-live="polite"
+                  className="mt-2 flex items-center gap-2 font-mono text-xs text-destructive"
+                >
+                  <XIcon className="h-3.5 w-3.5" aria-hidden="true" />
+                  Could not copy README image code.
+                </p>
+              ) : null}
+            </div>
           </CardContent>
         </Card>
-
-        <aside className="grid gap-5 lg:sticky lg:top-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="font-mono text-base">
-                Generated README image code
-              </CardTitle>
-              <CardDescription className="font-mono">
-                Generated from the current valid editor settings.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="grid gap-4">
-              <div>
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between lg:flex-col lg:items-stretch xl:flex-row xl:items-center">
-                  <Label
-                    className="flex items-center gap-2 font-mono text-xs text-muted-foreground"
-                    htmlFor="generated-readme-html"
-                  >
-                    <LinkIcon className="h-3.5 w-3.5" aria-hidden="true" />
-                    README image code
-                  </Label>
-                  {generatedHtml === "" ? null : (
-                    <Button
-                      className="w-full sm:w-auto lg:w-full xl:w-auto"
-                      onClick={copyGeneratedHtml}
-                      size="sm"
-                      type="button"
-                      variant="outline"
-                    >
-                      <CopyIcon className="h-4 w-4" aria-hidden="true" />
-                      Copy README image code
-                    </Button>
-                  )}
-                </div>
-                <Textarea
-                  className="mt-2 min-h-48 resize-none bg-muted font-mono text-muted-foreground"
-                  id="generated-readme-html"
-                  placeholder="Fix validation errors to create README image code."
-                  readOnly
-                  value={generatedHtml}
-                />
-                {copyGeneratedHtmlStatus === "succeeded" ? (
-                  <p
-                    aria-live="polite"
-                    className="mt-2 flex items-center gap-2 font-mono text-xs text-green-700"
-                  >
-                    <CheckIcon className="h-3.5 w-3.5" aria-hidden="true" />
-                    README image code copied.
-                  </p>
-                ) : null}
-                {copyGeneratedHtmlStatus === "failed" ? (
-                  <p
-                    aria-live="polite"
-                    className="mt-2 flex items-center gap-2 font-mono text-xs text-destructive"
-                  >
-                    <XIcon className="h-3.5 w-3.5" aria-hidden="true" />
-                    Could not copy README image code.
-                  </p>
-                ) : null}
-              </div>
-            </CardContent>
-          </Card>
-        </aside>
 
         <ColumnLayoutPreviewDialog
           generatedImageSources={generatedImageSources}
@@ -588,6 +613,30 @@ export function StackIconsEditor({ initialState }: StackIconsEditorProps) {
       </div>
     </TooltipProvider>
   );
+}
+
+const ICONS_SUMMARY_LABEL_LIMIT = 4;
+
+function getIconsSummary(slugs: readonly string[]): string {
+  if (slugs.length === 0) {
+    return "none yet";
+  }
+
+  const labels = slugs.map((slug) => getIconLabel(slug) ?? slug);
+  const shownLabels = labels.slice(0, ICONS_SUMMARY_LABEL_LIMIT).join(", ");
+  const overflowCount = labels.length - ICONS_SUMMARY_LABEL_LIMIT;
+
+  return overflowCount > 0 ? `${shownLabels} +${overflowCount}` : shownLabels;
+}
+
+function getLayoutSummary(state: StackIconsEditorState): string {
+  if (state.layoutMode === "responsive") {
+    return `responsive · ${state.columnLayouts.length} layouts`;
+  }
+
+  const baseColumnLayout = getEditableBaseColumnLayout(state.columnLayouts);
+
+  return `single · ${baseColumnLayout?.columns ?? "?"} cols`;
 }
 
 type FieldErrorProps = {

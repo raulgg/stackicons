@@ -1978,4 +1978,175 @@ describe("StackIconsEditor", () => {
       expect(params.get("icons")).toBe("react,bun,vite");
     });
   });
+
+  describe("three-step accordion shell", () => {
+    function getSectionToggle(sectionKey: "icons" | "layout" | "spacing") {
+      return screen.getByTestId(`editor-section-toggle-${sectionKey}`);
+    }
+
+    function getSectionSummary(sectionKey: "icons" | "layout" | "spacing") {
+      return screen.getByTestId(`editor-section-summary-${sectionKey}`);
+    }
+
+    it("should render the three step sections expanded on load", () => {
+      renderEditor();
+
+      const sectionKeys = ["icons", "layout", "spacing"] as const;
+
+      sectionKeys.forEach((sectionKey) => {
+        expect(getSectionToggle(sectionKey)).toHaveAttribute(
+          "aria-expanded",
+          "true",
+        );
+      });
+      expect(getSectionToggle("icons")).toHaveTextContent("Icons");
+      expect(getSectionToggle("layout")).toHaveTextContent("Layout");
+      expect(getSectionToggle("spacing")).toHaveTextContent("Spacing & size");
+    });
+
+    it("should collapse and expand sections independently", () => {
+      renderEditor();
+
+      // When — collapse the Icons section only
+      fireEvent.click(getSectionToggle("icons"));
+
+      // Then
+      expect(getSectionToggle("icons")).toHaveAttribute(
+        "aria-expanded",
+        "false",
+      );
+      expect(getSectionToggle("layout")).toHaveAttribute(
+        "aria-expanded",
+        "true",
+      );
+      expect(getSectionToggle("spacing")).toHaveAttribute(
+        "aria-expanded",
+        "true",
+      );
+      expect(
+        screen.queryByRole("button", { name: "Add icons" }),
+      ).not.toBeInTheDocument();
+      expect(screen.getByLabelText("Columns")).toBeInTheDocument();
+      expect(screen.getByLabelText("Gap")).toBeInTheDocument();
+
+      // When — expand the Icons section again
+      fireEvent.click(getSectionToggle("icons"));
+
+      // Then
+      expect(getSectionToggle("icons")).toHaveAttribute(
+        "aria-expanded",
+        "true",
+      );
+      expect(
+        screen.getByRole("button", { name: "Add icons" }),
+      ).toBeInTheDocument();
+    });
+
+    it("should show live icon labels with overflow count in the Icons summary", () => {
+      renderEditor();
+
+      expect(getSectionSummary("icons")).toHaveTextContent(
+        "TypeScript, Next.js, Tailwind CSS, Vercel",
+      );
+
+      fireEvent.change(getIconSlugsTextarea(), {
+        target: { value: "typescript,nextjs,tailwindcss,vercel,react" },
+      });
+
+      expect(getSectionSummary("icons")).toHaveTextContent(
+        "TypeScript, Next.js, Tailwind CSS, Vercel +1",
+      );
+    });
+
+    it("should show the raw slug in the Icons summary for unknown slugs", () => {
+      renderEditor();
+
+      fireEvent.change(getIconSlugsTextarea(), {
+        target: { value: "typescript,not-real" },
+      });
+
+      expect(getSectionSummary("icons")).toHaveTextContent(
+        "TypeScript, not-real",
+      );
+    });
+
+    it("should mark the Icons step done only when at least one icon slug is present", () => {
+      renderEditor();
+
+      expect(getSectionToggle("icons")).toHaveTextContent("Step 1 complete");
+
+      fireEvent.change(getIconSlugsTextarea(), {
+        target: { value: "" },
+      });
+
+      expect(getSectionToggle("icons")).not.toHaveTextContent(
+        "Step 1 complete",
+      );
+      expect(getSectionSummary("icons")).toHaveTextContent("none yet");
+    });
+
+    it("should always mark the Layout and Spacing steps done", () => {
+      renderEditor();
+
+      fireEvent.change(getIconSlugsTextarea(), {
+        target: { value: "" },
+      });
+
+      expect(getSectionToggle("layout")).toHaveTextContent("Step 2 complete");
+      expect(getSectionToggle("spacing")).toHaveTextContent("Step 3 complete");
+    });
+
+    it("should reflect single layout columns live in the Layout summary", () => {
+      renderEditor();
+
+      expect(getSectionSummary("layout")).toHaveTextContent("single · 18 cols");
+
+      fireEvent.change(screen.getByLabelText("Columns"), {
+        target: { value: "6" },
+      });
+
+      expect(getSectionSummary("layout")).toHaveTextContent("single · 6 cols");
+    });
+
+    it("should count column layouts in the Layout summary in responsive mode", () => {
+      renderEditor();
+
+      fireEvent.click(screen.getByLabelText("Responsive layout"));
+
+      expect(getSectionSummary("layout")).toHaveTextContent(
+        "responsive · 2 layouts",
+      );
+
+      fireEvent.click(screen.getByRole("button", { name: "Add breakpoint" }));
+
+      expect(getSectionSummary("layout")).toHaveTextContent(
+        "responsive · 3 layouts",
+      );
+    });
+
+    it("should show the icon size and live gap in the Spacing & size summary", () => {
+      renderEditor();
+
+      expect(getSectionSummary("spacing")).toHaveTextContent("48px · gap 8px");
+
+      fireEvent.change(screen.getByLabelText("Gap"), {
+        target: { value: "12" },
+      });
+
+      expect(getSectionSummary("spacing")).toHaveTextContent("48px · gap 12px");
+    });
+
+    it("should keep README image code output rendered outside the accordion sections", () => {
+      renderEditor();
+
+      fireEvent.click(getSectionToggle("icons"));
+      fireEvent.click(getSectionToggle("layout"));
+      fireEvent.click(getSectionToggle("spacing"));
+
+      expect(screen.getByLabelText("README image code")).not.toHaveValue("");
+      expect(
+        screen.getByRole("button", { name: "Copy README image code" }),
+      ).toBeInTheDocument();
+    });
+  });
 });

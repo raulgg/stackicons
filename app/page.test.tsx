@@ -27,7 +27,7 @@ describe("Home", () => {
     // When — visitor lands on the root page (render is the action)
 
     // Then
-    expect(screen.getByText("README tech-stack icons")).toBeInTheDocument();
+    expect(screen.getByText("Tech Stack Icons Composer")).toBeInTheDocument();
     expect(screen.getByRole("group", { name: "UI theme" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Light" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Dark" })).toBeInTheDocument();

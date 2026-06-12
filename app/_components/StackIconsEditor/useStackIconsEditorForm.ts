@@ -24,7 +24,7 @@ import {
 // 0001). It deliberately differs from the endpoint's back-compat default of
 // 40. The icon size slider is a separate issue; until it lands the README
 // image editor always emits this constant.
-const DEFAULT_ICON_SIZE = "48";
+export const DEFAULT_ICON_SIZE = "48";
 
 type CopyGeneratedHtmlStatus = "failed" | "idle" | "succeeded";
 type CopyImageUrlStatus = "failed" | "idle" | "succeeded";
