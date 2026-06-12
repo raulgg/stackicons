@@ -3,6 +3,11 @@
 import React from "react";
 import { EyeIcon, MoonIcon, SunIcon } from "lucide-react";
 
+import {
+  getEditableBaseColumnLayout,
+  type EditableColumnLayout,
+  type LayoutMode,
+} from "@/lib/icons/column-layout";
 import { getIconGridLayout } from "@/lib/icons/layout";
 import { isIconSlug } from "@/lib/icons/registry";
 import { cn } from "@/lib/utils";
@@ -39,6 +44,101 @@ export function resolveColumnLayoutPreviewBaseColumns(
   }
 
   return Math.min(Math.max(columns, MIN_COLUMNS), MAX_COLUMNS);
+}
+
+export type ColumnLayoutPreviewBand = {
+  columns: number;
+  minWidthPx: number | null;
+};
+
+// One breakpoint band per column layout with a usable column count, sorted by
+// min-width ascending with the base column layout first. Column layouts whose
+// columns or min-width are unparseable are skipped: a band must know how many
+// columns it shows and where it starts.
+export function getColumnLayoutPreviewBands(
+  columnLayouts: readonly EditableColumnLayout[],
+): ColumnLayoutPreviewBand[] {
+  const bands: ColumnLayoutPreviewBand[] = [];
+
+  for (const layout of columnLayouts) {
+    const columns = parsePositiveInteger(layout.columns);
+
+    if (columns === null) {
+      continue;
+    }
+
+    if (layout.minWidthPx === null) {
+      bands.push({
+        columns: Math.min(Math.max(columns, MIN_COLUMNS), MAX_COLUMNS),
+        minWidthPx: null,
+      });
+      continue;
+    }
+
+    const minWidthPx = parsePositiveInteger(layout.minWidthPx);
+
+    if (minWidthPx === null) {
+      continue;
+    }
+
+    bands.push({
+      columns: Math.min(Math.max(columns, MIN_COLUMNS), MAX_COLUMNS),
+      minWidthPx,
+    });
+  }
+
+  return bands.sort((bandA, bandB) => {
+    if (bandA.minWidthPx === null) {
+      return bandB.minWidthPx === null ? 0 : -1;
+    }
+
+    if (bandB.minWidthPx === null) {
+      return 1;
+    }
+
+    return bandA.minWidthPx - bandB.minWidthPx;
+  });
+}
+
+// Human-readable viewport range for one band given the full sorted band list:
+// the band runs from its own min-width up to just below the next band's
+// min-width, and the widest band is open-ended.
+export function getColumnLayoutPreviewBandRangeText(
+  bandIndex: number,
+  bands: readonly ColumnLayoutPreviewBand[],
+): string {
+  if (bands.length === 1) {
+    return "any width";
+  }
+
+  const band = bands[bandIndex];
+  const nextBand = bands[bandIndex + 1];
+
+  if (band.minWidthPx === null) {
+    return nextBand === undefined
+      ? "any width"
+      : `under ${nextBand.minWidthPx}px`;
+  }
+
+  if (nextBand === undefined) {
+    return `${band.minWidthPx}px and up`;
+  }
+
+  return `${band.minWidthPx}–${(nextBand.minWidthPx ?? 1) - 1}px`;
+}
+
+function parsePositiveInteger(value: string): number | null {
+  const numberValue = Number(value);
+
+  if (
+    value.trim() === "" ||
+    !Number.isInteger(numberValue) ||
+    numberValue <= 0
+  ) {
+    return null;
+  }
+
+  return numberValue;
 }
 
 // The stage's column count is derived through the shared server grid math
@@ -82,28 +182,47 @@ function getPreviewIconUrl({
 }
 
 type ColumnLayoutPreviewProps = {
-  baseColumns: string;
+  columnLayouts: readonly EditableColumnLayout[];
   gap: string;
   iconSize: string;
+  layoutMode: LayoutMode;
   onPreviewThemeChange: (previewTheme: StackIconsPreviewTheme) => void;
   previewTheme: StackIconsPreviewTheme;
   slugs: readonly string[];
 };
 
-// Always-visible column layout preview: a live client-side recreation of the
-// base column layout's generated image source for the selected preview theme.
-// Unknown slugs are skipped entirely, matching how generated image sources
-// render (ADR 0002).
+// Always-visible column layout preview: a live client-side recreation of one
+// column layout's generated image source for the selected preview theme.
+// In responsive layout mode with at least two usable bands, breakpoint band
+// picker cards let the user choose which column layout the stage recreates;
+// otherwise the stage shows the base column layout. Unknown slugs are skipped
+// entirely, matching how generated image sources render (ADR 0002).
 export function ColumnLayoutPreview({
-  baseColumns,
+  columnLayouts,
   gap,
   iconSize,
+  layoutMode,
   onPreviewThemeChange,
   previewTheme,
   slugs,
 }: ColumnLayoutPreviewProps) {
+  // Band selection is ephemeral UI state, never part of the shareable URL.
+  // Clamping happens on read (not in an effect): when layout edits remove the
+  // selected band, the stage derives back to the base band atomically.
+  const [selectedBandIndex, setSelectedBandIndex] = React.useState(0);
   const renderableSlugs = slugs.filter(isIconSlug);
-  const columns = resolveColumnLayoutPreviewBaseColumns(baseColumns);
+  const bands = getColumnLayoutPreviewBands(columnLayouts);
+  const isBandPickerVisible = layoutMode === "responsive" && bands.length >= 2;
+  const activeBandIndex =
+    isBandPickerVisible && selectedBandIndex < bands.length
+      ? selectedBandIndex
+      : 0;
+  const activeBand = isBandPickerVisible ? bands[activeBandIndex] : undefined;
+  const columns =
+    activeBand?.columns ??
+    resolveColumnLayoutPreviewBaseColumns(
+      getEditableBaseColumnLayout(columnLayouts).columns,
+    );
   const gapPx =
     Number.isFinite(Number(gap)) && gap.trim() !== ""
       ? Number(gap)
@@ -184,10 +303,102 @@ export function ColumnLayoutPreview({
           </ul>
         )}
       </div>
-      <p className="px-5 pb-[18px] pt-[10px] text-center font-mono text-[11.5px] text-ink-3">
-        {`${columns} columns · ${iconSizePx}px icons · gap ${gapPx}px · base layout — exactly what the README shows`}
+      <p
+        className={cn(
+          "px-5 pt-[10px] text-center font-mono text-[11.5px] text-ink-3",
+          isBandPickerVisible ? "pb-[10px]" : "pb-[18px]",
+        )}
+      >
+        {`${columns} columns · ${iconSizePx}px icons · gap ${gapPx}px · ${
+          activeBand?.minWidthPx == null
+            ? "base layout"
+            : `≥ ${activeBand.minWidthPx}px viewport`
+        } — exactly what the README shows`}
       </p>
+      {isBandPickerVisible ? (
+        <div className="px-5 pb-[18px]">
+          <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 pb-2">
+            <span className="font-mono text-[11px] uppercase tracking-[0.07em] text-ink-2">
+              Responsive preview — choose a viewport range
+            </span>
+            <span
+              aria-hidden="true"
+              className="font-mono text-[10px] text-ink-3"
+            >
+              narrow → wide
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-[9px]">
+            {bands.map((band, bandIndex) => (
+              <BreakpointBandPickerCard
+                band={band}
+                isSelected={bandIndex === activeBandIndex}
+                key={`${band.minWidthPx ?? "base"}-${bandIndex}`}
+                onSelect={() => setSelectedBandIndex(bandIndex)}
+                rangeText={getColumnLayoutPreviewBandRangeText(
+                  bandIndex,
+                  bands,
+                )}
+              />
+            ))}
+          </div>
+        </div>
+      ) : null}
     </section>
+  );
+}
+
+type BreakpointBandPickerCardProps = {
+  band: ColumnLayoutPreviewBand;
+  isSelected: boolean;
+  onSelect: () => void;
+  rangeText: string;
+};
+
+// One breakpoint band choice-card. Accent-driven border, background, and
+// shadow states deliberately carry NO CSS transitions: they must apply
+// atomically on selection (stale-color bugs otherwise); only text color may
+// transition.
+function BreakpointBandPickerCard({
+  band,
+  isSelected,
+  onSelect,
+  rangeText,
+}: BreakpointBandPickerCardProps) {
+  return (
+    <button
+      aria-pressed={isSelected}
+      className={cn(
+        "group relative flex min-w-[128px] flex-1 flex-col items-start gap-[3px] rounded-[6px] border bg-background py-[11px] pl-[13px] pr-[38px] text-left",
+        isSelected
+          ? "border-accent bg-accent-soft shadow-[inset_0_0_0_1px_hsl(var(--accent))]"
+          : "border-border-strong hover:border-border-ink hover:shadow-button",
+      )}
+      onClick={onSelect}
+      type="button"
+    >
+      <span
+        aria-hidden="true"
+        className={cn(
+          "absolute right-[11px] top-[11px] h-4 w-4 rounded-full bg-background",
+          isSelected
+            ? "border-[5px] border-accent"
+            : "border-[1.5px] border-border-ink group-hover:border-ink-3",
+        )}
+      />
+      <span className="text-[19px] font-bold leading-none tracking-[-0.01em]">
+        {band.columns}{" "}
+        <span
+          className={cn(
+            "text-[12px] font-semibold tracking-normal transition-[color]",
+            isSelected ? "text-accent-ink" : "text-ink-2",
+          )}
+        >
+          columns
+        </span>
+      </span>
+      <span className="font-mono text-[11px] text-ink-2">{rangeText}</span>
+    </button>
   );
 }
 

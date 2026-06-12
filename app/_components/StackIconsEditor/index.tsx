@@ -414,9 +414,10 @@ export function StackIconsEditor({ initialState }: StackIconsEditorProps) {
       </EditorSection>
 
       <ColumnLayoutPreview
-        baseColumns={baseColumnLayout?.columns ?? ""}
+        columnLayouts={state.columnLayouts}
         gap={state.gap}
         iconSize={state.iconSize}
+        layoutMode={state.layoutMode}
         onPreviewThemeChange={(previewTheme) =>
           updateField("previewTheme", previewTheme)
         }
