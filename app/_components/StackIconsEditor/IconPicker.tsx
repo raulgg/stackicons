@@ -196,112 +196,111 @@ export function StackIconPicker({
           value={query}
         />
       </div>
-      {isOpen ? (
-        <div>
-          <div
-            aria-label="Filter icons by category"
-            className="mb-1 mt-3.5 flex flex-wrap gap-[7px]"
-            role="group"
-          >
-            {(["All", ...iconCategories] as const).map((category) => {
-              const isActiveCategory = category === categoryFilter;
-
-              return (
-                <button
-                  aria-pressed={isActiveCategory}
-                  className={cn(
-                    "rounded-full border px-3 py-[5px] font-mono text-[11.5px] font-medium",
-                    isActiveCategory
-                      ? "border-foreground bg-foreground text-background"
-                      : "border-border-strong text-ink-2 hover:bg-surface-2",
-                  )}
-                  key={category}
-                  onClick={() => selectCategoryFilter(category)}
-                  type="button"
-                >
-                  {category}
-                </button>
-              );
-            })}
-          </div>
-          {dropdownPosition !== null
-            ? createPortal(
+      {isOpen
+        ? dropdownPosition !== null
+          ? createPortal(
+              <div
+                className="absolute z-50 rounded-[6px] border border-border-strong bg-popover p-[7px] text-popover-foreground shadow-overlay"
+                ref={dropdownRef}
+                style={{
+                  left: dropdownPosition.left,
+                  top: dropdownPosition.top,
+                  width: dropdownPosition.width,
+                }}
+              >
                 <div
-                  className="absolute z-50 rounded-[6px] border border-border-strong bg-popover p-[7px] text-popover-foreground shadow-overlay"
-                  ref={dropdownRef}
-                  style={{
-                    left: dropdownPosition.left,
-                    top: dropdownPosition.top,
-                    width: dropdownPosition.width,
-                  }}
+                  aria-label="Filter icons by category"
+                  className="mb-2 flex flex-wrap gap-[7px] px-1 pt-1"
+                  role="group"
                 >
-                  {matchingIcons.length === 0 ? (
-                    <p className="px-3 py-6 text-center text-sm text-ink-3">
-                      No icons match &quot;{query}&quot;.
-                    </p>
-                  ) : (
-                    <ul
-                      aria-label="Icons"
-                      className="max-h-[340px] overflow-y-auto"
-                      id="icon-picker-listbox"
-                      role="listbox"
-                    >
-                      {matchingIcons.map((icon, index) => {
-                        const isSelected = selectedSlugs.includes(icon.slug);
+                  {(["All", ...iconCategories] as const).map((category) => {
+                    const isActiveCategory = category === categoryFilter;
 
-                        return (
-                          <li key={icon.slug} role="presentation">
-                            <div
-                              aria-selected={isSelected}
+                    return (
+                      <button
+                        aria-pressed={isActiveCategory}
+                        className={cn(
+                          "rounded-full border px-3 py-[5px] font-mono text-[11.5px] font-medium",
+                          isActiveCategory
+                            ? "border-foreground bg-foreground text-background"
+                            : "border-border-strong text-ink-2 hover:bg-surface-2",
+                        )}
+                        key={category}
+                        onClick={() => selectCategoryFilter(category)}
+                        onMouseDown={(event) => event.preventDefault()}
+                        type="button"
+                      >
+                        {category}
+                      </button>
+                    );
+                  })}
+                </div>
+                {matchingIcons.length === 0 ? (
+                  <p className="px-3 py-6 text-center text-sm text-ink-3">
+                    No icons match &quot;{query}&quot;.
+                  </p>
+                ) : (
+                  <ul
+                    aria-label="Icons"
+                    className="max-h-[340px] overflow-y-auto"
+                    id="icon-picker-listbox"
+                    role="listbox"
+                  >
+                    {matchingIcons.map((icon, index) => {
+                      const isSelected = selectedSlugs.includes(icon.slug);
+
+                      return (
+                        <li key={icon.slug} role="presentation">
+                          <div
+                            aria-selected={isSelected}
+                            className={cn(
+                              "flex cursor-pointer items-center gap-2.5 rounded-[7px] px-[11px] py-[9px] hover:bg-surface-3",
+                              index === activeIndex && "bg-surface-3",
+                            )}
+                            id={getIconOptionId(icon.slug)}
+                            onClick={() => onToggleSlug(icon.slug)}
+                            onMouseDown={(event) => event.preventDefault()}
+                            onMouseEnter={() => setActiveIndex(index)}
+                            role="option"
+                          >
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              alt=""
+                              aria-hidden="true"
+                              className="h-[22px] w-[22px]"
+                              loading="lazy"
+                              src={getIconThumbnailUrl(icon.slug)}
+                            />
+                            <span className="truncate text-sm font-medium">
+                              {icon.label}
+                            </span>
+                            <span className="flex-1 truncate font-mono text-[11px] text-ink-3">
+                              {icon.slug}
+                            </span>
+                            <span
+                              aria-hidden="true"
                               className={cn(
-                                "flex cursor-pointer items-center gap-2.5 rounded-[7px] px-[11px] py-[9px] hover:bg-surface-3",
-                                index === activeIndex && "bg-surface-3",
+                                "flex h-5 w-5 shrink-0 items-center justify-center rounded-md",
+                                isSelected
+                                  ? "bg-accent text-white"
+                                  : "border-[1.5px] border-border-ink",
                               )}
-                              id={getIconOptionId(icon.slug)}
-                              onClick={() => onToggleSlug(icon.slug)}
-                              onMouseDown={(event) => event.preventDefault()}
-                              onMouseEnter={() => setActiveIndex(index)}
-                              role="option"
                             >
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img
-                                alt=""
-                                aria-hidden="true"
-                                className="h-[22px] w-[22px]"
-                                loading="lazy"
-                                src={getIconThumbnailUrl(icon.slug)}
-                              />
-                              <span className="truncate text-sm font-medium">
-                                {icon.label}
-                              </span>
-                              <span className="flex-1 truncate font-mono text-[11px] text-ink-3">
-                                {icon.slug}
-                              </span>
-                              <span
-                                aria-hidden="true"
-                                className={cn(
-                                  "flex h-5 w-5 shrink-0 items-center justify-center rounded-md",
-                                  isSelected
-                                    ? "bg-accent text-white"
-                                    : "border-[1.5px] border-border-ink",
-                                )}
-                              >
-                                {isSelected ? (
-                                  <CheckIcon className="h-3.5 w-3.5" />
-                                ) : null}
-                              </span>
-                            </div>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  )}
-                </div>,
-                document.body,
-              )
-            : null}
-        </div>
-      ) : null}
+                              {isSelected ? (
+                                <CheckIcon className="h-3.5 w-3.5" />
+                              ) : null}
+                            </span>
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </div>,
+              document.body,
+            )
+          : null
+        : null}
     </div>
   );
 }
