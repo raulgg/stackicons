@@ -146,11 +146,11 @@ describe("ColumnLayoutPreview", () => {
 
     expect(stageIcon.src).toContain("/icons?icons=typescript&theme=dark");
     expect(getStageIconList().parentElement).toHaveStyle({
-      backgroundColor: "#16181B",
+      backgroundColor: "#0d1117",
     });
   });
 
-  it("should notify the preview theme change when the Dark segment is pressed", () => {
+  it("should notify the dark preview theme when the Dark segment is pressed", () => {
     // Given
     const onPreviewThemeChange = vi.fn();
 
@@ -171,6 +171,29 @@ describe("ColumnLayoutPreview", () => {
 
     // Then
     expect(onPreviewThemeChange).toHaveBeenCalledWith("dark");
+  });
+
+  it("should notify the light preview theme when the Light segment is pressed while dark", () => {
+    // Given
+    const onPreviewThemeChange = vi.fn();
+
+    renderColumnLayoutPreview({ onPreviewThemeChange, previewTheme: "dark" });
+
+    const previewThemeGroup = screen.getByRole("group", {
+      name: "Preview theme",
+    });
+
+    expect(
+      within(previewThemeGroup).getByRole("button", { name: "Dark" }),
+    ).toHaveAttribute("aria-pressed", "true");
+
+    // When
+    fireEvent.click(
+      within(previewThemeGroup).getByRole("button", { name: "Light" }),
+    );
+
+    // Then
+    expect(onPreviewThemeChange).toHaveBeenCalledWith("light");
   });
 
   it("should fall back to a monogram cell when a known icon thumbnail fails to load", () => {

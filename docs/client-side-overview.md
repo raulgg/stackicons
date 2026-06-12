@@ -20,12 +20,13 @@ architecture shipped by the UI overhaul.
 
 ## Editor structure (`app/_components/StackIconsEditor/`)
 
-`index.tsx` lays out a 3-step accordion (`EditorSection`, keys `icons`,
-`layout`, `spacing`) above the output card. Each section header shows a step
-number (or a check when done), a title, and a summary of its current values;
-sections toggle independently.
+`index.tsx` lays out a 3-section accordion (`EditorSection`, keys `icons`,
+`layout`, `spacing`) above the output card. Each section has a GitHub
+file-list-style header: a gray bar with a section icon and title on the left
+and a summary of its current values as right-side metadata; sections toggle
+independently.
 
-### Step 1 — Icons
+### Icons
 
 - `IconPicker` is a focus-opens picker: focusing the search input opens a
   popover listing registered icons, filterable by text and by category chips
@@ -38,7 +39,7 @@ sections toggle independently.
 - A collapsible plain-text editor exposes the raw comma-separated slug string
   for paste-in editing.
 
-### Step 2 — Layout
+### Layout
 
 - A segmented mode control switches between **single layout** and
   **responsive layout**. Switching modes remembers each mode's column
@@ -49,7 +50,7 @@ sections toggle independently.
   removed), and an add-breakpoint button. Added breakpoints start at 768px
   and step by 256px to the next unused min-width.
 
-### Step 3 — Spacing
+### Spacing & size
 
 - Sliders for icon size (24–64px, step 2, default 48 per ADR 0001) and gap
   (0–24px). One icon size applies to the whole README image; it is not
@@ -59,12 +60,15 @@ sections toggle independently.
 
 - `ColumnLayoutPreview` is the column layout preview: a client-side
   recreation of one generated image source for a specific column layout and
-  color theme. A band picker (`getColumnLayoutPreviewBands`) offers one band
-  per column layout with a usable column count, sorted by min-width; column
-  layouts with unparseable columns or min-width are skipped. A theme switch
-  flips the preview between light and dark independently of the UI theme.
-  Unknown slugs do not appear in the preview, matching how generated image
-  sources render.
+  color theme. The card has a GitHub README-style header — a "README" tab
+  with an accent underline, plus a ghost download icon button. A segmented
+  light/dark preview theme control floats in the top-right corner of the
+  stage itself. A band picker (`getColumnLayoutPreviewBands`) offers one
+  band per column layout with a usable column count, sorted by min-width;
+  column layouts with unparseable columns or min-width are skipped. The
+  theme toggle flips the preview between light and dark independently of
+  the UI theme. Unknown slugs do not appear in the preview, matching how
+  generated image sources render.
 - `ReadmeImageCodePanel` shows the generated README image code with custom
   highlighting: `tokenizeReadmeImageCode` splits the HTML into
   tag/attribute/string/punctuation tokens styled by the Primer syntax

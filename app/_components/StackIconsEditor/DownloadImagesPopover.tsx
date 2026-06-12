@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { CheckIcon, ChevronDownIcon, DownloadIcon } from "lucide-react";
+import { CheckIcon, DownloadIcon } from "lucide-react";
 
 import { showToast } from "@/components/ui/sonner";
 import { buildGeneratedImageSourceZip } from "@/lib/icons/generated-image-zip";
@@ -172,14 +172,13 @@ export function DownloadImagesPopover({
       <button
         aria-expanded={isOpen}
         aria-haspopup="dialog"
-        className="inline-flex items-center gap-1.5 rounded-[6px] border border-border-strong bg-background px-[13px] py-[7px] text-[13px] font-semibold text-ink hover:shadow-button disabled:pointer-events-none disabled:opacity-45"
+        aria-label="Download"
+        className="flex h-8 w-8 items-center justify-center rounded-[6px] text-ink-2 hover:bg-surface-2 hover:text-ink disabled:pointer-events-none disabled:opacity-45"
         disabled={isDisabled}
         onClick={togglePopover}
         type="button"
       >
         <DownloadIcon aria-hidden="true" size={16} />
-        Download
-        <ChevronDownIcon aria-hidden="true" size={13} />
       </button>
       {isOpen ? (
         <div

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { EyeIcon, MoonIcon, SunIcon } from "lucide-react";
+import { BookOpenIcon, MoonIcon, SunIcon } from "lucide-react";
 
 import {
   getEditableBaseColumnLayout,
@@ -15,13 +15,14 @@ import type { StackIconsPreviewTheme } from "./state";
 
 // Fixed image-theme stage colors. These deliberately ignore the UI chrome
 // theme: the stage recreates what the generated image source looks like on a
-// light or dark GitHub README background.
+// light or dark GitHub README background (Primer canvas-default plus the
+// dark border-default).
 const STAGE_COLORS: Record<
   StackIconsPreviewTheme,
   { backgroundColor: string; borderColor?: string }
 > = {
-  light: { backgroundColor: "#FCFBF8" },
-  dark: { backgroundColor: "#16181B", borderColor: "#2A2D31" },
+  light: { backgroundColor: "#ffffff" },
+  dark: { backgroundColor: "#0d1117", borderColor: "#30363d" },
 };
 
 const MIN_COLUMNS = 2;
@@ -247,68 +248,71 @@ export function ColumnLayoutPreview({
       aria-label="Column layout preview"
       className="rounded-[6px] border bg-card text-card-foreground"
     >
-      <div className="flex flex-wrap items-center justify-between gap-3 px-5 pb-3.5 pt-[18px]">
-        <div className="flex flex-wrap items-center gap-2.5">
-          <EyeIcon aria-hidden="true" className="h-4 w-4 text-ink-2" />
-          <span className="font-mono text-[11px] uppercase tracking-[0.07em] text-ink-2">
-            Live preview
-          </span>
-          <span className="rounded-full border bg-surface-3 px-[9px] py-[3px] font-mono text-[10.5px] text-ink-2">
-            inline svg · in-browser
-          </span>
-        </div>
-        <div className="flex flex-wrap items-center gap-2.5">
-          <div
-            aria-label="Preview theme"
-            className="inline-flex items-center gap-[3px] rounded-[6px] border bg-surface-3 p-[3px]"
-            role="group"
-          >
-            <PreviewThemeSegmentedButton
-              isActive={previewTheme === "light"}
-              label="Light"
-              onActivate={() => onPreviewThemeChange("light")}
-            >
-              <SunIcon aria-hidden="true" size={16} />
-            </PreviewThemeSegmentedButton>
-            <PreviewThemeSegmentedButton
-              isActive={previewTheme === "dark"}
-              label="Dark"
-              onActivate={() => onPreviewThemeChange("dark")}
-            >
-              <MoonIcon aria-hidden="true" size={16} />
-            </PreviewThemeSegmentedButton>
-          </div>
-          {downloadAction}
-        </div>
+      {/* GitHub README-style card header: the label renders as the selected
+          tab of an underline nav. */}
+      <div className="flex flex-wrap items-center justify-between gap-x-3 border-b pl-5 pr-3">
+        <span className="relative flex items-center gap-2 py-[13px] text-sm font-semibold">
+          <BookOpenIcon aria-hidden="true" className="h-4 w-4 text-ink-2" />
+          README
+          <span
+            aria-hidden="true"
+            className="absolute inset-x-0 -bottom-px h-[2px] rounded-full bg-accent"
+          />
+        </span>
+        {downloadAction}
       </div>
-      <div
-        className="mx-5 flex max-w-full items-center justify-center overflow-x-auto rounded-[6px] border px-4 py-[22px] sm:px-[26px] sm:py-[30px]"
-        data-preview-theme={previewTheme}
-        style={STAGE_COLORS[previewTheme]}
-      >
-        {renderableSlugs.length === 0 ? (
-          <p className="text-center text-[14px] text-ink-3">
-            Add icons above to see your stack rendered here.
-          </p>
-        ) : (
-          <ul
-            aria-label="Column layout preview icons"
-            className="grid"
-            style={{
-              gap: `${gapPx + 4}px`,
-              gridTemplateColumns: `repeat(${stageColumnCount}, ${iconSizePx}px)`,
-            }}
+      <div className="relative mx-5 mt-[18px]">
+        <div
+          className="flex max-w-full items-center justify-center overflow-x-auto rounded-[6px] border px-4 py-[22px] sm:px-[26px] sm:py-[30px]"
+          data-preview-theme={previewTheme}
+          style={STAGE_COLORS[previewTheme]}
+        >
+          {renderableSlugs.length === 0 ? (
+            <p className="text-center text-[14px] text-ink-3">
+              Add icons above to see your stack rendered here.
+            </p>
+          ) : (
+            <ul
+              aria-label="Column layout preview icons"
+              className="grid"
+              style={{
+                gap: `${gapPx + 4}px`,
+                gridTemplateColumns: `repeat(${stageColumnCount}, ${iconSizePx}px)`,
+              }}
+            >
+              {renderableSlugs.map((slug, index) => (
+                <ColumnLayoutPreviewIconCell
+                  iconSize={iconSizePx}
+                  key={`${slug}-${index}-${previewTheme}-${iconSizePx}`}
+                  previewTheme={previewTheme}
+                  slug={slug}
+                />
+              ))}
+            </ul>
+          )}
+        </div>
+        {/* Pinned to the non-scrolling wrapper, not the scrollable stage, so
+            it stays in the corner when the stage scrolls horizontally. */}
+        <div
+          aria-label="Preview theme"
+          className="absolute right-2 top-2 inline-flex items-center gap-[3px] rounded-[6px] border bg-surface-3 p-[3px]"
+          role="group"
+        >
+          <PreviewThemeSegmentedButton
+            isActive={previewTheme === "light"}
+            label="Light"
+            onActivate={() => onPreviewThemeChange("light")}
           >
-            {renderableSlugs.map((slug, index) => (
-              <ColumnLayoutPreviewIconCell
-                iconSize={iconSizePx}
-                key={`${slug}-${index}-${previewTheme}-${iconSizePx}`}
-                previewTheme={previewTheme}
-                slug={slug}
-              />
-            ))}
-          </ul>
-        )}
+            <SunIcon aria-hidden="true" size={15} />
+          </PreviewThemeSegmentedButton>
+          <PreviewThemeSegmentedButton
+            isActive={previewTheme === "dark"}
+            label="Dark"
+            onActivate={() => onPreviewThemeChange("dark")}
+          >
+            <MoonIcon aria-hidden="true" size={15} />
+          </PreviewThemeSegmentedButton>
+        </div>
       </div>
       <p
         className={cn(
@@ -410,6 +414,40 @@ function BreakpointBandPickerCard({
   );
 }
 
+type PreviewThemeSegmentedButtonProps = {
+  children: React.ReactNode;
+  isActive: boolean;
+  label: string;
+  onActivate: () => void;
+};
+
+// Icon-only accent variant of the segmented control (same treatment as the
+// Layout mode switch): the active segment fills with the accent color so the
+// selected preview theme stands out over the stage. Accent-driven
+// backgrounds never transition; only color may. This switches the IMAGE
+// theme, not the UI chrome theme.
+function PreviewThemeSegmentedButton({
+  children,
+  isActive,
+  label,
+  onActivate,
+}: PreviewThemeSegmentedButtonProps) {
+  return (
+    <button
+      aria-label={label}
+      aria-pressed={isActive}
+      className={cn(
+        "flex h-7 w-7 items-center justify-center rounded-[7px] transition-[color]",
+        isActive ? "bg-accent text-white" : "text-ink-2 hover:text-ink",
+      )}
+      onClick={onActivate}
+      type="button"
+    >
+      {children}
+    </button>
+  );
+}
+
 type ColumnLayoutPreviewIconCellProps = {
   iconSize: number;
   previewTheme: StackIconsPreviewTheme;
@@ -447,38 +485,5 @@ function ColumnLayoutPreviewIconCell({
         />
       )}
     </li>
-  );
-}
-
-type PreviewThemeSegmentedButtonProps = {
-  children: React.ReactNode;
-  isActive: boolean;
-  label: string;
-  onActivate: () => void;
-};
-
-// Neutral variant of the segmented control (same treatment as the app-bar UI
-// theme toggle): surface-3 track, active segment gets the surface background
-// and a small shadow. This switches the IMAGE theme, not the UI chrome theme.
-function PreviewThemeSegmentedButton({
-  children,
-  isActive,
-  label,
-  onActivate,
-}: PreviewThemeSegmentedButtonProps) {
-  return (
-    <button
-      aria-pressed={isActive}
-      className={cn(
-        "inline-flex items-center gap-1.5 rounded-[7px] border-0 bg-transparent px-[13px] py-[7px] text-[13px] font-semibold text-ink-2 transition-[color] duration-[140ms] hover:text-ink",
-        isActive &&
-          "bg-background text-ink shadow-button dark:bg-[hsl(var(--button-bg-hover))]",
-      )}
-      onClick={onActivate}
-      type="button"
-    >
-      {children}
-      {label}
-    </button>
   );
 }

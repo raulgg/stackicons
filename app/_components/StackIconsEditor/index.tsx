@@ -1,7 +1,14 @@
 "use client";
 
 import React from "react";
-import { ChevronDownIcon, PlusIcon, Trash2Icon } from "lucide-react";
+import {
+  BlocksIcon,
+  ChevronDownIcon,
+  Columns3Icon,
+  PlusIcon,
+  RulerIcon,
+  Trash2Icon,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
@@ -116,11 +123,10 @@ export function StackIconsEditor({ initialState }: StackIconsEditorProps) {
   return (
     <div className="grid grid-cols-[minmax(0,1fr)] gap-4">
       <EditorSection
-        isDone={selectedIconSlugs.length > 0}
+        icon={<BlocksIcon className="h-4 w-4" />}
         isOpen={openSections.icons}
         onToggle={() => toggleSection("icons")}
         sectionKey="icons"
-        stepNumber={1}
         summary={getIconsSummary(selectedIconSlugs)}
         title="Icons"
       >
@@ -190,11 +196,10 @@ export function StackIconsEditor({ initialState }: StackIconsEditorProps) {
       </EditorSection>
 
       <EditorSection
-        isDone
+        icon={<Columns3Icon className="h-4 w-4" />}
         isOpen={openSections.layout}
         onToggle={() => toggleSection("layout")}
         sectionKey="layout"
-        stepNumber={2}
         summary={getLayoutSummary(state)}
         title="Layout"
       >
@@ -367,11 +372,10 @@ export function StackIconsEditor({ initialState }: StackIconsEditorProps) {
       </EditorSection>
 
       <EditorSection
-        isDone
+        icon={<RulerIcon className="h-4 w-4" />}
         isOpen={openSections.spacing}
         onToggle={() => toggleSection("spacing")}
         sectionKey="spacing"
-        stepNumber={3}
         summary={`${state.iconSize}px · gap ${state.gap}px`}
         title="Spacing & size"
       >

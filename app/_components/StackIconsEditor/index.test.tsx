@@ -1821,7 +1821,7 @@ describe("StackIconsEditor", () => {
     });
   });
 
-  describe("three-step accordion shell", () => {
+  describe("accordion shell", () => {
     function getSectionToggle(sectionKey: "icons" | "layout" | "spacing") {
       return screen.getByTestId(`editor-section-toggle-${sectionKey}`);
     }
@@ -1830,7 +1830,7 @@ describe("StackIconsEditor", () => {
       return screen.getByTestId(`editor-section-summary-${sectionKey}`);
     }
 
-    it("should render the three step sections expanded on load", () => {
+    it("should render the three sections expanded on load", () => {
       renderEditor();
 
       const sectionKeys = ["icons", "layout", "spacing"] as const;
@@ -1908,30 +1908,14 @@ describe("StackIconsEditor", () => {
       );
     });
 
-    it("should mark the Icons step done only when at least one icon slug is present", () => {
+    it("should show the none-yet Icons summary when all icon slugs are removed", () => {
       renderEditor();
-
-      expect(getSectionToggle("icons")).toHaveTextContent("Step 1 complete");
 
       fireEvent.change(getIconSlugsTextarea(), {
         target: { value: "" },
       });
 
-      expect(getSectionToggle("icons")).not.toHaveTextContent(
-        "Step 1 complete",
-      );
       expect(getSectionSummary("icons")).toHaveTextContent("none yet");
-    });
-
-    it("should always mark the Layout and Spacing steps done", () => {
-      renderEditor();
-
-      fireEvent.change(getIconSlugsTextarea(), {
-        target: { value: "" },
-      });
-
-      expect(getSectionToggle("layout")).toHaveTextContent("Step 2 complete");
-      expect(getSectionToggle("spacing")).toHaveTextContent("Step 3 complete");
     });
 
     it("should reflect single layout columns live in the Layout summary", () => {
@@ -1989,8 +1973,10 @@ describe("StackIconsEditor", () => {
   });
 
   describe("column layout preview", () => {
-    function getPreviewThemeGroup() {
-      return screen.getByRole("group", { name: "Preview theme" });
+    function getDarkPreviewThemeSegment() {
+      return within(
+        screen.getByRole("group", { name: "Preview theme" }),
+      ).getByRole("button", { name: "Dark" });
     }
 
     function getSectionToggle(sectionKey: "icons" | "layout" | "spacing") {
@@ -2017,9 +2003,7 @@ describe("StackIconsEditor", () => {
       renderEditor();
 
       // When
-      fireEvent.click(
-        within(getPreviewThemeGroup()).getByRole("button", { name: "Dark" }),
-      );
+      fireEvent.click(getDarkPreviewThemeSegment());
 
       // Then
       await waitFor(() => {
@@ -2027,9 +2011,10 @@ describe("StackIconsEditor", () => {
 
         expect(params.get("preview-theme")).toBe("dark");
       });
-      expect(
-        within(getPreviewThemeGroup()).getByRole("button", { name: "Dark" }),
-      ).toHaveAttribute("aria-pressed", "true");
+      expect(getDarkPreviewThemeSegment()).toHaveAttribute(
+        "aria-pressed",
+        "true",
+      );
     });
 
     it("should keep the preview theme independent of the UI chrome theme when toggled", () => {
@@ -2039,9 +2024,7 @@ describe("StackIconsEditor", () => {
       const documentClassName = document.documentElement.className;
 
       // When — the IMAGE preview theme switches to dark
-      fireEvent.click(
-        within(getPreviewThemeGroup()).getByRole("button", { name: "Dark" }),
-      );
+      fireEvent.click(getDarkPreviewThemeSegment());
 
       // Then — stage icons use the dark image theme, UI chrome is untouched
       const stageIcon = screen.getByRole("img", {
