@@ -132,12 +132,6 @@ export function StackIconsEditor({ initialState }: StackIconsEditorProps) {
             Tile order is the icon order in the generated image. Drag tiles to
             reorder.
           </FieldDescription>
-          <SelectedIconTiles
-            onAddIconRequest={focusIconPickerSearch}
-            onRemoveSlug={removeIconSlugAt}
-            onReorderSlug={reorderIconSlug}
-            slugs={selectedIconSlugs}
-          />
           <StackIconPicker
             describedBy={
               hasErrors(fieldValidation.icons) ? "icons-error" : undefined
@@ -145,6 +139,12 @@ export function StackIconsEditor({ initialState }: StackIconsEditorProps) {
             onToggleSlug={toggleIconSlug}
             searchInputRef={pickerSearchInputRef}
             selectedSlugs={selectedIconSlugs}
+          />
+          <SelectedIconTiles
+            onAddIconRequest={focusIconPickerSearch}
+            onRemoveSlug={removeIconSlugAt}
+            onReorderSlug={reorderIconSlug}
+            slugs={selectedIconSlugs}
           />
           <div>
             <button

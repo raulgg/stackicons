@@ -1679,6 +1679,20 @@ describe("StackIconsEditor", () => {
     ).toBeInTheDocument();
   });
 
+  it("should render the icon search above the selected icon tiles", () => {
+    // Given
+    renderEditor();
+
+    const searchInput = screen.getByLabelText("Search icons");
+    const tileGrid = screen.getByLabelText("Selected icons");
+
+    // Then — the search input precedes the tile grid in the DOM
+    expect(
+      searchInput.compareDocumentPosition(tileGrid) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
   it("should remove a tile and preserve the remaining slug order", async () => {
     // Given
     renderEditor();

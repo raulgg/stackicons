@@ -50,6 +50,24 @@ describe("StackIconPicker", () => {
     );
   });
 
+  it("should render the open dropdown in a portal outside the picker's section card", () => {
+    // Given — the picker sits inside a card that clips overflowing content
+    render(
+      <div className="overflow-hidden" data-testid="section-card">
+        <ControlledStackIconPicker />
+      </div>,
+    );
+
+    // When
+    fireEvent.focus(getSearchInput());
+
+    // Then — the dropdown escapes the card's clipping context via a portal
+    const listbox = screen.getByRole("listbox");
+
+    expect(screen.getByTestId("section-card")).not.toContainElement(listbox);
+    expect(document.body).toContainElement(listbox);
+  });
+
   it("should close the picker on mousedown outside but keep it open on inside clicks", () => {
     // Given
     render(
