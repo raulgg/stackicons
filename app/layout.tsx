@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { SiteHeader } from "@/app/_components/SiteHeader";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Toaster } from "@/components/ui/sonner";
 import { uiThemeResetScript } from "@/lib/ui-theme-reset";
@@ -23,6 +24,7 @@ export default function RootLayout({
             next-themes init script reads localStorage. See ADR 0003. */}
         <script dangerouslySetInnerHTML={{ __html: uiThemeResetScript }} />
         <ThemeProvider>
+          <SiteHeader />
           {children}
           <Toaster />
         </ThemeProvider>
