@@ -18,13 +18,12 @@ export const MAX_ICON_SIZE = 64;
 export const ICON_SIZE_STEP = 2;
 
 export type StackIconsPreviewTheme = "dark" | "light";
-export type ColumnLayout = EditableColumnLayout;
 export type { LayoutMode };
 
 type EditorState = {
   icons: string;
   layoutMode: LayoutMode;
-  columnLayouts: ColumnLayout[];
+  columnLayouts: EditableColumnLayout[];
   iconSize: string;
   gap: string;
 };
@@ -93,7 +92,7 @@ function getLayoutMode(
 function getColumnLayouts(
   searchParams: Record<string, SearchParamValue>,
   layoutMode: LayoutMode | null,
-): ColumnLayout[] | null | undefined {
+): EditableColumnLayout[] | null | undefined {
   if (layoutMode === null) {
     return null;
   }

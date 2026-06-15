@@ -3,9 +3,13 @@
 import React from "react";
 
 import {
+  addBreakpointLayout,
   copyEditableColumnLayouts,
   DEFAULT_RESPONSIVE_COLUMN_LAYOUTS,
+  getColumnLayoutsForMode,
+  getColumnLayoutRichResult,
   getEditableBaseColumnLayout,
+  removeBreakpointLayout,
 } from "@/lib/icons/column-layout";
 import { showToast } from "@/components/ui/sonner";
 import { generateReadmeImage } from "@/lib/icons/readme-image";
@@ -14,16 +18,16 @@ import {
   buildStackIconsEditorPageQuery,
   DEFAULT_ICON_SIZE,
   DEFAULT_STACK_ICONS_EDITOR_STATE,
-  type ColumnLayout,
   type LayoutMode,
   type StackIconsEditorState,
 } from "./state";
+import type { EditableColumnLayout } from "@/lib/icons/column-layout";
 
 export { DEFAULT_ICON_SIZE };
 
 type LayoutMemoryState = {
-  singleColumnLayout: ColumnLayout;
-  responsiveColumnLayouts: ColumnLayout[];
+  singleColumnLayout: EditableColumnLayout;
+  responsiveColumnLayouts: EditableColumnLayout[];
 };
 
 function getBaseColumnLayout(state: StackIconsEditorState) {
@@ -104,6 +108,22 @@ export function useStackIconsEditorForm(initialState: StackIconsEditorState) {
   const generatedReadmeImage = generatedReadmeImageResult.success
     ? generatedReadmeImageResult
     : null;
+
+  const columnLayoutResult = getColumnLayoutRichResult({
+    columnLayouts: editorState.columnLayouts,
+    layoutMode: editorState.layoutMode,
+  });
+
+  // Unified column layouts updater: all column-related mutations go through here
+  // so commit + memory + URL replace side effects are in one place.
+  function applyColumnLayouts(nextColumnLayouts: EditableColumnLayout[]) {
+    const nextState: StackIconsEditorState = {
+      ...editorState,
+      columnLayouts: nextColumnLayouts,
+    };
+    commitEditorState(nextState);
+  }
+
   const generatedHtml = generatedReadmeImage?.readmeHtml ?? "";
   const generatedImageSources = generatedReadmeImage?.imageSources ?? [];
   const unknownSlugs = generatedReadmeImage?.unknownSlugs ?? [];
@@ -134,19 +154,15 @@ export function useStackIconsEditorForm(initialState: StackIconsEditorState) {
   }
 
   function updateBaseColumns(columns: string) {
-    const nextState: StackIconsEditorState = {
-      ...editorState,
-      columnLayouts: editorState.columnLayouts.map((layout) =>
-        layout.minWidthPx === null ? { ...layout, columns } : layout,
-      ),
-    };
-
-    commitEditorState(nextState);
+    const nextColumnLayouts = editorState.columnLayouts.map((layout) =>
+      layout.minWidthPx === null ? { ...layout, columns } : layout,
+    );
+    applyColumnLayouts(nextColumnLayouts);
   }
 
   function updateColumnLayout(
     layoutIndex: number,
-    field: keyof ColumnLayout,
+    field: keyof EditableColumnLayout,
     value: string,
   ) {
     const targetLayout = editorState.columnLayouts[layoutIndex];
@@ -155,63 +171,37 @@ export function useStackIconsEditorForm(initialState: StackIconsEditorState) {
       return;
     }
 
-    const nextState: StackIconsEditorState = {
-      ...editorState,
-      columnLayouts: editorState.columnLayouts.map((layout, currentIndex) =>
+    const nextColumnLayouts = editorState.columnLayouts.map(
+      (layout, currentIndex) =>
         currentIndex === layoutIndex ? { ...layout, [field]: value } : layout,
-      ),
-    };
-
-    commitEditorState(nextState);
+    );
+    applyColumnLayouts(nextColumnLayouts);
   }
 
-  function addBreakpointLayout() {
+  function handleAddBreakpointLayout() {
     if (editorState.layoutMode !== "responsive") {
       return;
     }
 
-    const nextState: StackIconsEditorState = {
-      ...editorState,
-      columnLayouts: [
-        ...editorState.columnLayouts,
-        {
-          columns: ADDED_BREAKPOINT_COLUMNS,
-          minWidthPx: getNextAvailableBreakpointMinWidthPx(
-            editorState.columnLayouts,
-          ),
-        },
-      ],
-    };
+    const nextLayouts = addBreakpointLayout(
+      editorState.columnLayouts,
+      editorState.layoutMode,
+    );
 
-    commitEditorState(nextState);
+    applyColumnLayouts(nextLayouts);
   }
 
-  function removeBreakpointLayout(layoutIndex: number) {
+  function handleRemoveBreakpointLayout(layoutIndex: number) {
     if (editorState.layoutMode !== "responsive") {
       return;
     }
 
-    const targetLayout = editorState.columnLayouts[layoutIndex];
-    const breakpointLayoutCount = editorState.columnLayouts.filter(
-      (layout) => layout.minWidthPx !== null,
-    ).length;
+    const nextLayouts = removeBreakpointLayout(
+      editorState.columnLayouts,
+      layoutIndex,
+    );
 
-    if (
-      targetLayout === undefined ||
-      targetLayout.minWidthPx === null ||
-      breakpointLayoutCount <= 1
-    ) {
-      return;
-    }
-
-    const nextState: StackIconsEditorState = {
-      ...editorState,
-      columnLayouts: editorState.columnLayouts.filter(
-        (_layout, currentIndex) => currentIndex !== layoutIndex,
-      ),
-    };
-
-    commitEditorState(nextState);
+    applyColumnLayouts(nextLayouts);
   }
 
   function switchLayoutMode(layoutMode: LayoutMode) {
@@ -226,13 +216,14 @@ export function useStackIconsEditorForm(initialState: StackIconsEditorState) {
           : layoutMemory.singleColumnLayout,
       responsiveColumnLayouts:
         editorState.layoutMode === "responsive"
-          ? editorState.columnLayouts.map((layout) => ({ ...layout }))
+          ? copyEditableColumnLayouts(editorState.columnLayouts)
           : layoutMemory.responsiveColumnLayouts,
     };
-    const nextColumnLayouts =
-      layoutMode === "single"
-        ? [{ ...nextMemory.singleColumnLayout }]
-        : nextMemory.responsiveColumnLayouts.map((layout) => ({ ...layout }));
+    const nextColumnLayouts = getColumnLayoutsForMode(
+      nextMemory.singleColumnLayout,
+      nextMemory.responsiveColumnLayouts,
+      layoutMode,
+    );
     const nextState: StackIconsEditorState = {
       ...editorState,
       layoutMode,
@@ -268,12 +259,13 @@ export function useStackIconsEditorForm(initialState: StackIconsEditorState) {
   }
 
   return {
-    addBreakpointLayout,
+    addBreakpointLayout: handleAddBreakpointLayout,
+    columnLayoutResult,
     copyReadmeImageCode,
     generatedHtml,
     generatedImageSources,
     hasGeneratedOutput,
-    removeBreakpointLayout,
+    removeBreakpointLayout: handleRemoveBreakpointLayout,
     state: editorState,
     switchLayoutMode,
     unknownSlugs,
@@ -282,27 +274,4 @@ export function useStackIconsEditorForm(initialState: StackIconsEditorState) {
     updateField,
     validationErrors,
   };
-}
-
-// Added breakpoint layouts start at 768px and step up by 256px until they
-// find a min width no existing column layout uses (768 → 1024 → 1280 …).
-const ADDED_BREAKPOINT_COLUMNS = "6";
-const ADDED_BREAKPOINT_MIN_WIDTH_PX = 768;
-const ADDED_BREAKPOINT_MIN_WIDTH_STEP_PX = 256;
-
-function getNextAvailableBreakpointMinWidthPx(
-  columnLayouts: readonly ColumnLayout[],
-): string {
-  const takenMinWidths = new Set(
-    columnLayouts
-      .map((layout) => Number(layout.minWidthPx))
-      .filter((minWidthPx) => Number.isFinite(minWidthPx)),
-  );
-  let minWidthPx = ADDED_BREAKPOINT_MIN_WIDTH_PX;
-
-  while (takenMinWidths.has(minWidthPx)) {
-    minWidthPx += ADDED_BREAKPOINT_MIN_WIDTH_STEP_PX;
-  }
-
-  return String(minWidthPx);
 }

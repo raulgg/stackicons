@@ -6,13 +6,15 @@ import { BookOpenIcon, MoonIcon, SunIcon } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
+  getColumnLayoutPreviewBands,
   getEditableBaseColumnLayout,
+  resolveColumnLayoutPreviewBaseColumns,
+  type ColumnLayoutPreviewBand,
   type EditableColumnLayout,
   type LayoutMode,
 } from "@/lib/icons/column-layout";
 import { getIconGridLayout } from "@/lib/icons/layout";
 import { isIconSlug } from "@/lib/icons/registry";
-import { cn } from "@/lib/utils";
 import type { StackIconsPreviewTheme } from "./state";
 
 // Fixed image-theme stage colors. These deliberately ignore the UI chrome
@@ -27,81 +29,8 @@ const STAGE_COLORS: Record<
   dark: { backgroundColor: "#0d1117", borderColor: "#30363d" },
 };
 
-const MIN_COLUMNS = 2;
-const MAX_COLUMNS = 20;
-const FALLBACK_COLUMNS = 4;
 const FALLBACK_GAP = 8;
 const FALLBACK_ICON_SIZE = 48;
-
-// Invalid/unparseable base columns fall back gracefully instead of blanking
-// the stage: numeric values clamp into the valid 2–20 range and anything
-// unparseable renders with the default 4 base columns. Generation itself
-// still uses values as-is and surfaces validation errors elsewhere.
-export function resolveColumnLayoutPreviewBaseColumns(
-  baseColumns: string,
-): number {
-  const columns = Number(baseColumns);
-
-  if (baseColumns.trim() === "" || !Number.isInteger(columns)) {
-    return FALLBACK_COLUMNS;
-  }
-
-  return Math.min(Math.max(columns, MIN_COLUMNS), MAX_COLUMNS);
-}
-
-export type ColumnLayoutPreviewBand = {
-  columns: number;
-  minWidthPx: number | null;
-};
-
-// One breakpoint band per column layout with a usable column count, sorted by
-// min-width ascending with the base column layout first. Column layouts whose
-// columns or min-width are unparseable are skipped: a band must know how many
-// columns it shows and where it starts.
-export function getColumnLayoutPreviewBands(
-  columnLayouts: readonly EditableColumnLayout[],
-): ColumnLayoutPreviewBand[] {
-  const bands: ColumnLayoutPreviewBand[] = [];
-
-  for (const layout of columnLayouts) {
-    const columns = parsePositiveInteger(layout.columns);
-
-    if (columns === null) {
-      continue;
-    }
-
-    if (layout.minWidthPx === null) {
-      bands.push({
-        columns: Math.min(Math.max(columns, MIN_COLUMNS), MAX_COLUMNS),
-        minWidthPx: null,
-      });
-      continue;
-    }
-
-    const minWidthPx = parsePositiveInteger(layout.minWidthPx);
-
-    if (minWidthPx === null) {
-      continue;
-    }
-
-    bands.push({
-      columns: Math.min(Math.max(columns, MIN_COLUMNS), MAX_COLUMNS),
-      minWidthPx,
-    });
-  }
-
-  return bands.sort((bandA, bandB) => {
-    if (bandA.minWidthPx === null) {
-      return bandB.minWidthPx === null ? 0 : -1;
-    }
-
-    if (bandB.minWidthPx === null) {
-      return 1;
-    }
-
-    return bandA.minWidthPx - bandB.minWidthPx;
-  });
-}
 
 // Human-readable viewport range for one band given the full sorted band list:
 // the band runs from its own min-width up to just below the next band's
@@ -128,20 +57,6 @@ export function getColumnLayoutPreviewBandRangeText(
   }
 
   return `${band.minWidthPx}–${(nextBand.minWidthPx ?? 1) - 1}px`;
-}
-
-function parsePositiveInteger(value: string): number | null {
-  const numberValue = Number(value);
-
-  if (
-    value.trim() === "" ||
-    !Number.isInteger(numberValue) ||
-    numberValue <= 0
-  ) {
-    return null;
-  }
-
-  return numberValue;
 }
 
 // The stage's column count is derived through the shared server grid math

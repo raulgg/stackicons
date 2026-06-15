@@ -25,6 +25,15 @@ export type ColumnLayoutValidationResult =
     };
 
 const DEFAULT_BASE_COLUMNS = "4";
+const MIN_COLUMNS = 2;
+const MAX_COLUMNS = 20;
+const FALLBACK_COLUMNS = 4;
+const COLUMNS_RANGE_ERROR = "2–20 columns";
+const MIN_WIDTH_RANGE_ERROR = "1–3840px";
+const DUPLICATE_MIN_WIDTH_ERROR = "duplicate min-width";
+const ADDED_BREAKPOINT_COLUMNS = "6";
+const ADDED_BREAKPOINT_MIN_WIDTH_PX = 768;
+const ADDED_BREAKPOINT_MIN_WIDTH_STEP_PX = 256;
 
 export const DEFAULT_SINGLE_COLUMN_LAYOUTS: EditableColumnLayout[] = [
   { columns: DEFAULT_BASE_COLUMNS, minWidthPx: null },
@@ -277,4 +286,260 @@ function parseBreakpointMinWidth(value: string): number | null {
     breakpointPx <= 3840
     ? breakpointPx
     : null;
+}
+
+export type ColumnLayoutPreviewBand = {
+  columns: number;
+  minWidthPx: number | null;
+};
+
+export type ColumnLayoutRichResult = {
+  success: boolean;
+  columnLayouts: ColumnLayout[];
+  errors: string[];
+  baseColumns: string[];
+  breakpointColumnsByIndex: Record<number, string[]>;
+  breakpointMinWidthByIndex: Record<number, string[]>;
+  previewBands: ColumnLayoutPreviewBand[];
+};
+
+export function projectColumnLayoutFormErrors(
+  columnLayouts: readonly EditableColumnLayout[],
+): {
+  baseColumns: string[];
+  breakpointColumnsByIndex: Record<number, string[]>;
+  breakpointMinWidthByIndex: Record<number, string[]>;
+} {
+  const baseColumns: string[] = [];
+  const breakpointColumnsByIndex: Record<number, string[]> = {};
+  const breakpointMinWidthByIndex: Record<number, string[]> = {};
+  const minWidthLayoutsByValue = new Map<string, number[]>();
+
+  columnLayouts.forEach((layout, index) => {
+    if (layout.minWidthPx === null) {
+      if (!isIntegerInRange(layout.columns, 2, 20)) {
+        baseColumns.push(COLUMNS_RANGE_ERROR);
+      }
+      return;
+    }
+
+    const columnsErrors: string[] = [];
+    const minWidthErrors: string[] = [];
+    const hasColumns = layout.columns !== "";
+    const hasMinWidth = layout.minWidthPx !== "";
+
+    if (
+      (hasColumns || hasMinWidth) &&
+      !isIntegerInRange(layout.columns, 2, 20)
+    ) {
+      columnsErrors.push(COLUMNS_RANGE_ERROR);
+    }
+
+    if (
+      (hasColumns || hasMinWidth) &&
+      !isIntegerInRange(layout.minWidthPx, 1, 3840)
+    ) {
+      minWidthErrors.push(MIN_WIDTH_RANGE_ERROR);
+    }
+
+    if (isIntegerInRange(layout.minWidthPx, 1, 3840)) {
+      minWidthLayoutsByValue.set(layout.minWidthPx, [
+        ...(minWidthLayoutsByValue.get(layout.minWidthPx) ?? []),
+        index,
+      ]);
+    }
+
+    breakpointColumnsByIndex[index] = columnsErrors;
+    breakpointMinWidthByIndex[index] = minWidthErrors;
+  });
+
+  for (const duplicatedIndexes of minWidthLayoutsByValue.values()) {
+    if (duplicatedIndexes.length <= 1) {
+      continue;
+    }
+
+    duplicatedIndexes.forEach((index) => {
+      breakpointMinWidthByIndex[index] = [
+        ...(breakpointMinWidthByIndex[index] ?? []),
+        DUPLICATE_MIN_WIDTH_ERROR,
+      ];
+    });
+  }
+
+  return { baseColumns, breakpointColumnsByIndex, breakpointMinWidthByIndex };
+}
+
+export function getColumnLayoutRichResult({
+  columnLayouts,
+  layoutMode,
+}: {
+  columnLayouts: readonly EditableColumnLayout[];
+  layoutMode: LayoutMode;
+}): ColumnLayoutRichResult {
+  const validation = validateColumnLayouts({ columnLayouts, layoutMode });
+  const { baseColumns, breakpointColumnsByIndex, breakpointMinWidthByIndex } =
+    projectColumnLayoutFormErrors(columnLayouts);
+  const previewBands = getColumnLayoutPreviewBands(columnLayouts);
+
+  return {
+    success: validation.success,
+    columnLayouts: validation.success ? validation.columnLayouts : [],
+    errors: validation.success ? [] : validation.errors,
+    baseColumns,
+    breakpointColumnsByIndex,
+    breakpointMinWidthByIndex,
+    previewBands,
+  };
+}
+
+function isIntegerInRange(value: string, min: number, max: number): boolean {
+  const numberValue = Number(value);
+
+  return (
+    value.trim() === value &&
+    Number.isInteger(numberValue) &&
+    numberValue >= min &&
+    numberValue <= max
+  );
+}
+
+export function getColumnLayoutPreviewBands(
+  columnLayouts: readonly EditableColumnLayout[],
+): ColumnLayoutPreviewBand[] {
+  const bands: ColumnLayoutPreviewBand[] = [];
+
+  for (const layout of columnLayouts) {
+    const columns = parsePositiveInteger(layout.columns);
+
+    if (columns === null) {
+      continue;
+    }
+
+    if (layout.minWidthPx === null) {
+      bands.push({
+        columns: Math.min(Math.max(columns, MIN_COLUMNS), MAX_COLUMNS),
+        minWidthPx: null,
+      });
+      continue;
+    }
+
+    const minWidthPx = parsePositiveInteger(layout.minWidthPx);
+
+    if (minWidthPx === null) {
+      continue;
+    }
+
+    bands.push({
+      columns: Math.min(Math.max(columns, MIN_COLUMNS), MAX_COLUMNS),
+      minWidthPx,
+    });
+  }
+
+  return bands.sort((bandA, bandB) => {
+    if (bandA.minWidthPx === null) {
+      return bandB.minWidthPx === null ? 0 : -1;
+    }
+
+    if (bandB.minWidthPx === null) {
+      return 1;
+    }
+
+    return bandA.minWidthPx - bandB.minWidthPx;
+  });
+}
+
+function parsePositiveInteger(value: string): number | null {
+  const numberValue = Number(value);
+
+  if (
+    value.trim() === "" ||
+    !Number.isInteger(numberValue) ||
+    numberValue <= 0
+  ) {
+    return null;
+  }
+
+  return numberValue;
+}
+
+export function resolveColumnLayoutPreviewBaseColumns(
+  baseColumns: string,
+): number {
+  const columns = Number(baseColumns);
+
+  if (baseColumns.trim() === "" || !Number.isInteger(columns)) {
+    return FALLBACK_COLUMNS;
+  }
+
+  return Math.min(Math.max(columns, MIN_COLUMNS), MAX_COLUMNS);
+}
+
+export function getNextAvailableBreakpointMinWidthPx(
+  columnLayouts: readonly EditableColumnLayout[],
+): string {
+  const takenMinWidths = new Set(
+    columnLayouts
+      .map((layout) => Number(layout.minWidthPx))
+      .filter((minWidthPx) => Number.isFinite(minWidthPx)),
+  );
+  let minWidthPx = ADDED_BREAKPOINT_MIN_WIDTH_PX;
+
+  while (takenMinWidths.has(minWidthPx)) {
+    minWidthPx += ADDED_BREAKPOINT_MIN_WIDTH_STEP_PX;
+  }
+
+  return String(minWidthPx);
+}
+
+export function addBreakpointLayout(
+  columnLayouts: readonly EditableColumnLayout[],
+  layoutMode: LayoutMode,
+): EditableColumnLayout[] {
+  if (layoutMode !== "responsive") {
+    return copyEditableColumnLayouts(columnLayouts);
+  }
+
+  return [
+    ...copyEditableColumnLayouts(columnLayouts),
+    {
+      columns: ADDED_BREAKPOINT_COLUMNS,
+      minWidthPx: getNextAvailableBreakpointMinWidthPx(columnLayouts),
+    },
+  ];
+}
+
+export function removeBreakpointLayout(
+  columnLayouts: readonly EditableColumnLayout[],
+  layoutIndex: number,
+): EditableColumnLayout[] {
+  const targetLayout = columnLayouts[layoutIndex];
+  const breakpointLayoutCount = columnLayouts.filter(
+    (layout) => layout.minWidthPx !== null,
+  ).length;
+
+  if (
+    targetLayout === undefined ||
+    targetLayout.minWidthPx === null ||
+    breakpointLayoutCount <= 1
+  ) {
+    return copyEditableColumnLayouts(columnLayouts);
+  }
+
+  return copyEditableColumnLayouts(
+    columnLayouts.filter(
+      (_layout, currentIndex) => currentIndex !== layoutIndex,
+    ),
+  );
+}
+
+export function getColumnLayoutsForMode(
+  rememberedSingle: EditableColumnLayout,
+  rememberedResponsive: readonly EditableColumnLayout[],
+  targetMode: LayoutMode,
+): EditableColumnLayout[] {
+  if (targetMode === "single") {
+    return [{ ...rememberedSingle }];
+  }
+
+  return copyEditableColumnLayouts(rememberedResponsive);
 }

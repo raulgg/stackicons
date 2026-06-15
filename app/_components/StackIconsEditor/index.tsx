@@ -20,6 +20,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   getEditableBaseColumnLayout,
   getEditableBreakpointColumnLayouts,
+  type ColumnLayoutRichResult,
   type LayoutMode,
 } from "@/lib/icons/column-layout";
 import { formatUnknownSlugsMessage } from "@/lib/icons/parse-request";
@@ -60,6 +61,7 @@ const emptySubscribe = () => () => {};
 export function StackIconsEditor({ initialState }: StackIconsEditorProps) {
   const {
     addBreakpointLayout,
+    columnLayoutResult,
     copyReadmeImageCode,
     generatedHtml,
     generatedImageSources,
@@ -150,9 +152,9 @@ export function StackIconsEditor({ initialState }: StackIconsEditorProps) {
     state.columnLayouts,
   );
   const fieldValidation = getStackIconsEditorFieldValidation({
-    state,
     unknownSlugs,
     validationErrors,
+    columnLayoutResult,
   });
 
   return (
@@ -476,18 +478,14 @@ function FieldError({ errors, id }: FieldErrorProps) {
   );
 }
 
-const COLUMNS_RANGE_ERROR = "2–20 columns";
-const MIN_WIDTH_RANGE_ERROR = "1–3840px";
-const DUPLICATE_MIN_WIDTH_ERROR = "duplicate min-width";
-
 function getStackIconsEditorFieldValidation({
-  state,
   unknownSlugs,
   validationErrors,
+  columnLayoutResult,
 }: {
-  state: StackIconsEditorState;
   unknownSlugs: readonly string[];
   validationErrors: readonly string[];
+  columnLayoutResult?: ColumnLayoutRichResult;
 }): StackIconsEditorFieldValidation {
   const fieldValidation: StackIconsEditorFieldValidation = {
     baseColumns: [],
@@ -502,57 +500,13 @@ function getStackIconsEditorFieldValidation({
     ],
     layout: validationErrors.filter(isLayoutValidationError),
   };
-  const minWidthLayoutsByValue = new Map<string, number[]>();
 
-  state.columnLayouts.forEach((layout, index) => {
-    if (layout.minWidthPx === null) {
-      if (!isIntegerInRange(layout.columns, 2, 20)) {
-        fieldValidation.baseColumns.push(COLUMNS_RANGE_ERROR);
-      }
-      return;
-    }
-
-    const columnsErrors: string[] = [];
-    const minWidthErrors: string[] = [];
-    const hasColumns = layout.columns !== "";
-    const hasMinWidth = layout.minWidthPx !== "";
-
-    if (
-      (hasColumns || hasMinWidth) &&
-      !isIntegerInRange(layout.columns, 2, 20)
-    ) {
-      columnsErrors.push(COLUMNS_RANGE_ERROR);
-    }
-
-    if (
-      (hasColumns || hasMinWidth) &&
-      !isIntegerInRange(layout.minWidthPx, 1, 3840)
-    ) {
-      minWidthErrors.push(MIN_WIDTH_RANGE_ERROR);
-    }
-
-    if (isIntegerInRange(layout.minWidthPx, 1, 3840)) {
-      minWidthLayoutsByValue.set(layout.minWidthPx, [
-        ...(minWidthLayoutsByValue.get(layout.minWidthPx) ?? []),
-        index,
-      ]);
-    }
-
-    fieldValidation.breakpointColumnsByIndex[index] = columnsErrors;
-    fieldValidation.breakpointMinWidthByIndex[index] = minWidthErrors;
-  });
-
-  for (const duplicatedIndexes of minWidthLayoutsByValue.values()) {
-    if (duplicatedIndexes.length <= 1) {
-      continue;
-    }
-
-    duplicatedIndexes.forEach((index) => {
-      fieldValidation.breakpointMinWidthByIndex[index] = [
-        ...(fieldValidation.breakpointMinWidthByIndex[index] ?? []),
-        DUPLICATE_MIN_WIDTH_ERROR,
-      ];
-    });
+  if (columnLayoutResult) {
+    fieldValidation.baseColumns = columnLayoutResult.baseColumns;
+    fieldValidation.breakpointColumnsByIndex =
+      columnLayoutResult.breakpointColumnsByIndex;
+    fieldValidation.breakpointMinWidthByIndex =
+      columnLayoutResult.breakpointMinWidthByIndex;
   }
 
   return fieldValidation;
@@ -576,17 +530,6 @@ function isLayoutValidationError(error: string): boolean {
       "Breakpoint px must be an integer from 1 to 3840.",
       "Breakpoint px values must be unique.",
     ].includes(error)
-  );
-}
-
-function isIntegerInRange(value: string, min: number, max: number): boolean {
-  const numberValue = Number(value);
-
-  return (
-    value.trim() === value &&
-    Number.isInteger(numberValue) &&
-    numberValue >= min &&
-    numberValue <= max
   );
 }
 

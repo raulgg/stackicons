@@ -3,11 +3,11 @@ import { fireEvent, render, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import type { EditableColumnLayout } from "@/lib/icons/column-layout";
+import { getColumnLayoutPreviewBands } from "@/lib/icons/column-layout";
 import { getIconGridLayout } from "@/lib/icons/layout";
 import {
   ColumnLayoutPreview,
   getColumnLayoutPreviewBandRangeText,
-  getColumnLayoutPreviewBands,
   getColumnLayoutPreviewColumnCount,
 } from "./ColumnLayoutPreview";
 
@@ -393,41 +393,6 @@ describe("ColumnLayoutPreview", () => {
     expect(
       screen.getByText("under 768px · 48px icons · gap 8px"),
     ).toBeInTheDocument();
-  });
-});
-
-describe("getColumnLayoutPreviewBands", () => {
-  it("should sort bands by min-width ascending with the base band first when layouts arrive unordered", () => {
-    // Given / When
-    const bands = getColumnLayoutPreviewBands([
-      { columns: "12", minWidthPx: "1200" },
-      { columns: "4", minWidthPx: null },
-      { columns: "8", minWidthPx: "768" },
-    ]);
-
-    // Then
-    expect(bands).toEqual([
-      { columns: 4, minWidthPx: null },
-      { columns: 8, minWidthPx: 768 },
-      { columns: 12, minWidthPx: 1200 },
-    ]);
-  });
-
-  it("should skip column layouts with unparseable columns or min-width when building bands", () => {
-    // Given / When
-    const bands = getColumnLayoutPreviewBands([
-      { columns: "4", minWidthPx: null },
-      { columns: "", minWidthPx: "768" },
-      { columns: "abc", minWidthPx: "900" },
-      { columns: "10", minWidthPx: "not-a-number" },
-      { columns: "12", minWidthPx: "1200" },
-    ]);
-
-    // Then — only the base layout and the 1200px breakpoint remain
-    expect(bands).toEqual([
-      { columns: 4, minWidthPx: null },
-      { columns: 12, minWidthPx: 1200 },
-    ]);
   });
 });
 

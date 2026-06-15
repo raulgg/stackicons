@@ -15,12 +15,18 @@ The fallback icon layout used when no breakpoint matches. Single layout README i
 _Avoid_: Default layout, mobile breakpoint
 
 **Column layout**:
-A configurable icon grid layout with a column count and an optional breakpoint. The base column layout has no breakpoint and is identified by a `null` minimum width, while breakpoint-specific column layouts have a `min-width` pixel threshold.
+A valid layout value: how many columns to render, and optionally the breakpoint where that column count starts. The base column layout has no breakpoint and is identified by a `null` minimum width; breakpoint-specific column layouts have a numeric `min-width` pixel threshold.
 _Avoid_: Layout rule, column preset, responsive layout
 
+**Column layout form**:
+A temporary editor value for column layout inputs while the user is typing. It exists only because form fields hold strings like `"12"` or incomplete values like `""`; after validation, it becomes a Column layout.
+_Avoid_: Editable column layout, form layout, draft layout, pending layout
+
 **Column layout preview**:
-A live visual recreation of one generated image source for a specific column layout and color theme, shown in the README image editor. It mirrors what the generated image source will look like but is not the source itself, and it does not simulate the full responsive README image selection behavior. Unknown slugs do not appear in it, matching how generated image sources render.
+A visual rendering of one column layout in the README image editor. It shows what one generated image source would look like for the selected preview theme; it is not form state and it is not the generated README image code.
 _Avoid_: Responsive preview, full preview, image preview, live preview
+
+In short: Column layout is the valid data, Column layout form is the in-progress input, and Column layout preview is the visual output.
 
 Generated README HTML emits breakpoint-specific sources from widest to narrowest so the browser selects the first matching source.
 
