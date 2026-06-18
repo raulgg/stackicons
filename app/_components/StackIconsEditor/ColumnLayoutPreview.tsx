@@ -184,8 +184,8 @@ export function ColumnLayoutPreview({
           onValueChange={(value) => setSelectedBandIndex(Number(value))}
           value={String(activeBandIndex)}
         >
-          <div className="flex items-center justify-between gap-x-3 border-b bg-surface-2 px-3 py-[7px]">
-            <TabsList aria-label="Preview column layout">
+          <div className="flex items-center justify-between gap-x-3 border-b bg-surface-2 px-3 py-[6px]">
+            <TabsList aria-label="Preview column layout" variant="segmented">
               {bands.map((band, bandIndex) => (
                 <TabsTrigger
                   key={`${band.minWidthPx ?? "base"}-${bandIndex}`}
