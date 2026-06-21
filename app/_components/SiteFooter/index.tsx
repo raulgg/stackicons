@@ -1,14 +1,11 @@
 import Link from "next/link";
 
-import { StackIconsLogo } from "@/components/StackIconsLogo";
+import { StackIconsBrand } from "@/components/StackIconsBrand";
 
-export function LandingFooter() {
+export function SiteFooter() {
   return (
     <footer className="flex items-center gap-3 border-t border-border px-10 py-[18px] max-[760px]:px-5 max-[760px]:py-4">
-      <StackIconsLogo size={22} />
-      <span className="text-[13px] font-semibold text-foreground">
-        StackIcons
-      </span>
+      <StackIconsBrand variant="compact" />
       <div className="ml-auto flex items-center gap-[18px] font-mono text-[11px] text-ink-3">
         <Link href="/editor" className="hover:text-foreground hover:underline">
           editor
@@ -18,5 +15,3 @@ export function LandingFooter() {
     </footer>
   );
 }
-
-export default LandingFooter;

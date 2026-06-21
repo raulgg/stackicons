@@ -1,11 +1,20 @@
 "use client";
 
 import { useTheme } from "next-themes";
+import * as React from "react";
 
 import { ThemeSelect, type ThemeSelectValue } from "./ThemeSelect";
 
+const subscribeToHydration = () => () => {};
+
 export function UiThemeMenu() {
   const { setTheme, theme } = useTheme();
+
+  const isHydrated = React.useSyncExternalStore(
+    subscribeToHydration,
+    () => true,
+    () => false,
+  );
 
   return (
     <ThemeSelect
@@ -13,7 +22,7 @@ export function UiThemeMenu() {
       onValueChange={setTheme}
       showSystemOption
       triggerVariant="surface"
-      value={(theme ?? "system") as ThemeSelectValue}
+      value={(isHydrated ? (theme ?? "system") : "system") as ThemeSelectValue}
     />
   );
 }

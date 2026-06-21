@@ -10,7 +10,7 @@ type StackIconsLogoProps = {
 export function StackIconsLogo({ className, size = 52 }: StackIconsLogoProps) {
   return (
     <Image
-      alt="StackIcons logo"
+      alt=""
       aria-hidden="true"
       className={className}
       height={size}

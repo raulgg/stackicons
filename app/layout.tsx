@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 
+import { SiteFooter } from "@/app/_components/SiteFooter";
 import { SiteHeader } from "@/app/_components/SiteHeader";
-import { LandingFooter } from "@/app/_components/landing/LandingFooter";
 import stackIconsLogo from "@/assets/stack-icons-logo.svg";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Toaster } from "@/components/ui/sonner";
@@ -28,12 +29,14 @@ export default function RootLayout({
       <body>
         {/* Must stay ahead of ThemeProvider so it runs before the
             next-themes init script reads localStorage. See ADR 0003. */}
-        <script dangerouslySetInnerHTML={{ __html: uiThemeResetScript }} />
+        <Script id="ui-theme-reset" strategy="beforeInteractive">
+          {uiThemeResetScript}
+        </Script>
         <ThemeProvider>
           <div className="flex min-h-screen flex-col">
             <SiteHeader />
             {children}
-            <LandingFooter />
+            <SiteFooter />
           </div>
           <Toaster />
         </ThemeProvider>
