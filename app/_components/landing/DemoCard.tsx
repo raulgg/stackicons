@@ -1,14 +1,7 @@
 "use client";
 
 import React from "react";
-import {
-  BookOpenIcon,
-  CheckIcon,
-  ChevronDownIcon,
-  CopyIcon,
-  MoonIcon,
-  SunIcon,
-} from "lucide-react";
+import { BookOpenIcon, ChevronDownIcon } from "lucide-react";
 import { useTheme } from "next-themes";
 
 import { cn } from "@/lib/utils";
@@ -41,50 +34,19 @@ const ABBREVIATED_SNIPPET = `<picture>
        alt="My tech stack" />
 </picture>`;
 
-const FULL_SNIPPET = `<picture>
-  <source media="(min-width: 768px) and (prefers-color-scheme: dark)"
-          srcset="https://stackicons.dev/icons?icons=typescript,react,nextdotjs,tailwindcss,nodedotjs,postgresql,prisma,docker&columns=8&theme=dark" />
-  <source media="(min-width: 768px)"
-          srcset="https://stackicons.dev/icons?icons=typescript,react,nextdotjs,tailwindcss,nodedotjs,postgresql,prisma,docker&columns=8" />
-  <img src="https://stackicons.dev/icons?icons=typescript,react,nextdotjs,tailwindcss,nodedotjs,postgresql,prisma,docker&columns=4"
-       alt="My tech stack" />
-</picture>`;
+const subscribeToHydration = () => () => {};
 
 export function DemoCard() {
   const { resolvedTheme } = useTheme();
-  const resolvedPreviewTheme: PreviewTheme =
-    resolvedTheme === "dark" ? "dark" : "light";
-  const [previewTheme, setPreviewTheme] =
-    React.useState<PreviewTheme>(resolvedPreviewTheme);
-  const [lastSeededTheme, setLastSeededTheme] =
-    React.useState(resolvedPreviewTheme);
   const [isCodeVisible, setIsCodeVisible] = React.useState(true);
-  const [isCopied, setIsCopied] = React.useState(false);
-  const timeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Re-seed preview theme when UI theme changes — same contract as the editor.
-  // Adjusted during render instead of in an effect so the seeded value paints
-  // in the same pass (mirrors StackIconsEditor).
-  if (lastSeededTheme !== resolvedPreviewTheme) {
-    setLastSeededTheme(resolvedPreviewTheme);
-    setPreviewTheme(resolvedPreviewTheme);
-  }
-
-  React.useEffect(
-    () => () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    },
-    [],
+  const isHydrated = React.useSyncExternalStore(
+    subscribeToHydration,
+    () => true,
+    () => false,
   );
-
-  async function handleCopy() {
-    try {
-      await navigator.clipboard.writeText(FULL_SNIPPET);
-    } catch {}
-    setIsCopied(true);
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    timeoutRef.current = setTimeout(() => setIsCopied(false), 2000);
-  }
+  const previewTheme: PreviewTheme =
+    isHydrated && resolvedTheme === "dark" ? "dark" : "light";
 
   return (
     <section className="rounded-[6px] border bg-card text-card-foreground">
@@ -101,7 +63,7 @@ export function DemoCard() {
       </div>
 
       {/* Stage */}
-      <div className="relative mx-5 mt-[18px]">
+      <div className="mx-5 mt-[18px]">
         <div
           className="flex max-w-full items-center justify-center overflow-x-auto rounded-[6px] border px-4 py-[22px] sm:px-[26px] sm:py-[30px]"
           style={STAGE_COLORS[previewTheme]}
@@ -113,34 +75,12 @@ export function DemoCard() {
             src={`/icons?icons=typescript,react,nextdotjs,tailwindcss,nodedotjs,postgresql,prisma,docker&columns=4&size=48&theme=${previewTheme}`}
           />
         </div>
-        {/* Preview theme toggle — same treatment as the editor's stage overlay */}
-        <div
-          aria-label="Preview theme"
-          className="absolute right-2 top-2 inline-flex items-center gap-[3px] rounded-[6px] border bg-surface-3 p-[3px]"
-          role="group"
-        >
-          <PreviewThemeButton
-            isActive={previewTheme === "light"}
-            label="Light"
-            onActivate={() => setPreviewTheme("light")}
-          >
-            <SunIcon aria-hidden="true" size={15} />
-          </PreviewThemeButton>
-          <PreviewThemeButton
-            isActive={previewTheme === "dark"}
-            label="Dark"
-            onActivate={() => setPreviewTheme("dark")}
-          >
-            <MoonIcon aria-hidden="true" size={15} />
-          </PreviewThemeButton>
-        </div>
       </div>
 
       <p className="px-5 pb-[18px] pt-[10px] text-center font-mono text-[11.5px] text-ink-3">
         4 columns · 48px icons — exactly what your README shows
       </p>
 
-      {/* Code panel — mirrors ReadmeImageCodePanel structure */}
       <div className="mx-5 mb-5">
         <button
           className="flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.07em] text-ink-2"
@@ -157,7 +97,7 @@ export function DemoCard() {
           {"README code · <picture>"}
         </button>
         {isCodeVisible ? (
-          <div className="relative mt-3">
+          <div className="mt-3">
             <pre
               aria-label="README image code"
               className="max-w-full overflow-x-auto whitespace-pre rounded-[6px] border border-code-bg-2 bg-code-bg px-4 py-[15px] font-mono text-[12.5px] leading-[1.75]"
@@ -175,55 +115,10 @@ export function DemoCard() {
                 )}
               </code>
             </pre>
-            <button
-              aria-label={isCopied ? "Copied" : "Copy README code"}
-              aria-live="polite"
-              className={cn(
-                "absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-[6px] border bg-surface-3 transition-[color]",
-                isCopied ? "text-accent-ink" : "text-ink-2 hover:text-ink",
-              )}
-              onClick={handleCopy}
-              type="button"
-            >
-              {isCopied ? (
-                <CheckIcon aria-hidden="true" size={15} />
-              ) : (
-                <CopyIcon aria-hidden="true" size={15} />
-              )}
-            </button>
           </div>
         ) : null}
       </div>
     </section>
-  );
-}
-
-type PreviewThemeButtonProps = {
-  children: React.ReactNode;
-  isActive: boolean;
-  label: string;
-  onActivate: () => void;
-};
-
-function PreviewThemeButton({
-  children,
-  isActive,
-  label,
-  onActivate,
-}: PreviewThemeButtonProps) {
-  return (
-    <button
-      aria-label={label}
-      aria-pressed={isActive}
-      className={cn(
-        "flex h-7 w-7 items-center justify-center rounded-[7px] transition-[color]",
-        isActive ? "bg-accent text-white" : "text-ink-2 hover:text-ink",
-      )}
-      onClick={onActivate}
-      type="button"
-    >
-      {children}
-    </button>
   );
 }
 
