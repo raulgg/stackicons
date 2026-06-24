@@ -273,6 +273,20 @@ describe("StackIconsEditor", () => {
     expect(screen.queryByLabelText("Version")).not.toBeInTheDocument();
   });
 
+  it("should omit the fix-errors placeholder when icons are present but origin is unavailable", () => {
+    const useSyncExternalStoreSpy = vi
+      .spyOn(React, "useSyncExternalStore")
+      .mockImplementation((_subscribe, _client, server) => server());
+
+    render(
+      <StackIconsEditor initialState={DEFAULT_STACK_ICONS_EDITOR_STATE} />,
+    );
+
+    expect(getIconsImageCodeText()).toBe("");
+
+    useSyncExternalStoreSpy.mockRestore();
+  });
+
   it("should show validation errors when the icons field is empty", async () => {
     // Given
     render(

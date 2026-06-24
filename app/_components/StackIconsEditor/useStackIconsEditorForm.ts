@@ -3,6 +3,11 @@
 import React from "react";
 
 import {
+  ADD_ICONS_IMAGE_CODE_PLACEHOLDER,
+  FIX_ERRORS_IMAGE_CODE_PLACEHOLDER,
+} from "@/app/_components/readme";
+import { showToast } from "@/components/ui/sonner";
+import {
   addBreakpointLayout,
   copyEditableColumnLayouts,
   DEFAULT_RESPONSIVE_COLUMN_LAYOUTS,
@@ -11,7 +16,6 @@ import {
   getEditableBaseColumnLayout,
   removeBreakpointLayout,
 } from "@/lib/icons/column-layout";
-import { showToast } from "@/components/ui/sonner";
 import { generateIconsImage } from "@/lib/icons/icons-image";
 
 import {
@@ -76,6 +80,24 @@ function getCurrentOrigin() {
 
 function getServerOriginSnapshot() {
   return "";
+}
+
+export function getIconsImageCodeEmptyPlaceholder({
+  hasIcons,
+  validationErrorCount,
+}: {
+  hasIcons: boolean;
+  validationErrorCount: number;
+}): string | undefined {
+  if (!hasIcons) {
+    return ADD_ICONS_IMAGE_CODE_PLACEHOLDER;
+  }
+
+  if (validationErrorCount > 0) {
+    return FIX_ERRORS_IMAGE_CODE_PLACEHOLDER;
+  }
+
+  return undefined;
 }
 
 function replaceEditorUrl(state: StackIconsEditorState) {

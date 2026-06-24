@@ -10,8 +10,6 @@ import {
   Trash2Icon,
 } from "lucide-react";
 import {
-  ADD_ICONS_IMAGE_CODE_PLACEHOLDER,
-  FIX_ERRORS_IMAGE_CODE_PLACEHOLDER,
   IconsImageCodePanel,
   useResolvedPreviewTheme,
   type StackIconsPreviewTheme,
@@ -42,7 +40,10 @@ import {
   MIN_ICON_SIZE,
   type StackIconsEditorState,
 } from "./state";
-import { useStackIconsEditorForm } from "./useStackIconsEditorForm";
+import {
+  getIconsImageCodeEmptyPlaceholder,
+  useStackIconsEditorForm,
+} from "./useStackIconsEditorForm";
 
 export type { StackIconsEditorState } from "./state";
 
@@ -397,11 +398,10 @@ export function StackIconsEditor({ initialState }: StackIconsEditorProps) {
       <ColumnLayoutPreview
         codePanel={
           <IconsImageCodePanel
-            emptyPlaceholder={
-              selectedIconSlugs.length > 0
-                ? FIX_ERRORS_IMAGE_CODE_PLACEHOLDER
-                : ADD_ICONS_IMAGE_CODE_PLACEHOLDER
-            }
+            emptyPlaceholder={getIconsImageCodeEmptyPlaceholder({
+              hasIcons: selectedIconSlugs.length > 0,
+              validationErrorCount: validationErrors.length,
+            })}
             onCopy={copyIconsImageCode}
             iconsImageCode={generatedHtml}
           />
