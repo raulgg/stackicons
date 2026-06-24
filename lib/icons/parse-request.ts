@@ -28,21 +28,21 @@ export type IconRequestParseResult =
 const maxIconSlugs = 1000;
 
 const rawIconRequestSchema = z.object({
-  icons: z.preprocess(
+  s: z.preprocess(
     (value) => (value === undefined ? "all" : value),
     z
       .string()
-      .min(1, "`icons` must include at least one icon slug.")
+      .min(1, "`s` must include at least one icon slug.")
       .refine(
         (value) => parseRawIconSlugs(value).length <= maxIconSlugs,
-        "`icons` must include 1000 icons or fewer.",
+        "`s` must include 1000 icons or fewer.",
       ),
   ),
   columns: z.coerce
     .number()
-    .int("`columns` must be an integer.")
-    .min(2, "`columns` must be at least 2.")
-    .max(20, "`columns` must be at most 20.")
+    .int("`cols` must be an integer.")
+    .min(2, "`cols` must be at least 2.")
+    .max(20, "`cols` must be at most 20.")
     .default(16),
   gap: z.coerce
     .number()
@@ -66,8 +66,8 @@ export function parseIconRequest(
   searchParams: URLSearchParams,
 ): IconRequestParseResult {
   const rawRequest = rawIconRequestSchema.safeParse({
-    icons: searchParams.get("icons") ?? undefined,
-    columns: searchParams.get("columns") ?? undefined,
+    s: searchParams.get("s") ?? undefined,
+    columns: searchParams.get("cols") ?? undefined,
     gap: searchParams.get("gap") ?? undefined,
     size: searchParams.get("size") ?? undefined,
     theme: searchParams.get("theme") ?? undefined,
@@ -81,12 +81,12 @@ export function parseIconRequest(
     };
   }
 
-  const slugs = parseRawIconSlugs(rawRequest.data.icons);
+  const slugs = parseRawIconSlugs(rawRequest.data.s);
 
   if (slugs.length === 0) {
     return {
       success: false,
-      errors: ["`icons` must include at least one icon slug."],
+      errors: ["`s` must include at least one icon slug."],
     };
   }
 

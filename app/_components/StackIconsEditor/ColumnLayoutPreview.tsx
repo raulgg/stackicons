@@ -86,7 +86,7 @@ function getPreviewIconUrl({
   previewTheme: StackIconsPreviewTheme;
   slug: string;
 }): string {
-  return `/icons?icons=${encodeURIComponent(slug)}&theme=${previewTheme}&size=${iconSize}`;
+  return `/icons?s=${encodeURIComponent(slug)}&theme=${previewTheme}&size=${iconSize}`;
 }
 
 type ColumnLayoutPreviewProps = {

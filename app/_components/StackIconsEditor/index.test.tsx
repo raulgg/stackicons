@@ -168,7 +168,7 @@ describe("StackIconsEditor", () => {
     await waitFor(() => {
       const params = new URLSearchParams(window.location.search);
 
-      expect(params.get("icons")).toBe("react,nextjs");
+      expect(params.get("s")).toBe("react,nextjs");
       expect(params.get("layout")).toBe("single");
       expect(params.get("column-layouts")).toBe(
         JSON.stringify([{ columns: "4", minWidthPx: null }]),
@@ -184,8 +184,8 @@ describe("StackIconsEditor", () => {
       expect(params.has("v")).toBe(false);
     });
     expect(getReadmeImageCodeText()).toBe(`<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?icons=react%2Cnextjs&amp;columns=4&amp;gap=12&amp;size=48&amp;theme=dark" />
-  <img src="http://localhost:3000/icons?icons=react%2Cnextjs&amp;columns=4&amp;gap=12&amp;size=48&amp;theme=light" alt="React, Next.js" title="React, Next.js" />
+  <source media="(prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?s=react%2Cnextjs&amp;cols=4&amp;gap=12&amp;size=48&amp;theme=dark" />
+  <img src="http://localhost:3000/icons?s=react%2Cnextjs&amp;cols=4&amp;gap=12&amp;size=48&amp;theme=light" alt="React, Next.js" title="React, Next.js" />
 </picture>`);
   });
 
@@ -217,7 +217,7 @@ describe("StackIconsEditor", () => {
     expect(getIconSizeSlider()).toHaveAttribute("aria-valuenow", "50");
     expect(screen.getByText("50px")).toBeInTheDocument();
     expectGeneratedImageSourceUrl(
-      "http://localhost:3000/icons?icons=typescript%2Cnextjs%2Ctailwindcss%2Cvercel&columns=4&gap=8&size=50&theme=light",
+      "http://localhost:3000/icons?s=typescript%2Cnextjs%2Ctailwindcss%2Cvercel&cols=4&gap=8&size=50&theme=light",
     );
     await waitFor(() => {
       const params = new URLSearchParams(window.location.search);
@@ -229,7 +229,7 @@ describe("StackIconsEditor", () => {
   it("should preserve raw state when rendered with page query params", async () => {
     // Given
     setLocation(
-      "/?icons=solid%2Ctypescript&layout=single&column-layouts=%5B%7B%22columns%22%3A%226%22%2C%22minWidthPx%22%3Anull%7D%5D&gap=10&v=rev-2&baseUrl=https%3A%2F%2Fcdn.example",
+      "/?s=solid%2Ctypescript&layout=single&column-layouts=%5B%7B%22columns%22%3A%226%22%2C%22minWidthPx%22%3Anull%7D%5D&gap=10&v=rev-2&baseUrl=https%3A%2F%2Fcdn.example",
     );
 
     // When
@@ -241,7 +241,7 @@ describe("StackIconsEditor", () => {
             { columns: "6", minWidthPx: null },
           ]),
           gap: "10",
-          icons: "solid,typescript",
+          s: "solid,typescript",
           layout: "single",
           v: "rev-2",
         })}
@@ -289,14 +289,14 @@ describe("StackIconsEditor", () => {
     await waitFor(() => {
       const params = new URLSearchParams(window.location.search);
 
-      expect(params.get("icons")).toBe("");
+      expect(params.get("s")).toBe("");
     });
     expect(getReadmeImageCodeText()).toBe(
       ADD_ICONS_README_IMAGE_CODE_PLACEHOLDER,
     );
     expect(getIconSlugsTextarea()).toHaveAttribute("aria-invalid", "true");
     expect(
-      screen.getByText("`icons` must include at least one icon slug."),
+      screen.getByText("`s` must include at least one icon slug."),
     ).toBeInTheDocument();
   });
 
@@ -316,8 +316,8 @@ describe("StackIconsEditor", () => {
 
     // Then
     expect(getReadmeImageCodeText()).toBe(`<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?icons=react%2Cnextjs&amp;columns=4&amp;gap=8&amp;size=48&amp;theme=dark" />
-  <img src="http://localhost:3000/icons?icons=react%2Cnextjs&amp;columns=4&amp;gap=8&amp;size=48&amp;theme=light" alt="React, Next.js" title="React, Next.js" />
+  <source media="(prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?s=react%2Cnextjs&amp;cols=4&amp;gap=8&amp;size=48&amp;theme=dark" />
+  <img src="http://localhost:3000/icons?s=react%2Cnextjs&amp;cols=4&amp;gap=8&amp;size=48&amp;theme=light" alt="React, Next.js" title="React, Next.js" />
 </picture>`);
     expect(getReadmeImageCodeText()).not.toContain("loading=");
     expect(getReadmeImageCodeText()).not.toContain("decoding=");
@@ -356,8 +356,8 @@ describe("StackIconsEditor", () => {
     });
     expect(writeText).toHaveBeenCalledTimes(1);
     expect(getReadmeImageCodeText()).toBe(`<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?icons=react%2Cnextjs&amp;columns=4&amp;gap=8&amp;size=48&amp;theme=dark" />
-  <img src="http://localhost:3000/icons?icons=react%2Cnextjs&amp;columns=4&amp;gap=8&amp;size=48&amp;theme=light" alt="React, Next.js" title="React, Next.js" />
+  <source media="(prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?s=react%2Cnextjs&amp;cols=4&amp;gap=8&amp;size=48&amp;theme=dark" />
+  <img src="http://localhost:3000/icons?s=react%2Cnextjs&amp;cols=4&amp;gap=8&amp;size=48&amp;theme=light" alt="React, Next.js" title="React, Next.js" />
 </picture>`);
   });
 
@@ -467,12 +467,12 @@ describe("StackIconsEditor", () => {
     generatePreview();
 
     expect(getReadmeImageCodeText()).toBe(`<picture>
-  <source media="(min-width: 1024px) and (prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?icons=react%2Cnextjs&amp;columns=12&amp;gap=10&amp;size=48&amp;theme=dark" />
-  <source media="(min-width: 1024px)" srcset="http://localhost:3000/icons?icons=react%2Cnextjs&amp;columns=12&amp;gap=10&amp;size=48&amp;theme=light" />
-  <source media="(min-width: 640px) and (prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?icons=react%2Cnextjs&amp;columns=8&amp;gap=10&amp;size=48&amp;theme=dark" />
-  <source media="(min-width: 640px)" srcset="http://localhost:3000/icons?icons=react%2Cnextjs&amp;columns=8&amp;gap=10&amp;size=48&amp;theme=light" />
-  <source media="(prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?icons=react%2Cnextjs&amp;columns=4&amp;gap=10&amp;size=48&amp;theme=dark" />
-  <img src="http://localhost:3000/icons?icons=react%2Cnextjs&amp;columns=4&amp;gap=10&amp;size=48&amp;theme=light" alt="React, Next.js" title="React, Next.js" />
+  <source media="(min-width: 1024px) and (prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?s=react%2Cnextjs&amp;cols=12&amp;gap=10&amp;size=48&amp;theme=dark" />
+  <source media="(min-width: 1024px)" srcset="http://localhost:3000/icons?s=react%2Cnextjs&amp;cols=12&amp;gap=10&amp;size=48&amp;theme=light" />
+  <source media="(min-width: 640px) and (prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?s=react%2Cnextjs&amp;cols=8&amp;gap=10&amp;size=48&amp;theme=dark" />
+  <source media="(min-width: 640px)" srcset="http://localhost:3000/icons?s=react%2Cnextjs&amp;cols=8&amp;gap=10&amp;size=48&amp;theme=light" />
+  <source media="(prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?s=react%2Cnextjs&amp;cols=4&amp;gap=10&amp;size=48&amp;theme=dark" />
+  <img src="http://localhost:3000/icons?s=react%2Cnextjs&amp;cols=4&amp;gap=10&amp;size=48&amp;theme=light" alt="React, Next.js" title="React, Next.js" />
 </picture>`);
   });
 
@@ -494,10 +494,10 @@ describe("StackIconsEditor", () => {
     generatePreview();
 
     expect(getReadmeImageCodeText()).toBe(`<picture>
-  <source media="(min-width: 640px) and (prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?icons=react%2Cnextjs&amp;columns=8&amp;gap=8&amp;size=48&amp;theme=dark" />
-  <source media="(min-width: 640px)" srcset="http://localhost:3000/icons?icons=react%2Cnextjs&amp;columns=8&amp;gap=8&amp;size=48&amp;theme=light" />
-  <source media="(prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?icons=react%2Cnextjs&amp;columns=4&amp;gap=8&amp;size=48&amp;theme=dark" />
-  <img src="http://localhost:3000/icons?icons=react%2Cnextjs&amp;columns=4&amp;gap=8&amp;size=48&amp;theme=light" alt="React, Next.js" title="React, Next.js" />
+  <source media="(min-width: 640px) and (prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?s=react%2Cnextjs&amp;cols=8&amp;gap=8&amp;size=48&amp;theme=dark" />
+  <source media="(min-width: 640px)" srcset="http://localhost:3000/icons?s=react%2Cnextjs&amp;cols=8&amp;gap=8&amp;size=48&amp;theme=light" />
+  <source media="(prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?s=react%2Cnextjs&amp;cols=4&amp;gap=8&amp;size=48&amp;theme=dark" />
+  <img src="http://localhost:3000/icons?s=react%2Cnextjs&amp;cols=4&amp;gap=8&amp;size=48&amp;theme=light" alt="React, Next.js" title="React, Next.js" />
 </picture>`);
     expect(getReadmeImageCodeText()).toContain("theme=dark");
   });
@@ -559,15 +559,15 @@ describe("StackIconsEditor", () => {
     expect(getMinWidthInputs()[1]).toHaveValue(640);
     expect(getColumnInputs()[2]).toHaveValue(8);
     expectGeneratedImageSourceUrl(
-      "http://localhost:3000/icons?icons=typescript%2Cnextjs%2Ctailwindcss%2Cvercel&columns=4&gap=8&size=48&theme=light",
+      "http://localhost:3000/icons?s=typescript%2Cnextjs%2Ctailwindcss%2Cvercel&cols=4&gap=8&size=48&theme=light",
     );
     expect(getReadmeImageCodeText()).toBe(`<picture>
-  <source media="(min-width: 1024px) and (prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?icons=typescript%2Cnextjs%2Ctailwindcss%2Cvercel&amp;columns=12&amp;gap=8&amp;size=48&amp;theme=dark" />
-  <source media="(min-width: 1024px)" srcset="http://localhost:3000/icons?icons=typescript%2Cnextjs%2Ctailwindcss%2Cvercel&amp;columns=12&amp;gap=8&amp;size=48&amp;theme=light" />
-  <source media="(min-width: 640px) and (prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?icons=typescript%2Cnextjs%2Ctailwindcss%2Cvercel&amp;columns=8&amp;gap=8&amp;size=48&amp;theme=dark" />
-  <source media="(min-width: 640px)" srcset="http://localhost:3000/icons?icons=typescript%2Cnextjs%2Ctailwindcss%2Cvercel&amp;columns=8&amp;gap=8&amp;size=48&amp;theme=light" />
-  <source media="(prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?icons=typescript%2Cnextjs%2Ctailwindcss%2Cvercel&amp;columns=4&amp;gap=8&amp;size=48&amp;theme=dark" />
-  <img src="http://localhost:3000/icons?icons=typescript%2Cnextjs%2Ctailwindcss%2Cvercel&amp;columns=4&amp;gap=8&amp;size=48&amp;theme=light" alt="TypeScript, Next.js, Tailwind CSS, Vercel" title="TypeScript, Next.js, Tailwind CSS, Vercel" />
+  <source media="(min-width: 1024px) and (prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?s=typescript%2Cnextjs%2Ctailwindcss%2Cvercel&amp;cols=12&amp;gap=8&amp;size=48&amp;theme=dark" />
+  <source media="(min-width: 1024px)" srcset="http://localhost:3000/icons?s=typescript%2Cnextjs%2Ctailwindcss%2Cvercel&amp;cols=12&amp;gap=8&amp;size=48&amp;theme=light" />
+  <source media="(min-width: 640px) and (prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?s=typescript%2Cnextjs%2Ctailwindcss%2Cvercel&amp;cols=8&amp;gap=8&amp;size=48&amp;theme=dark" />
+  <source media="(min-width: 640px)" srcset="http://localhost:3000/icons?s=typescript%2Cnextjs%2Ctailwindcss%2Cvercel&amp;cols=8&amp;gap=8&amp;size=48&amp;theme=light" />
+  <source media="(prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?s=typescript%2Cnextjs%2Ctailwindcss%2Cvercel&amp;cols=4&amp;gap=8&amp;size=48&amp;theme=dark" />
+  <img src="http://localhost:3000/icons?s=typescript%2Cnextjs%2Ctailwindcss%2Cvercel&amp;cols=4&amp;gap=8&amp;size=48&amp;theme=light" alt="TypeScript, Next.js, Tailwind CSS, Vercel" title="TypeScript, Next.js, Tailwind CSS, Vercel" />
 </picture>`);
   });
 
@@ -589,7 +589,7 @@ describe("StackIconsEditor", () => {
     generatePreview();
 
     const expectedUrl =
-      "http://localhost:3000/icons?icons=react%2Cnextjs&columns=4&gap=8&size=48&theme=light";
+      "http://localhost:3000/icons?s=react%2Cnextjs&cols=4&gap=8&size=48&theme=light";
 
     expectGeneratedImageSourceUrl(expectedUrl);
   });
@@ -699,7 +699,7 @@ describe("StackIconsEditor", () => {
     generatePreview();
 
     expectGeneratedImageSourceUrl(
-      "http://localhost:3000/icons?icons=typescript%2Cnextjs%2Ctailwindcss%2Cvercel&columns=4&gap=8&size=48&theme=light",
+      "http://localhost:3000/icons?s=typescript%2Cnextjs%2Ctailwindcss%2Cvercel&cols=4&gap=8&size=48&theme=light",
     );
     expect(getReadmeImageCodeText()).toContain("<picture>");
 
@@ -728,8 +728,8 @@ describe("StackIconsEditor", () => {
 
     // Then
     expect(getReadmeImageCodeText()).toBe(`<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?columns=4&amp;gap=8&amp;size=48&amp;theme=dark" />
-  <img src="http://localhost:3000/icons?columns=4&amp;gap=8&amp;size=48&amp;theme=light" alt="All stack icons" title="All stack icons" />
+  <source media="(prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?cols=4&amp;gap=8&amp;size=48&amp;theme=dark" />
+  <img src="http://localhost:3000/icons?cols=4&amp;gap=8&amp;size=48&amp;theme=light" alt="All stack icons" title="All stack icons" />
 </picture>`);
   });
 
@@ -745,8 +745,8 @@ describe("StackIconsEditor", () => {
 
     // Then
     expect(getReadmeImageCodeText()).toBe(`<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?icons=typescript%2Creact%2Cnextjs&amp;columns=4&amp;gap=8&amp;size=48&amp;theme=dark" />
-  <img src="http://localhost:3000/icons?icons=typescript%2Creact%2Cnextjs&amp;columns=4&amp;gap=8&amp;size=48&amp;theme=light" alt="TypeScript, React, Next.js" title="TypeScript, React, Next.js" />
+  <source media="(prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?s=typescript%2Creact%2Cnextjs&amp;cols=4&amp;gap=8&amp;size=48&amp;theme=dark" />
+  <img src="http://localhost:3000/icons?s=typescript%2Creact%2Cnextjs&amp;cols=4&amp;gap=8&amp;size=48&amp;theme=light" alt="TypeScript, React, Next.js" title="TypeScript, React, Next.js" />
 </picture>`);
   });
 
@@ -768,7 +768,7 @@ describe("StackIconsEditor", () => {
 
     // Then
     const expectedUrl =
-      "http://localhost:3000/icons?icons=react%2Cnextjs&columns=4&gap=12&size=48&theme=light";
+      "http://localhost:3000/icons?s=react%2Cnextjs&cols=4&gap=12&size=48&theme=light";
 
     expectGeneratedImageSourceUrl(expectedUrl);
   });
@@ -789,8 +789,8 @@ describe("StackIconsEditor", () => {
       screen.getByText("Unknown icon slug: not-real."),
     ).toBeInTheDocument();
     expect(getReadmeImageCodeText()).toBe(`<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?icons=typescript%2Cnot-real%2Creact&amp;columns=4&amp;gap=8&amp;size=48&amp;theme=dark" />
-  <img src="http://localhost:3000/icons?icons=typescript%2Cnot-real%2Creact&amp;columns=4&amp;gap=8&amp;size=48&amp;theme=light" alt="TypeScript, React" title="TypeScript, React" />
+  <source media="(prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?s=typescript%2Cnot-real%2Creact&amp;cols=4&amp;gap=8&amp;size=48&amp;theme=dark" />
+  <img src="http://localhost:3000/icons?s=typescript%2Cnot-real%2Creact&amp;cols=4&amp;gap=8&amp;size=48&amp;theme=light" alt="TypeScript, React" title="TypeScript, React" />
 </picture>`);
   });
 
@@ -818,7 +818,7 @@ describe("StackIconsEditor", () => {
       expect(writeText).toHaveBeenCalledWith(getReadmeImageCodeText());
     });
     expect(writeText.mock.calls[0]?.[0]).toContain(
-      "icons=typescript%2Cnot-real%2Creact",
+      "s=typescript%2Cnot-real%2Creact",
     );
   });
 
@@ -867,7 +867,7 @@ describe("StackIconsEditor", () => {
     ).not.toBeInTheDocument();
     expect(getIconSlugsTextarea()).not.toHaveAttribute("aria-invalid");
     expectGeneratedImageSourceUrl(
-      "http://localhost:3000/icons?icons=react&columns=4&gap=8&size=48&theme=light",
+      "http://localhost:3000/icons?s=react&cols=4&gap=8&size=48&theme=light",
     );
   });
 
@@ -876,7 +876,7 @@ describe("StackIconsEditor", () => {
     renderSingleLayoutEditor();
     generatePreview();
     const generatedUrl =
-      "http://localhost:3000/icons?icons=typescript%2Cnextjs%2Ctailwindcss%2Cvercel&columns=4&gap=8&size=48&theme=light";
+      "http://localhost:3000/icons?s=typescript%2Cnextjs%2Ctailwindcss%2Cvercel&cols=4&gap=8&size=48&theme=light";
 
     expectGeneratedImageSourceUrl(generatedUrl);
 
@@ -887,7 +887,7 @@ describe("StackIconsEditor", () => {
 
     // Then
     const nextGeneratedUrl =
-      "http://localhost:3000/icons?icons=react%2Cnextjs&columns=4&gap=8&size=48&theme=light";
+      "http://localhost:3000/icons?s=react%2Cnextjs&cols=4&gap=8&size=48&theme=light";
 
     expectGeneratedImageSourceUrl(nextGeneratedUrl);
   });
@@ -1077,15 +1077,15 @@ describe("StackIconsEditor", () => {
     expect(screen.queryByText("2–20 columns")).not.toBeInTheDocument();
     expect(screen.queryByText("1–3840px")).not.toBeInTheDocument();
     expectGeneratedImageSourceUrl(
-      "http://localhost:3000/icons?icons=typescript%2Cnextjs%2Ctailwindcss%2Cvercel&columns=4&gap=8&size=48&theme=light",
+      "http://localhost:3000/icons?s=typescript%2Cnextjs%2Ctailwindcss%2Cvercel&cols=4&gap=8&size=48&theme=light",
     );
     expect(getReadmeImageCodeText()).toBe(`<picture>
-  <source media="(min-width: 1200px) and (prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?icons=typescript%2Cnextjs%2Ctailwindcss%2Cvercel&amp;columns=12&amp;gap=8&amp;size=48&amp;theme=dark" />
-  <source media="(min-width: 1200px)" srcset="http://localhost:3000/icons?icons=typescript%2Cnextjs%2Ctailwindcss%2Cvercel&amp;columns=12&amp;gap=8&amp;size=48&amp;theme=light" />
-  <source media="(min-width: 768px) and (prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?icons=typescript%2Cnextjs%2Ctailwindcss%2Cvercel&amp;columns=8&amp;gap=8&amp;size=48&amp;theme=dark" />
-  <source media="(min-width: 768px)" srcset="http://localhost:3000/icons?icons=typescript%2Cnextjs%2Ctailwindcss%2Cvercel&amp;columns=8&amp;gap=8&amp;size=48&amp;theme=light" />
-  <source media="(prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?icons=typescript%2Cnextjs%2Ctailwindcss%2Cvercel&amp;columns=4&amp;gap=8&amp;size=48&amp;theme=dark" />
-  <img src="http://localhost:3000/icons?icons=typescript%2Cnextjs%2Ctailwindcss%2Cvercel&amp;columns=4&amp;gap=8&amp;size=48&amp;theme=light" alt="TypeScript, Next.js, Tailwind CSS, Vercel" title="TypeScript, Next.js, Tailwind CSS, Vercel" />
+  <source media="(min-width: 1200px) and (prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?s=typescript%2Cnextjs%2Ctailwindcss%2Cvercel&amp;cols=12&amp;gap=8&amp;size=48&amp;theme=dark" />
+  <source media="(min-width: 1200px)" srcset="http://localhost:3000/icons?s=typescript%2Cnextjs%2Ctailwindcss%2Cvercel&amp;cols=12&amp;gap=8&amp;size=48&amp;theme=light" />
+  <source media="(min-width: 768px) and (prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?s=typescript%2Cnextjs%2Ctailwindcss%2Cvercel&amp;cols=8&amp;gap=8&amp;size=48&amp;theme=dark" />
+  <source media="(min-width: 768px)" srcset="http://localhost:3000/icons?s=typescript%2Cnextjs%2Ctailwindcss%2Cvercel&amp;cols=8&amp;gap=8&amp;size=48&amp;theme=light" />
+  <source media="(prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?s=typescript%2Cnextjs%2Ctailwindcss%2Cvercel&amp;cols=4&amp;gap=8&amp;size=48&amp;theme=dark" />
+  <img src="http://localhost:3000/icons?s=typescript%2Cnextjs%2Ctailwindcss%2Cvercel&amp;cols=4&amp;gap=8&amp;size=48&amp;theme=light" alt="TypeScript, Next.js, Tailwind CSS, Vercel" title="TypeScript, Next.js, Tailwind CSS, Vercel" />
 </picture>`);
   });
 
@@ -1338,15 +1338,15 @@ describe("StackIconsEditor", () => {
     generatePreview();
 
     expectGeneratedImageSourceUrl(
-      "http://localhost:3000/icons?icons=react%2Cnextjs&columns=6&gap=8&size=48&theme=light",
+      "http://localhost:3000/icons?s=react%2Cnextjs&cols=6&gap=8&size=48&theme=light",
     );
     expect(getReadmeImageCodeText()).toBe(`<picture>
-  <source media="(min-width: 1100px) and (prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?icons=react%2Cnextjs&amp;columns=15&amp;gap=8&amp;size=48&amp;theme=dark" />
-  <source media="(min-width: 1100px)" srcset="http://localhost:3000/icons?icons=react%2Cnextjs&amp;columns=15&amp;gap=8&amp;size=48&amp;theme=light" />
-  <source media="(min-width: 700px) and (prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?icons=react%2Cnextjs&amp;columns=9&amp;gap=8&amp;size=48&amp;theme=dark" />
-  <source media="(min-width: 700px)" srcset="http://localhost:3000/icons?icons=react%2Cnextjs&amp;columns=9&amp;gap=8&amp;size=48&amp;theme=light" />
-  <source media="(prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?icons=react%2Cnextjs&amp;columns=6&amp;gap=8&amp;size=48&amp;theme=dark" />
-  <img src="http://localhost:3000/icons?icons=react%2Cnextjs&amp;columns=6&amp;gap=8&amp;size=48&amp;theme=light" alt="React, Next.js" title="React, Next.js" />
+  <source media="(min-width: 1100px) and (prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?s=react%2Cnextjs&amp;cols=15&amp;gap=8&amp;size=48&amp;theme=dark" />
+  <source media="(min-width: 1100px)" srcset="http://localhost:3000/icons?s=react%2Cnextjs&amp;cols=15&amp;gap=8&amp;size=48&amp;theme=light" />
+  <source media="(min-width: 700px) and (prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?s=react%2Cnextjs&amp;cols=9&amp;gap=8&amp;size=48&amp;theme=dark" />
+  <source media="(min-width: 700px)" srcset="http://localhost:3000/icons?s=react%2Cnextjs&amp;cols=9&amp;gap=8&amp;size=48&amp;theme=light" />
+  <source media="(prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?s=react%2Cnextjs&amp;cols=6&amp;gap=8&amp;size=48&amp;theme=dark" />
+  <img src="http://localhost:3000/icons?s=react%2Cnextjs&amp;cols=6&amp;gap=8&amp;size=48&amp;theme=light" alt="React, Next.js" title="React, Next.js" />
 </picture>`);
   });
 
@@ -1409,7 +1409,7 @@ describe("StackIconsEditor", () => {
     const searchParams = {
       "column-layouts": JSON.stringify([{ columns: "6", minWidthPx: null }]),
       gap: "10",
-      icons: "solid,typescript",
+      s: "solid,typescript",
       layout: "single",
     };
 
@@ -1431,7 +1431,7 @@ describe("StackIconsEditor", () => {
     const searchParams = {
       "column-layouts": JSON.stringify([{ columns: "6", minWidthPx: null }]),
       gap: "10",
-      icons: "solid,typescript",
+      s: "solid,typescript",
       "include-dark-theme": "false",
       layout: "single",
     };
@@ -1460,7 +1460,7 @@ describe("StackIconsEditor", () => {
     const initialState = getStackIconsEditorInitialState({
       "column-layouts": "{bad-json",
       gap: "10",
-      icons: "solid,typescript",
+      s: "solid,typescript",
       layout: "single",
     });
 
@@ -1476,7 +1476,7 @@ describe("StackIconsEditor", () => {
     const initialState = getStackIconsEditorInitialState({
       "column-layouts": JSON.stringify([{ columns: "21", minWidthPx: null }]),
       gap: "10",
-      icons: "solid,typescript",
+      s: "solid,typescript",
       layout: "single",
     });
 
@@ -1492,7 +1492,7 @@ describe("StackIconsEditor", () => {
     const initialState = getStackIconsEditorInitialState({
       "column-layouts": JSON.stringify([{ columns: "abc", minWidthPx: null }]),
       gap: "10",
-      icons: "solid,typescript",
+      s: "solid,typescript",
       layout: "single",
     });
 
@@ -1511,7 +1511,7 @@ describe("StackIconsEditor", () => {
         { columns: "4", minWidthPx: "768" },
       ]),
       gap: "10",
-      icons: "solid,typescript",
+      s: "solid,typescript",
       layout: "responsive",
     });
 
@@ -1529,7 +1529,7 @@ describe("StackIconsEditor", () => {
   it("should use default responsive layouts when responsive layout params omit column layouts", () => {
     const initialState = getStackIconsEditorInitialState({
       gap: "10",
-      icons: "solid,typescript",
+      s: "solid,typescript",
       layout: "responsive",
     });
 
@@ -1545,7 +1545,7 @@ describe("StackIconsEditor", () => {
     const initialState = getStackIconsEditorInitialState({
       "column-layouts": JSON.stringify([{ columns: "6", minWidthPx: null }]),
       gap: "10",
-      icons: "solid,typescript",
+      s: "solid,typescript",
       layout: "responsive",
     });
 
@@ -1564,7 +1564,7 @@ describe("StackIconsEditor", () => {
         { columns: "4", minWidthPx: "3841" },
       ]),
       gap: "10",
-      icons: "solid,typescript",
+      s: "solid,typescript",
       layout: "responsive",
     });
 
@@ -1587,7 +1587,7 @@ describe("StackIconsEditor", () => {
         { columns: "", minWidthPx: "" },
       ]),
       gap: "10",
-      icons: "solid,typescript",
+      s: "solid,typescript",
       layout: "responsive",
     });
 
@@ -1618,7 +1618,7 @@ describe("StackIconsEditor", () => {
     await waitFor(() => {
       const params = new URLSearchParams(window.location.search);
 
-      expect(params.get("icons")).toBe(
+      expect(params.get("s")).toBe(
         "typescript,nextjs,tailwindcss,vercel,react",
       );
     });
@@ -1652,7 +1652,7 @@ describe("StackIconsEditor", () => {
     await waitFor(() => {
       const params = new URLSearchParams(window.location.search);
 
-      expect(params.get("icons")).toBe("nextjs,tailwindcss,vercel");
+      expect(params.get("s")).toBe("nextjs,tailwindcss,vercel");
     });
     expect(
       screen.getByRole("option", { name: "TypeScript typescript" }),
@@ -1704,7 +1704,7 @@ describe("StackIconsEditor", () => {
     await waitFor(() => {
       const params = new URLSearchParams(window.location.search);
 
-      expect(params.get("icons")).toBe("typescript,tailwindcss,vercel");
+      expect(params.get("s")).toBe("typescript,tailwindcss,vercel");
     });
     expect(
       screen.queryByRole("button", { name: "Remove Next.js" }),
@@ -1730,10 +1730,10 @@ describe("StackIconsEditor", () => {
     await waitFor(() => {
       const params = new URLSearchParams(window.location.search);
 
-      expect(params.get("icons")).toBe("nextjs,tailwindcss,vercel,typescript");
+      expect(params.get("s")).toBe("nextjs,tailwindcss,vercel,typescript");
     });
     expectGeneratedImageSourceUrl(
-      "icons=nextjs%2Ctailwindcss%2Cvercel%2Ctypescript",
+      "s=nextjs%2Ctailwindcss%2Cvercel%2Ctypescript",
     );
   });
 
@@ -1775,7 +1775,7 @@ describe("StackIconsEditor", () => {
     await waitFor(() => {
       const params = new URLSearchParams(window.location.search);
 
-      expect(params.get("icons")).toBe("typescript");
+      expect(params.get("s")).toBe("typescript");
     });
     expect(screen.queryByText("not-real")).not.toBeInTheDocument();
     expect(
@@ -1817,7 +1817,7 @@ describe("StackIconsEditor", () => {
     await waitFor(() => {
       const params = new URLSearchParams(window.location.search);
 
-      expect(params.get("icons")).toBe("react,bun,vite");
+      expect(params.get("s")).toBe("react,bun,vite");
     });
   });
 

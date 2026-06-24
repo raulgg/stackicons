@@ -269,7 +269,7 @@ function buildIconRequestParams({
 }): URLSearchParams {
   const params = new URLSearchParams();
 
-  params.set("icons", icons);
+  params.set("s", icons);
   params.set("gap", gap);
   params.set("size", size);
 
@@ -295,10 +295,10 @@ function buildReadmeImageUrl({
   const params = new URLSearchParams();
 
   if (!isAllIconInput(icons)) {
-    params.set("icons", icons);
+    params.set("s", icons);
   }
 
-  params.set("columns", String(columns));
+  params.set("cols", String(columns));
   params.set("gap", gap);
   // Icon size is always explicit so a generated image source never depends on
   // the endpoint's back-compat default of 40 (ADR 0001).

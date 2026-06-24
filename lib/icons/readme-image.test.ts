@@ -22,18 +22,18 @@ describe("README image", () => {
           columns: 4,
           minWidthPx: null,
           theme: "light",
-          url: "http://localhost:3000/icons?icons=react%2Cnextjs&columns=4&gap=8&size=48&theme=light",
+          url: "http://localhost:3000/icons?s=react%2Cnextjs&cols=4&gap=8&size=48&theme=light",
         },
         {
           columns: 4,
           minWidthPx: null,
           theme: "dark",
-          url: "http://localhost:3000/icons?icons=react%2Cnextjs&columns=4&gap=8&size=48&theme=dark",
+          url: "http://localhost:3000/icons?s=react%2Cnextjs&cols=4&gap=8&size=48&theme=dark",
         },
       ],
       readmeHtml: `<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?icons=react%2Cnextjs&amp;columns=4&amp;gap=8&amp;size=48&amp;theme=dark" />
-  <img src="http://localhost:3000/icons?icons=react%2Cnextjs&amp;columns=4&amp;gap=8&amp;size=48&amp;theme=light" alt="React, Next.js" title="React, Next.js" />
+  <source media="(prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?s=react%2Cnextjs&amp;cols=4&amp;gap=8&amp;size=48&amp;theme=dark" />
+  <img src="http://localhost:3000/icons?s=react%2Cnextjs&amp;cols=4&amp;gap=8&amp;size=48&amp;theme=light" alt="React, Next.js" title="React, Next.js" />
 </picture>`,
     });
   });
@@ -52,11 +52,11 @@ describe("README image", () => {
           columns: 4,
           minWidthPx: null,
           theme: "light",
-          url: "http://localhost:3000/icons?icons=react%2Cnextjs&columns=4&gap=8&size=48&theme=light",
+          url: "http://localhost:3000/icons?s=react%2Cnextjs&cols=4&gap=8&size=48&theme=light",
         },
       ],
       readmeHtml: `<picture>
-  <img src="http://localhost:3000/icons?icons=react%2Cnextjs&amp;columns=4&amp;gap=8&amp;size=48&amp;theme=light" alt="React, Next.js" title="React, Next.js" />
+  <img src="http://localhost:3000/icons?s=react%2Cnextjs&amp;cols=4&amp;gap=8&amp;size=48&amp;theme=light" alt="React, Next.js" title="React, Next.js" />
 </picture>`,
     });
   });
@@ -79,18 +79,18 @@ describe("README image", () => {
           columns: 4,
           minWidthPx: null,
           theme: "light",
-          url: "http://localhost:3000/icons?icons=react%2Cnextjs&columns=4&gap=8&size=48&theme=light",
+          url: "http://localhost:3000/icons?s=react%2Cnextjs&cols=4&gap=8&size=48&theme=light",
         },
         {
           columns: 8,
           minWidthPx: 640,
           theme: "light",
-          url: "http://localhost:3000/icons?icons=react%2Cnextjs&columns=8&gap=8&size=48&theme=light",
+          url: "http://localhost:3000/icons?s=react%2Cnextjs&cols=8&gap=8&size=48&theme=light",
         },
       ],
       readmeHtml: `<picture>
-  <source media="(min-width: 640px)" srcset="http://localhost:3000/icons?icons=react%2Cnextjs&amp;columns=8&amp;gap=8&amp;size=48&amp;theme=light" />
-  <img src="http://localhost:3000/icons?icons=react%2Cnextjs&amp;columns=4&amp;gap=8&amp;size=48&amp;theme=light" alt="React, Next.js" title="React, Next.js" />
+  <source media="(min-width: 640px)" srcset="http://localhost:3000/icons?s=react%2Cnextjs&amp;cols=8&amp;gap=8&amp;size=48&amp;theme=light" />
+  <img src="http://localhost:3000/icons?s=react%2Cnextjs&amp;cols=4&amp;gap=8&amp;size=48&amp;theme=light" alt="React, Next.js" title="React, Next.js" />
 </picture>`,
     });
     expect(result.success ? result.imageSources : []).not.toContainEqual(
@@ -122,12 +122,12 @@ describe("README image", () => {
       ],
     });
     expect(result.success ? result.readmeHtml : "").toBe(`<picture>
-  <source media="(min-width: 1024px) and (prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?icons=react%2Cnextjs&amp;columns=12&amp;gap=10&amp;size=48&amp;theme=dark" />
-  <source media="(min-width: 1024px)" srcset="http://localhost:3000/icons?icons=react%2Cnextjs&amp;columns=12&amp;gap=10&amp;size=48&amp;theme=light" />
-  <source media="(min-width: 640px) and (prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?icons=react%2Cnextjs&amp;columns=8&amp;gap=10&amp;size=48&amp;theme=dark" />
-  <source media="(min-width: 640px)" srcset="http://localhost:3000/icons?icons=react%2Cnextjs&amp;columns=8&amp;gap=10&amp;size=48&amp;theme=light" />
-  <source media="(prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?icons=react%2Cnextjs&amp;columns=4&amp;gap=10&amp;size=48&amp;theme=dark" />
-  <img src="http://localhost:3000/icons?icons=react%2Cnextjs&amp;columns=4&amp;gap=10&amp;size=48&amp;theme=light" alt="React, Next.js" title="React, Next.js" />
+  <source media="(min-width: 1024px) and (prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?s=react%2Cnextjs&amp;cols=12&amp;gap=10&amp;size=48&amp;theme=dark" />
+  <source media="(min-width: 1024px)" srcset="http://localhost:3000/icons?s=react%2Cnextjs&amp;cols=12&amp;gap=10&amp;size=48&amp;theme=light" />
+  <source media="(min-width: 640px) and (prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?s=react%2Cnextjs&amp;cols=8&amp;gap=10&amp;size=48&amp;theme=dark" />
+  <source media="(min-width: 640px)" srcset="http://localhost:3000/icons?s=react%2Cnextjs&amp;cols=8&amp;gap=10&amp;size=48&amp;theme=light" />
+  <source media="(prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?s=react%2Cnextjs&amp;cols=4&amp;gap=10&amp;size=48&amp;theme=dark" />
+  <img src="http://localhost:3000/icons?s=react%2Cnextjs&amp;cols=4&amp;gap=10&amp;size=48&amp;theme=light" alt="React, Next.js" title="React, Next.js" />
 </picture>`);
   });
 
@@ -142,26 +142,26 @@ describe("README image", () => {
         columns: 4,
         minWidthPx: null,
         theme: "light",
-        url: "http://localhost:3000/icons?columns=4&gap=8&size=48&theme=light",
+        url: "http://localhost:3000/icons?cols=4&gap=8&size=48&theme=light",
       },
       {
         columns: 4,
         minWidthPx: null,
         theme: "dark",
-        url: "http://localhost:3000/icons?columns=4&gap=8&size=48&theme=dark",
+        url: "http://localhost:3000/icons?cols=4&gap=8&size=48&theme=dark",
       },
     ]);
     expect(result.success ? result.readmeHtml : "").toBe(`<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?columns=4&amp;gap=8&amp;size=48&amp;theme=dark" />
-  <img src="http://localhost:3000/icons?columns=4&amp;gap=8&amp;size=48&amp;theme=light" alt="All stack icons" title="All stack icons" />
+  <source media="(prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?cols=4&amp;gap=8&amp;size=48&amp;theme=dark" />
+  <img src="http://localhost:3000/icons?cols=4&amp;gap=8&amp;size=48&amp;theme=light" alt="All stack icons" title="All stack icons" />
 </picture>`);
   });
 
   it("should escape query separators inside generated README image code", () => {
     const result = generateReadmeImage(baseInput);
 
-    expect(result.success ? result.readmeHtml : "").not.toContain("&columns=");
-    expect(result.success ? result.readmeHtml : "").toContain("&amp;columns=");
+    expect(result.success ? result.readmeHtml : "").not.toContain("&cols=");
+    expect(result.success ? result.readmeHtml : "").toContain("&amp;cols=");
   });
 
   it("should emit the icon size in every generated image source URL when README image code is generated", () => {
@@ -227,18 +227,18 @@ describe("README image", () => {
           columns: 4,
           minWidthPx: null,
           theme: "light",
-          url: "http://localhost:3000/icons?icons=react%2Cnot-real%2Cnextjs&columns=4&gap=8&size=48&theme=light",
+          url: "http://localhost:3000/icons?s=react%2Cnot-real%2Cnextjs&cols=4&gap=8&size=48&theme=light",
         },
         {
           columns: 4,
           minWidthPx: null,
           theme: "dark",
-          url: "http://localhost:3000/icons?icons=react%2Cnot-real%2Cnextjs&columns=4&gap=8&size=48&theme=dark",
+          url: "http://localhost:3000/icons?s=react%2Cnot-real%2Cnextjs&cols=4&gap=8&size=48&theme=dark",
         },
       ],
       readmeHtml: `<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?icons=react%2Cnot-real%2Cnextjs&amp;columns=4&amp;gap=8&amp;size=48&amp;theme=dark" />
-  <img src="http://localhost:3000/icons?icons=react%2Cnot-real%2Cnextjs&amp;columns=4&amp;gap=8&amp;size=48&amp;theme=light" alt="React, Next.js" title="React, Next.js" />
+  <source media="(prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?s=react%2Cnot-real%2Cnextjs&amp;cols=4&amp;gap=8&amp;size=48&amp;theme=dark" />
+  <img src="http://localhost:3000/icons?s=react%2Cnot-real%2Cnextjs&amp;cols=4&amp;gap=8&amp;size=48&amp;theme=light" alt="React, Next.js" title="React, Next.js" />
 </picture>`,
     });
   });

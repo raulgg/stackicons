@@ -13,9 +13,9 @@ describe("IconThumbnail", () => {
     const images = container.querySelectorAll("img");
 
     expect(images).toHaveLength(2);
-    expect(images[0]).toHaveAttribute("src", "/icons?icons=react&theme=light");
+    expect(images[0]).toHaveAttribute("src", "/icons?s=react&theme=light");
     expect(images[0].className).toContain("dark:hidden");
-    expect(images[1]).toHaveAttribute("src", "/icons?icons=react&theme=dark");
+    expect(images[1]).toHaveAttribute("src", "/icons?s=react&theme=dark");
     expect(images[1].className).toContain("hidden dark:block");
   });
 
@@ -27,10 +27,7 @@ describe("IconThumbnail", () => {
     const images = container.querySelectorAll("img");
 
     expect(images).toHaveLength(1);
-    expect(images[0]).toHaveAttribute(
-      "src",
-      "/icons?icons=typescript&theme=light",
-    );
+    expect(images[0]).toHaveAttribute("src", "/icons?s=typescript&theme=light");
   });
 
   it("should render a single light image when the slug is not in the registry", () => {
@@ -43,7 +40,7 @@ describe("IconThumbnail", () => {
     expect(images).toHaveLength(1);
     expect(images[0]).toHaveAttribute(
       "src",
-      "/icons?icons=not-a-real-icon&theme=light",
+      "/icons?s=not-a-real-icon&theme=light",
     );
   });
 });

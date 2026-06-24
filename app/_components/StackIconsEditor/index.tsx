@@ -504,7 +504,7 @@ function getStackIconsEditorFieldValidation({
 }
 
 function isIconsValidationError(error: string): boolean {
-  return error.includes("`icons`") || error.startsWith("Unknown icon slug");
+  return error.includes("`s`") || error.startsWith("Unknown icon slug");
 }
 
 function isGapValidationError(error: string): boolean {

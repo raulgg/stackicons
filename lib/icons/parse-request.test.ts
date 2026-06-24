@@ -25,7 +25,7 @@ describe("icon request parser", () => {
 
   it("should resolve all registered icons when the all value is parsed", () => {
     // Given
-    const searchParams = params("icons=all");
+    const searchParams = params("s=all");
 
     // When
     const result = parseIconRequest(searchParams);
@@ -40,7 +40,7 @@ describe("icon request parser", () => {
 
   it("should parse comma-separated icon slugs while preserving order and repetitions", () => {
     // Given
-    const searchParams = params("icons=typescript,react,typescript,nextjs");
+    const searchParams = params("s=typescript,react,typescript,nextjs");
 
     // When
     const result = parseIconRequest(searchParams);
@@ -62,7 +62,7 @@ describe("icon request parser", () => {
 
   it("should ignore empty slug entries when accidental double commas are parsed", () => {
     // Given
-    const searchParams = params("icons=typescript,,react,");
+    const searchParams = params("s=typescript,,react,");
 
     // When
     const result = parseIconRequest(searchParams);
@@ -78,7 +78,7 @@ describe("icon request parser", () => {
 
   it("should skip unknown slugs while preserving the order of known slugs when icon input is parsed", () => {
     // Given
-    const searchParams = params("icons=typescript,not-real,react");
+    const searchParams = params("s=typescript,not-real,react");
 
     // When
     const result = parseIconRequest(searchParams);
@@ -99,7 +99,7 @@ describe("icon request parser", () => {
 
   it("should report no unknown slugs when every parsed slug is registered", () => {
     // Given
-    const searchParams = params("icons=typescript,react");
+    const searchParams = params("s=typescript,react");
 
     // When
     const result = parseIconRequest(searchParams);
@@ -116,7 +116,7 @@ describe("icon request parser", () => {
 
   it("should reject the request when every parsed slug is unknown", () => {
     // Given
-    const searchParams = params("icons=not-real,also-fake");
+    const searchParams = params("s=not-real,also-fake");
 
     // When
     const result = parseIconRequest(searchParams);
@@ -131,7 +131,7 @@ describe("icon request parser", () => {
   it("should reject more than 1000 icon slugs when icon input is parsed", () => {
     // Given
     const searchParams = params(
-      `icons=${Array(1001).fill("typescript").join(",")}`,
+      `s=${Array(1001).fill("typescript").join(",")}`,
     );
 
     // When
@@ -140,13 +140,13 @@ describe("icon request parser", () => {
     // Then
     expect(result.success).toBe(false);
     expect(result).toMatchObject({
-      errors: ["`icons` must include 1000 icons or fewer."],
+      errors: ["`s` must include 1000 icons or fewer."],
     });
   });
 
   it("should use default layout values when optional params are omitted", () => {
     // Given
-    const searchParams = params("icons=typescript");
+    const searchParams = params("s=typescript");
 
     // When
     const result = parseIconRequest(searchParams);
@@ -166,7 +166,7 @@ describe("icon request parser", () => {
   it("should accept valid bounds when layout params are parsed", () => {
     // Given
     const searchParams = params(
-      "icons=typescript&columns=2&gap=24&size=64&theme=dark",
+      "s=typescript&cols=2&gap=24&size=64&theme=dark",
     );
 
     // When
@@ -187,7 +187,7 @@ describe("icon request parser", () => {
   it("should default the icon size to 40 when the size param is absent", () => {
     // Given — generated image source URLs copied before the size param existed
     // must keep rendering at the pre-existing 40px icon size (ADR 0001).
-    const searchParams = params("icons=typescript&columns=2&gap=12");
+    const searchParams = params("s=typescript&cols=2&gap=12");
 
     // When
     const result = parseIconRequest(searchParams);
@@ -203,7 +203,7 @@ describe("icon request parser", () => {
 
   it("should accept the minimum icon size when the size param is parsed", () => {
     // Given
-    const searchParams = params("icons=typescript&size=24");
+    const searchParams = params("s=typescript&size=24");
 
     // When
     const result = parseIconRequest(searchParams);
@@ -219,7 +219,7 @@ describe("icon request parser", () => {
 
   it("should reject an icon size below the minimum when the size param is parsed", () => {
     // Given
-    const searchParams = params("icons=typescript&size=23");
+    const searchParams = params("s=typescript&size=23");
 
     // When
     const result = parseIconRequest(searchParams);
@@ -233,7 +233,7 @@ describe("icon request parser", () => {
 
   it("should reject an icon size above the maximum when the size param is parsed", () => {
     // Given
-    const searchParams = params("icons=typescript&size=65");
+    const searchParams = params("s=typescript&size=65");
 
     // When
     const result = parseIconRequest(searchParams);
@@ -247,7 +247,7 @@ describe("icon request parser", () => {
 
   it("should reject non-integer icon sizes when the size param is parsed", () => {
     // Given
-    const searchParams = params("icons=typescript&size=47.5");
+    const searchParams = params("s=typescript&size=47.5");
 
     // When
     const result = parseIconRequest(searchParams);
@@ -261,7 +261,7 @@ describe("icon request parser", () => {
 
   it("should reject non-numeric icon sizes when the size param is parsed", () => {
     // Given
-    const searchParams = params("icons=typescript&size=abc");
+    const searchParams = params("s=typescript&size=abc");
 
     // When
     const result = parseIconRequest(searchParams);
@@ -275,7 +275,7 @@ describe("icon request parser", () => {
 
   it("should reject out-of-bounds columns when layout params are parsed", () => {
     // Given
-    const searchParams = params("icons=typescript&columns=21");
+    const searchParams = params("s=typescript&cols=21");
 
     // When
     const result = parseIconRequest(searchParams);
@@ -283,13 +283,13 @@ describe("icon request parser", () => {
     // Then
     expect(result.success).toBe(false);
     expect(result).toMatchObject({
-      errors: ["`columns` must be at most 20."],
+      errors: ["`cols` must be at most 20."],
     });
   });
 
   it("should reject non-integer gap values when layout params are parsed", () => {
     // Given
-    const searchParams = params("icons=typescript&gap=1.5");
+    const searchParams = params("s=typescript&gap=1.5");
 
     // When
     const result = parseIconRequest(searchParams);
@@ -303,7 +303,7 @@ describe("icon request parser", () => {
 
   it("should reject unsupported themes when theme params are parsed", () => {
     // Given
-    const searchParams = params("icons=typescript&theme=sepia");
+    const searchParams = params("s=typescript&theme=sepia");
 
     // When
     const result = parseIconRequest(searchParams);
@@ -317,11 +317,9 @@ describe("icon request parser", () => {
 
   it("should ignore the version param when semantic request values are parsed", () => {
     // Given
-    const withoutVersion = params(
-      "icons=typescript&columns=4&gap=12&theme=dark",
-    );
+    const withoutVersion = params("s=typescript&cols=4&gap=12&theme=dark");
     const withVersion = params(
-      "icons=typescript&columns=4&gap=12&theme=dark&v=cache-key",
+      "s=typescript&cols=4&gap=12&theme=dark&v=cache-key",
     );
 
     // When

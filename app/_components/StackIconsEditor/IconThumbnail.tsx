@@ -6,7 +6,7 @@ import {
 import { cn } from "@/lib/utils";
 
 function getIconThumbnailUrl(slug: string, theme: IconTheme): string {
-  return `/icons?icons=${encodeURIComponent(slug)}&theme=${theme}`;
+  return `/icons?s=${encodeURIComponent(slug)}&theme=${theme}`;
 }
 
 type IconThumbnailProps = {

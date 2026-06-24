@@ -153,7 +153,7 @@ describe("ColumnLayoutPreview", () => {
       name: "typescript",
     }) as HTMLImageElement;
 
-    expect(stageIcon.src).toContain("/icons?icons=typescript&theme=dark");
+    expect(stageIcon.src).toContain("/icons?s=typescript&theme=dark");
     expect(getStageIconList().parentElement).toHaveStyle({
       backgroundColor: "#0d1117",
     });

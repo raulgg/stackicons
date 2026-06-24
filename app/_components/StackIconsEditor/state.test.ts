@@ -21,7 +21,7 @@ describe("StackIconsEditor state", () => {
 
     const params = new URLSearchParams(buildStackIconsEditorPageQuery(state));
 
-    expect(params.get("icons")).toBe("react,nextjs");
+    expect(params.get("s")).toBe("react,nextjs");
     expect(params.get("layout")).toBe("responsive");
     expect(params.get("column-layouts")).toBe(
       JSON.stringify([

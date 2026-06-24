@@ -6,7 +6,7 @@ describe("/icons route", () => {
   it("should return an ordered icon grid when the icon request is valid", async () => {
     // Given
     const request = new Request(
-      "http://localhost/icons?icons=typescript,react,typescript&columns=2&gap=12",
+      "http://localhost/icons?s=typescript,react,typescript&cols=2&gap=12",
     );
 
     // When
@@ -40,7 +40,7 @@ describe("/icons route", () => {
   it("should render icons at the requested size when a valid size param is provided", async () => {
     // Given
     const request = new Request(
-      "http://localhost/icons?icons=typescript,react,typescript&columns=2&gap=12&size=56",
+      "http://localhost/icons?s=typescript,react,typescript&cols=2&gap=12&size=56",
     );
 
     // When
@@ -58,7 +58,7 @@ describe("/icons route", () => {
   it("should render icons at 40px when the size param is absent", async () => {
     // Given — README image code copied before the size param existed (ADR 0001)
     const request = new Request(
-      "http://localhost/icons?icons=typescript,react&columns=2&gap=12",
+      "http://localhost/icons?s=typescript,react&cols=2&gap=12",
     );
 
     // When
@@ -74,9 +74,7 @@ describe("/icons route", () => {
 
   it("should return an SVG error image when the size param is below the minimum", async () => {
     // Given
-    const request = new Request(
-      "http://localhost/icons?icons=typescript&size=23",
-    );
+    const request = new Request("http://localhost/icons?s=typescript&size=23");
 
     // When
     const response = await GET(request);
@@ -91,9 +89,7 @@ describe("/icons route", () => {
 
   it("should return an SVG error image when the size param is above the maximum", async () => {
     // Given
-    const request = new Request(
-      "http://localhost/icons?icons=typescript&size=65",
-    );
+    const request = new Request("http://localhost/icons?s=typescript&size=65");
 
     // When
     const response = await GET(request);
@@ -108,9 +104,7 @@ describe("/icons route", () => {
 
   it("should return an SVG error image when the size param is not numeric", async () => {
     // Given
-    const request = new Request(
-      "http://localhost/icons?icons=typescript&size=abc",
-    );
+    const request = new Request("http://localhost/icons?s=typescript&size=abc");
 
     // When
     const response = await GET(request);
@@ -125,7 +119,7 @@ describe("/icons route", () => {
   it("should skip unknown slugs and render the remaining icons in order when known slugs remain", async () => {
     // Given
     const request = new Request(
-      "http://localhost/icons?icons=typescript,not-real,react&columns=2&gap=12",
+      "http://localhost/icons?s=typescript,not-real,react&cols=2&gap=12",
     );
 
     // When
@@ -145,9 +139,7 @@ describe("/icons route", () => {
 
   it("should return an SVG error image when every icon slug is unknown", async () => {
     // Given
-    const request = new Request(
-      "http://localhost/icons?icons=not-real,also-fake",
-    );
+    const request = new Request("http://localhost/icons?s=not-real,also-fake");
 
     // When
     const response = await GET(request);
@@ -166,10 +158,10 @@ describe("/icons route", () => {
   it("should ignore the version query param when a valid icon request renders", async () => {
     // Given
     const requestWithoutVersion = new Request(
-      "http://localhost/icons?icons=typescript,react&columns=2&gap=12&theme=dark",
+      "http://localhost/icons?s=typescript,react&cols=2&gap=12&theme=dark",
     );
     const requestWithVersion = new Request(
-      "http://localhost/icons?icons=typescript,react&columns=2&gap=12&theme=dark&v=cache-key",
+      "http://localhost/icons?s=typescript,react&cols=2&gap=12&theme=dark&v=cache-key",
     );
 
     // When

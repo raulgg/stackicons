@@ -9,10 +9,10 @@ import {
 
 const ABBREVIATED_SNIPPET = `<picture>
   <source media="(min-width: 768px) and (prefers-color-scheme: dark)"
-          srcset="https://…/icons?…&columns=8&theme=dark" />
+          srcset="https://…/icons?…&cols=8&theme=dark" />
   <source media="(min-width: 768px)"
-          srcset="https://…/icons?…&columns=8" />
-  <img src="https://…/icons?icons=typescript,react,…&columns=4"
+          srcset="https://…/icons?…&cols=8" />
+  <img src="https://…/icons?s=typescript,react,…&cols=4"
        alt="My tech stack" />
 </picture>`;
 
@@ -29,7 +29,7 @@ export function DemoCard() {
           <img
             alt="Stack preview"
             className="block"
-            src={`/icons?icons=typescript,react,nextdotjs,tailwindcss,nodedotjs,postgresql,prisma,docker&columns=4&size=48&theme=${previewTheme}`}
+            src={`/icons?s=typescript,react,nextdotjs,tailwindcss,nodedotjs,postgresql,prisma,docker&cols=4&size=48&theme=${previewTheme}`}
           />
         </ReadmePreviewStage>
       </div>

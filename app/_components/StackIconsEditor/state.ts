@@ -50,7 +50,7 @@ export function getStackIconsEditorInitialState(
     layoutMode === null ? null : getColumnLayouts(searchParams, layoutMode);
 
   return {
-    icons: getSearchParamValue(searchParams.icons) ?? DEFAULT_ICONS,
+    icons: getSearchParamValue(searchParams.s) ?? DEFAULT_ICONS,
     layoutMode: activeLayoutMode,
     columnLayouts: columnLayouts ?? getDefaultColumnLayouts(activeLayoutMode),
     iconSize: getIconSize(searchParams),
@@ -63,7 +63,7 @@ export function buildStackIconsEditorPageQuery(
 ): string {
   const params = new URLSearchParams();
 
-  params.set("icons", state.icons);
+  params.set("s", state.icons);
   params.set("layout", state.layoutMode);
   params.set("column-layouts", JSON.stringify(state.columnLayouts));
   params.set("size", state.iconSize);

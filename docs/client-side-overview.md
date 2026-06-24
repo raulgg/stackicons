@@ -51,7 +51,7 @@ The landing card is a static showcase, not the editor:
 
 ## Editor structure (`app/_components/StackIconsEditor/`)
 
-`index.tsx` lays out a 3-section accordion (`EditorSection`, keys `icons`,
+`index.tsx` lays out a 3-section accordion (`EditorSection`, keys `s`,
 `layout`, `spacing`) above the output card. Each section has a GitHub
 file-list-style header: a gray bar with a section icon and title on the left
 and a summary of its current values as right-side metadata; sections toggle
@@ -127,7 +127,7 @@ State shape (`state.ts`):
 ```
 
 Every state change is mirrored into the URL with `history.replaceState`
-using these search params: `icons`, `layout`, `column-layouts` (JSON),
+using these search params: `s`, `layout`, `column-layouts` (JSON),
 `size`, `gap`. Unrecognized values fall back to defaults (responsive layout
 with 4 base columns, 8 from 768px, 12 from 1200px).
 
