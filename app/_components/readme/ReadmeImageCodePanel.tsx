@@ -96,7 +96,7 @@ const TOKEN_KIND_CLASS_NAMES: Record<ReadmeImageCodeTokenKind, string> = {
 const COPIED_FEEDBACK_DURATION_MS = 2000;
 
 type ReadmeImageCodePanelProps = {
-  hasSelectedIcons?: boolean;
+  emptyPlaceholder?: string;
   readmeImageCode: string;
 } & (
   | { showCopyButton?: true; onCopy: () => Promise<boolean> }
@@ -104,7 +104,7 @@ type ReadmeImageCodePanelProps = {
 );
 
 export function ReadmeImageCodePanel({
-  hasSelectedIcons = true,
+  emptyPlaceholder,
   readmeImageCode,
   showCopyButton = true,
   ...copyProps
@@ -187,9 +187,7 @@ export function ReadmeImageCodePanel({
               </code>
             ) : (
               <code className="text-syntax-punctuation">
-                {hasSelectedIcons
-                  ? FIX_ERRORS_README_IMAGE_CODE_PLACEHOLDER
-                  : ADD_ICONS_README_IMAGE_CODE_PLACEHOLDER}
+                {emptyPlaceholder ?? ""}
               </code>
             )}
           </pre>

@@ -9,9 +9,13 @@ import {
   RulerIcon,
   Trash2Icon,
 } from "lucide-react";
-import { ReadmeImageCodePanel } from "@/app/_components/readme/ReadmeImageCodePanel";
-import type { StackIconsPreviewTheme } from "@/app/_components/readme/preview-theme";
-import { useResolvedPreviewTheme } from "@/app/_components/readme/useResolvedPreviewTheme";
+import {
+  ADD_ICONS_README_IMAGE_CODE_PLACEHOLDER,
+  FIX_ERRORS_README_IMAGE_CODE_PLACEHOLDER,
+  ReadmeImageCodePanel,
+  useResolvedPreviewTheme,
+  type StackIconsPreviewTheme,
+} from "@/app/_components/readme";
 import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -393,7 +397,11 @@ export function StackIconsEditor({ initialState }: StackIconsEditorProps) {
       <ColumnLayoutPreview
         codePanel={
           <ReadmeImageCodePanel
-            hasSelectedIcons={selectedIconSlugs.length > 0}
+            emptyPlaceholder={
+              selectedIconSlugs.length > 0
+                ? FIX_ERRORS_README_IMAGE_CODE_PLACEHOLDER
+                : ADD_ICONS_README_IMAGE_CODE_PLACEHOLDER
+            }
             onCopy={copyReadmeImageCode}
             readmeImageCode={generatedHtml}
           />

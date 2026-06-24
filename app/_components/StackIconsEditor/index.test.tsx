@@ -16,7 +16,7 @@ import { DEFAULT_SINGLE_COLUMN_LAYOUTS } from "@/lib/icons/column-layout";
 import {
   ADD_ICONS_README_IMAGE_CODE_PLACEHOLDER,
   FIX_ERRORS_README_IMAGE_CODE_PLACEHOLDER,
-} from "../readme/ReadmeImageCodePanel";
+} from "@/app/_components/readme";
 import {
   DEFAULT_RESPONSIVE_COLUMN_LAYOUTS,
   DEFAULT_STACK_ICONS_EDITOR_STATE,

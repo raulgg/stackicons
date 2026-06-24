@@ -2,9 +2,11 @@
 
 import React from "react";
 
-import { ReadmeCardHeader } from "@/app/_components/readme/ReadmeCardHeader";
-import { ReadmePreviewStage } from "@/app/_components/readme/ReadmePreviewStage";
-import type { StackIconsPreviewTheme } from "@/app/_components/readme/preview-theme";
+import {
+  ReadmeCardHeader,
+  ReadmePreviewStage,
+  type StackIconsPreviewTheme,
+} from "@/app/_components/readme";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ThemeSelect } from "@/components/ThemeSelect";
 import {

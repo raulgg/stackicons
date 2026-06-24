@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   ADD_ICONS_README_IMAGE_CODE_PLACEHOLDER,
+  FIX_ERRORS_README_IMAGE_CODE_PLACEHOLDER,
   ReadmeImageCodePanel,
   tokenizeReadmeImageCode,
 } from "./ReadmeImageCodePanel";
@@ -48,7 +49,6 @@ describe("ReadmeImageCodePanel", () => {
     // Given
     render(
       <ReadmeImageCodePanel
-        hasSelectedIcons
         onCopy={vi.fn()}
         readmeImageCode={README_IMAGE_CODE}
       />,
@@ -69,7 +69,6 @@ describe("ReadmeImageCodePanel", () => {
     // Given
     render(
       <ReadmeImageCodePanel
-        hasSelectedIcons
         onCopy={vi.fn()}
         readmeImageCode={README_IMAGE_CODE}
       />,
@@ -89,7 +88,6 @@ describe("ReadmeImageCodePanel", () => {
     // Given
     render(
       <ReadmeImageCodePanel
-        hasSelectedIcons
         onCopy={vi.fn()}
         readmeImageCode={README_IMAGE_CODE}
       />,
@@ -109,7 +107,6 @@ describe("ReadmeImageCodePanel", () => {
     // Given
     render(
       <ReadmeImageCodePanel
-        hasSelectedIcons
         onCopy={vi.fn()}
         readmeImageCode={README_IMAGE_CODE}
       />,
@@ -159,7 +156,6 @@ describe("ReadmeImageCodePanel", () => {
       vi.useFakeTimers();
       render(
         <ReadmeImageCodePanel
-          hasSelectedIcons
           onCopy={vi.fn().mockResolvedValue(true)}
           readmeImageCode={README_IMAGE_CODE}
         />,
@@ -187,7 +183,6 @@ describe("ReadmeImageCodePanel", () => {
       // Given
       render(
         <ReadmeImageCodePanel
-          hasSelectedIcons
           onCopy={vi.fn().mockResolvedValue(false)}
           readmeImageCode={README_IMAGE_CODE}
         />,
@@ -206,17 +201,17 @@ describe("ReadmeImageCodePanel", () => {
     });
   });
 
-  it("should show the add-icons placeholder and disable copying when no icons are selected", () => {
+  it("should show the empty placeholder and disable copying when README image code is empty", () => {
     // Given
     render(
       <ReadmeImageCodePanel
-        hasSelectedIcons={false}
+        emptyPlaceholder={ADD_ICONS_README_IMAGE_CODE_PLACEHOLDER}
         onCopy={vi.fn()}
         readmeImageCode=""
       />,
     );
 
-    // When — panel renders without icons (render is the action)
+    // When — panel renders without code (render is the action)
 
     // Then
     expect(screen.getByLabelText("README image code").textContent).toBe(
@@ -225,5 +220,21 @@ describe("ReadmeImageCodePanel", () => {
     expect(
       screen.getByRole("button", { name: "Copy README code" }),
     ).toBeDisabled();
+  });
+
+  it("should render a custom empty placeholder when provided", () => {
+    // Given
+    render(
+      <ReadmeImageCodePanel
+        emptyPlaceholder={FIX_ERRORS_README_IMAGE_CODE_PLACEHOLDER}
+        onCopy={vi.fn()}
+        readmeImageCode=""
+      />,
+    );
+
+    // Then
+    expect(screen.getByLabelText("README image code").textContent).toBe(
+      FIX_ERRORS_README_IMAGE_CODE_PLACEHOLDER,
+    );
   });
 });

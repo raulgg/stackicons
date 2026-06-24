@@ -1,9 +1,11 @@
 "use client";
 
-import { ReadmeCardHeader } from "@/app/_components/readme/ReadmeCardHeader";
-import { ReadmeImageCodePanel } from "@/app/_components/readme/ReadmeImageCodePanel";
-import { ReadmePreviewStage } from "@/app/_components/readme/ReadmePreviewStage";
-import { useResolvedPreviewTheme } from "@/app/_components/readme/useResolvedPreviewTheme";
+import {
+  ReadmeCardHeader,
+  ReadmeImageCodePanel,
+  ReadmePreviewStage,
+  useResolvedPreviewTheme,
+} from "@/app/_components/readme";
 
 const ABBREVIATED_SNIPPET = `<picture>
   <source media="(min-width: 768px) and (prefers-color-scheme: dark)"
