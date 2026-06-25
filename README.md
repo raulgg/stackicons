@@ -10,7 +10,7 @@ applies at all widths; zero or more breakpoint rows (min-width px + columns)
 may be added for responsive behavior.
 
 The editor stores state in the page URL using `column-layouts` (JSON) along
-with the other fields. There is no mode switch or per-mode memory.
+with the other fields.
 
 Generated README HTML still targets the unchanged short `/icons` route. Each
 image URL uses the current site origin with `/icons` and the same public API

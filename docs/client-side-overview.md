@@ -77,7 +77,6 @@ independently.
 - Each breakpoint row (when present) has min-width and columns inputs and a
   remove button. Breakpoints may be removed all the way to zero. Added
   breakpoints start at 768 px and step by 256 px to the next free value.
-- There is no longer a Single / Responsive mode switch or per-mode memory.
 
 ### Spacing & size
 

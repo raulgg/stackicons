@@ -1,6 +1,5 @@
 import {
   DEFAULT_COLUMN_LAYOUTS,
-  DEFAULT_RESPONSIVE_COLUMN_LAYOUTS,
   parseEditableColumnLayouts,
   type EditableColumnLayout,
 } from "@/lib/icons/column-layout";
@@ -31,8 +30,6 @@ export const DEFAULT_STACK_ICONS_EDITOR_STATE: StackIconsEditorState = {
   iconSize: DEFAULT_ICON_SIZE,
   gap: DEFAULT_GAP,
 };
-
-export { DEFAULT_RESPONSIVE_COLUMN_LAYOUTS };
 
 type SearchParamValue = string | string[] | undefined;
 

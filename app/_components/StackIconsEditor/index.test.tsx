@@ -12,13 +12,11 @@ import { StackIconsEditor, type StackIconsEditorState } from ".";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { UiThemeMenu } from "@/components/UiThemeMenu";
 import { showToast } from "@/components/ui/sonner";
-import { DEFAULT_SINGLE_COLUMN_LAYOUTS } from "@/lib/icons/column-layout";
 import {
   ADD_ICONS_IMAGE_CODE_PLACEHOLDER,
   FIX_ERRORS_IMAGE_CODE_PLACEHOLDER,
 } from "@/app/_components/readme";
 import {
-  DEFAULT_RESPONSIVE_COLUMN_LAYOUTS,
   DEFAULT_STACK_ICONS_EDITOR_STATE,
   getStackIconsEditorInitialState,
 } from "./state";
@@ -546,7 +544,7 @@ describe("StackIconsEditor", () => {
 </picture>`);
   });
 
-  it("should use the base responsive layout for the SVG URL and preview image", () => {
+  it("should use the base column layout for the generated image URL and preview when breakpoints are present", () => {
     render(
       <StackIconsEditor
         initialState={{
@@ -946,7 +944,7 @@ describe("StackIconsEditor", () => {
     });
   });
 
-  it("should ignore a fully emptied breakpoint row when generating", () => {
+  it("should ignore a fully empty breakpoint row (falling back to base-only output)", () => {
     renderEditor();
 
     fireEvent.click(screen.getByRole("button", { name: "Add breakpoint" }));
@@ -974,7 +972,7 @@ describe("StackIconsEditor", () => {
 </picture>`);
   });
 
-  it("should reject a partially emptied breakpoint row when generating", () => {
+  it("should reject a partially filled breakpoint row", () => {
     renderEditor();
 
     fireEvent.click(screen.getByRole("button", { name: "Add breakpoint" }));
@@ -1110,7 +1108,7 @@ describe("StackIconsEditor", () => {
     });
   });
 
-  it("should restore edited responsive memory with multiple breakpoints", async () => {
+  it("should edit base layout and multiple breakpoints", async () => {
     render(
       <StackIconsEditor
         initialState={{
@@ -1283,7 +1281,7 @@ describe("StackIconsEditor", () => {
     });
   });
 
-  it("should derive responsive initial editor state when responsive page query params are valid", () => {
+  it("should derive initial editor state from a column-layouts query param that includes breakpoints", () => {
     const initialState = getStackIconsEditorInitialState({
       "column-layouts": JSON.stringify([
         { columns: "6", minWidthPx: null },
@@ -1317,7 +1315,7 @@ describe("StackIconsEditor", () => {
     });
   });
 
-  it("should use provided base-only column-layouts (even if previously called 'responsive' without bps)", () => {
+  it("should use provided base-only column-layouts", () => {
     const initialState = getStackIconsEditorInitialState({
       "column-layouts": JSON.stringify([{ columns: "6", minWidthPx: null }]),
       gap: "10",
@@ -1331,7 +1329,7 @@ describe("StackIconsEditor", () => {
     });
   });
 
-  it("should preserve editable responsive state when breakpoint px is out of range", () => {
+  it("should preserve editable state with breakpoints when breakpoint px is out of range", () => {
     const initialState = getStackIconsEditorInitialState({
       "column-layouts": JSON.stringify([
         { columns: "6", minWidthPx: null },
@@ -1352,7 +1350,7 @@ describe("StackIconsEditor", () => {
     });
   });
 
-  it("should preserve editable responsive state when added breakpoint inputs are empty", () => {
+  it("should preserve editable state with breakpoints when added breakpoint inputs are empty", () => {
     const initialState = getStackIconsEditorInitialState({
       "column-layouts": JSON.stringify([
         { columns: "6", minWidthPx: null },

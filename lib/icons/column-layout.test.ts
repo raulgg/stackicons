@@ -2,12 +2,9 @@ import { describe, expect, it } from "vitest";
 
 import {
   DEFAULT_COLUMN_LAYOUTS,
-  DEFAULT_RESPONSIVE_COLUMN_LAYOUTS,
-  DEFAULT_SINGLE_COLUMN_LAYOUTS,
   addBreakpointLayout,
   getColumnLayoutPreviewBands,
   getColumnLayoutRichResult,
-  getDefaultColumnLayouts,
   getEditableBaseColumnLayout,
   getEditableBreakpointColumnLayouts,
   parseEditableColumnLayouts,
@@ -16,16 +13,10 @@ import {
 } from "./column-layout";
 
 describe("column layouts", () => {
-  it("should expose default single and responsive column layouts", () => {
-    expect(DEFAULT_SINGLE_COLUMN_LAYOUTS).toEqual([
+  it("should provide the canonical base-only default column layout", () => {
+    expect(DEFAULT_COLUMN_LAYOUTS).toEqual([
       { columns: "4", minWidthPx: null },
     ]);
-    expect(DEFAULT_RESPONSIVE_COLUMN_LAYOUTS).toEqual([
-      { columns: "4", minWidthPx: null },
-      { columns: "8", minWidthPx: "768" },
-      { columns: "12", minWidthPx: "1200" },
-    ]);
-    expect(getDefaultColumnLayouts()).toEqual(DEFAULT_COLUMN_LAYOUTS);
   });
 
   it("should parse a base-only layout", () => {

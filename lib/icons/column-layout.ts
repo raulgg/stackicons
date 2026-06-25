@@ -33,23 +33,9 @@ const ADDED_BREAKPOINT_COLUMNS = "6";
 const ADDED_BREAKPOINT_MIN_WIDTH_PX = 768;
 const ADDED_BREAKPOINT_MIN_WIDTH_STEP_PX = 256;
 
-export const DEFAULT_SINGLE_COLUMN_LAYOUTS: EditableColumnLayout[] = [
-  { columns: DEFAULT_BASE_COLUMNS, minWidthPx: null },
-];
-
-export const DEFAULT_RESPONSIVE_COLUMN_LAYOUTS: EditableColumnLayout[] = [
-  { columns: DEFAULT_BASE_COLUMNS, minWidthPx: null },
-  { columns: "8", minWidthPx: "768" },
-  { columns: "12", minWidthPx: "1200" },
-];
-
 export const DEFAULT_COLUMN_LAYOUTS: EditableColumnLayout[] = [
   { columns: DEFAULT_BASE_COLUMNS, minWidthPx: null },
 ];
-
-export function getDefaultColumnLayouts(): EditableColumnLayout[] {
-  return copyEditableColumnLayouts(DEFAULT_COLUMN_LAYOUTS);
-}
 
 export function getEditableBaseColumnLayout(
   columnLayouts: readonly EditableColumnLayout[],
@@ -57,7 +43,7 @@ export function getEditableBaseColumnLayout(
   return (
     columnLayouts.find((layout) => layout.minWidthPx === null) ??
     columnLayouts[0] ??
-    DEFAULT_SINGLE_COLUMN_LAYOUTS[0]
+    DEFAULT_COLUMN_LAYOUTS[0]
   );
 }
 
