@@ -668,7 +668,7 @@ describe("StackIconsEditor", () => {
     expect(getIconsImageCodeText()).toBe(FIX_ERRORS_IMAGE_CODE_PLACEHOLDER);
   });
 
-  it("should generate basic icons image code without icons param for explicit all icons", async () => {
+  it("should show fix-errors placeholder when a non-registered value like 'all' is provided (no magic support)", async () => {
     // Given
     renderBaseOnlyEditor();
     fireEvent.change(getIconSlugsTextarea(), {
@@ -679,10 +679,7 @@ describe("StackIconsEditor", () => {
     generatePreview();
 
     // Then
-    expect(getIconsImageCodeText()).toBe(`<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?cols=4&amp;gap=8&amp;size=48&amp;theme=dark" />
-  <img src="http://localhost:3000/icons?cols=4&amp;gap=8&amp;size=48&amp;theme=light" alt="All stack icons" title="All stack icons" />
-</picture>`);
+    expect(getIconsImageCodeText()).toBe(FIX_ERRORS_IMAGE_CODE_PLACEHOLDER);
   });
 
   it("should preserve icons image code URL param order and escape attribute separators", async () => {
@@ -725,7 +722,7 @@ describe("StackIconsEditor", () => {
     expectGeneratedImageSourceUrl(expectedUrl);
   });
 
-  it("should flag unknown slugs inline while still generating icons image code", () => {
+  it("should flag unknown slugs inline and block generation of icons image code", () => {
     // Given
     renderBaseOnlyEditor();
 
@@ -740,16 +737,11 @@ describe("StackIconsEditor", () => {
     expect(
       screen.getByText("Unknown icon slug: not-real."),
     ).toBeInTheDocument();
-    expect(getIconsImageCodeText()).toBe(`<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?s=typescript%2Cnot-real%2Creact&amp;cols=4&amp;gap=8&amp;size=48&amp;theme=dark" />
-  <img src="http://localhost:3000/icons?s=typescript%2Cnot-real%2Creact&amp;cols=4&amp;gap=8&amp;size=48&amp;theme=light" alt="TypeScript, React" title="TypeScript, React" />
-</picture>`);
+    expect(getIconsImageCodeText()).toBe(FIX_ERRORS_IMAGE_CODE_PLACEHOLDER);
   });
 
-  it("should copy icons image code carrying unknown slugs when copy is clicked", async () => {
+  it("should disable copying when unknown slugs are present", async () => {
     // Given
-    const writeText = vi.fn().mockResolvedValue(undefined);
-    mockClipboard(writeText);
     renderEditor();
     fireEvent.change(getIconSlugsTextarea(), {
       target: { value: "typescript,not-real,react" },
@@ -760,18 +752,8 @@ describe("StackIconsEditor", () => {
       name: "Copy image code",
     });
 
-    expect(copyButton).toBeEnabled();
-
-    // When
-    fireEvent.click(copyButton);
-
     // Then
-    await waitFor(() => {
-      expect(writeText).toHaveBeenCalledWith(getIconsImageCodeText());
-    });
-    expect(writeText.mock.calls[0]?.[0]).toContain(
-      "s=typescript%2Cnot-real%2Creact",
-    );
+    expect(copyButton).toBeDisabled();
   });
 
   it("should show validation errors when every edited icon slug is unknown", () => {

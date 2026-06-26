@@ -128,30 +128,16 @@ describe("icons image", () => {
 </picture>`);
   });
 
-  it("should omit the icons query param for explicit all icons", () => {
+  it("should return a validation error when a non-registered value like 'all' is provided (no magic support)", () => {
     const result = generateIconsImage({
       ...baseInput,
       icons: "all",
     });
 
-    expect(result.success ? result.imageSources : []).toEqual([
-      {
-        columns: 4,
-        minWidthPx: null,
-        theme: "light",
-        url: "http://localhost:3000/icons?cols=4&gap=8&size=48&theme=light",
-      },
-      {
-        columns: 4,
-        minWidthPx: null,
-        theme: "dark",
-        url: "http://localhost:3000/icons?cols=4&gap=8&size=48&theme=dark",
-      },
-    ]);
-    expect(result.success ? result.iconsImageCode : "").toBe(`<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="http://localhost:3000/icons?cols=4&amp;gap=8&amp;size=48&amp;theme=dark" />
-  <img src="http://localhost:3000/icons?cols=4&amp;gap=8&amp;size=48&amp;theme=light" alt="All stack icons" title="All stack icons" />
-</picture>`);
+    expect(result.success).toBe(false);
+    expect(result).toMatchObject({
+      errors: ["Unknown icon slug: all."],
+    });
   });
 
   it("should escape query separators inside generated icons image code", () => {

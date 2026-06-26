@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 
-import { listIconSlugs, listRegisteredIcons } from "./registry";
 import { parseIconRequest } from "./parse-request";
 
 function params(query: string): URLSearchParams {
@@ -8,7 +7,7 @@ function params(query: string): URLSearchParams {
 }
 
 describe("icon request parser", () => {
-  it("should default to all registered icons when icon slugs are omitted", () => {
+  it("should return an error when the s param is absent", () => {
     // Given
     const searchParams = params("");
 
@@ -16,26 +15,24 @@ describe("icon request parser", () => {
     const result = parseIconRequest(searchParams);
 
     // Then
-    expect(result.success).toBe(true);
-    expect(result.success ? result.data.slugs : []).toEqual(listIconSlugs());
-    expect(result.success ? result.data.icons : []).toEqual(
-      listRegisteredIcons(),
-    );
+    expect(result.success).toBe(false);
+    expect(result).toMatchObject({
+      errors: ["`s` is required."],
+    });
   });
 
-  it("should resolve all registered icons when the all value is parsed", () => {
+  it("should return an error when s is present but empty", () => {
     // Given
-    const searchParams = params("s=all");
+    const searchParams = params("s=");
 
     // When
     const result = parseIconRequest(searchParams);
 
     // Then
-    expect(result.success).toBe(true);
-    expect(result.success ? result.data.slugs : []).toEqual(listIconSlugs());
-    expect(result.success ? result.data.icons : []).toEqual(
-      listRegisteredIcons(),
-    );
+    expect(result.success).toBe(false);
+    expect(result).toMatchObject({
+      errors: ["`s` must include at least one icon slug."],
+    });
   });
 
   it("should parse comma-separated icon slugs while preserving order and repetitions", () => {

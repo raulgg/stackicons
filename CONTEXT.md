@@ -45,7 +45,7 @@ An icons image code shape with a base column layout plus one or more breakpoint-
 _Avoid_: Breakpoint mode, advanced layout
 
 **Unknown slug**:
-An icon slug that is not in the icon registry. Unknown slugs keep their place in the user's icon order and are carried in icons image code, but generated icons images render without them until the registry recognizes them. The icons image editor flags them for correction without blocking the user.
+An icon slug that is not in the icon registry. Unknown slugs keep their place in the user's icon order and are carried in icons image code, but generated icons images render without them until the registry recognizes them. The icons image editor flags them for correction and blocks generation of copyable icons image code until they are resolved.
 _Avoid_: Invalid slug, bad icon, unsupported icon
 
 **Icon size**:

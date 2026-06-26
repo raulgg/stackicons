@@ -4,20 +4,11 @@ Compose an ordered stack of technology slugs into one cached SVG image for Markd
 
 ## Editor
 
-The public editor builds a GitHub README-safe HTML snippet from icon slugs,
-column layouts (base + optional breakpoints), and gap. A base column count
-applies at all widths; zero or more breakpoint rows (min-width px + columns)
-may be added for responsive behavior.
+The public editor builds a GitHub README-safe HTML snippet from icon slugs, column layouts (base + optional breakpoints), and gap. A base column count applies at all widths; zero or more breakpoint rows (min-width px + columns) may be added for responsive behavior.
 
-The editor stores state in the page URL using `column-layouts` (JSON) along
-with the other fields.
+The editor stores state in the page URL using `column-layouts` (JSON) along with the other fields.
 
-Generated README HTML still targets the unchanged short `/icons` route. Each
-image URL uses the current site origin with `/icons` and the same public API
-query params as before: `icons`, `columns`, `gap`, and `theme`. Responsive
-HTML emits multiple `<source>` URLs that differ only by `columns` and `theme`;
-the `/icons` API itself remains a single-layout SVG endpoint. Base URL and
-version/cache-busting query params are not exposed as editor form fields.
+Generated README HTML targets the short `/icons` route. Each image URL uses the current site origin with `/icons` and the public API query params `s` (comma-separated slugs, required), `cols`, `gap`, `size`, and `theme`. Responsive HTML emits multiple `<source>` URLs that differ only by `cols` and `theme`; the `/icons` API itself remains a single-layout SVG endpoint. Base URL and version/cache-busting query params are not exposed as editor form fields.
 
 ## Stack
 

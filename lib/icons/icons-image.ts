@@ -76,9 +76,7 @@ export function generateIconsImage({
     size,
   });
 
-  const labels = isAllIconInput(icons)
-    ? "All stack icons"
-    : parsedRequest.data.icons.map((icon) => icon.label).join(", ");
+  const labels = parsedRequest.data.icons.map((icon) => icon.label).join(", ");
 
   return {
     success: true,
@@ -288,9 +286,7 @@ function buildIconsImageUrl({
   const url = new URL("/icons", currentOrigin);
   const params = new URLSearchParams();
 
-  if (!isAllIconInput(icons)) {
-    params.set("s", icons);
-  }
+  params.set("s", icons);
 
   params.set("cols", String(columns));
   params.set("gap", gap);
@@ -302,8 +298,4 @@ function buildIconsImageUrl({
   url.search = params.toString();
 
   return url.toString();
-}
-
-function isAllIconInput(icons: string): boolean {
-  return icons.trim() === "all";
 }

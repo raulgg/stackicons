@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { getIconBySlug, isIconSlug, listIconSlugs } from "./registry";
+import { getIconBySlug, isIconSlug } from "./registry";
 import type { IconSlug, RegisteredIcon } from "./registry";
 
 export type IconRequestTheme = "light" | "dark";
@@ -28,16 +28,13 @@ export type IconRequestParseResult =
 const maxIconSlugs = 1000;
 
 const rawIconRequestSchema = z.object({
-  s: z.preprocess(
-    (value) => (value === undefined ? "all" : value),
-    z
-      .string()
-      .min(1, "`s` must include at least one icon slug.")
-      .refine(
-        (value) => parseRawIconSlugs(value).length <= maxIconSlugs,
-        "`s` must include 1000 icons or fewer.",
-      ),
-  ),
+  s: z
+    .string()
+    .min(1, "`s` must include at least one icon slug.")
+    .refine(
+      (value) => parseRawIconSlugs(value).length <= maxIconSlugs,
+      "`s` must include 1000 icons or fewer.",
+    ),
   columns: z.coerce
     .number()
     .int("`cols` must be an integer.")
@@ -65,8 +62,16 @@ const rawIconRequestSchema = z.object({
 export function parseIconRequest(
   searchParams: URLSearchParams,
 ): IconRequestParseResult {
+  const sParam = searchParams.get("s");
+  if (sParam === null) {
+    return {
+      success: false,
+      errors: ["`s` is required."],
+    };
+  }
+
   const rawRequest = rawIconRequestSchema.safeParse({
-    s: searchParams.get("s") ?? undefined,
+    s: sParam,
     columns: searchParams.get("cols") ?? undefined,
     gap: searchParams.get("gap") ?? undefined,
     size: searchParams.get("size") ?? undefined,
@@ -90,10 +95,8 @@ export function parseIconRequest(
     };
   }
 
-  const requestedAllIcons = slugs.length === 1 && slugs[0] === "all";
-  const resolvedSlugs = requestedAllIcons ? [...listIconSlugs()] : slugs;
-  const unknownSlugs = resolvedSlugs.filter((slug) => !isIconSlug(slug));
-  const registeredSlugs = resolvedSlugs.filter(isIconSlug);
+  const unknownSlugs = slugs.filter((slug) => !isIconSlug(slug));
+  const registeredSlugs = slugs.filter(isIconSlug);
 
   if (registeredSlugs.length === 0) {
     return {

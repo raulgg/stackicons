@@ -99,16 +99,21 @@ export function useStackIconsEditorForm(initialState: StackIconsEditorState) {
     commitEditorState(nextState);
   }
 
-  const generatedHtml = generatedIconsImage?.iconsImageCode ?? "";
-  const generatedImageSources = generatedIconsImage?.imageSources ?? [];
   const unknownSlugs = generatedIconsImage?.unknownSlugs ?? [];
-  const hasGeneratedOutput = generatedIconsImage !== null;
+  const hasUnknownSlugs = unknownSlugs.length > 0;
+  const generatedHtml = hasUnknownSlugs
+    ? ""
+    : (generatedIconsImage?.iconsImageCode ?? "");
+  const generatedImageSources = hasUnknownSlugs
+    ? []
+    : (generatedIconsImage?.imageSources ?? []);
+  const hasGeneratedOutput = generatedIconsImage !== null && !hasUnknownSlugs;
   const validationErrors = generatedIconsImageResult.success
     ? []
     : generatedIconsImageResult.errors;
   const iconsImageCodeEmptyPlaceholder = getIconsImageCodeEmptyPlaceholder({
     hasIcons: parseIconSlugs(editorState.icons).length > 0,
-    validationErrorCount: validationErrors.length,
+    validationErrorCount: hasUnknownSlugs ? 1 : validationErrors.length,
   });
   function commitEditorState(nextState: StackIconsEditorState) {
     setEditorState(nextState);
