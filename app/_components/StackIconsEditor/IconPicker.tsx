@@ -2,13 +2,16 @@
 
 import React from "react";
 import { createPortal } from "react-dom";
-import { CheckIcon, SearchIcon } from "lucide-react";
+import { SearchIcon } from "lucide-react";
 
 import {
   listIconCategories,
   listRegisteredIcons,
   type IconCategory,
 } from "@/lib/icons/registry";
+import { Checkbox } from "@/components/ui/Checkbox";
+import { CheckboxIndicator } from "@/components/ui/CheckboxIndicator";
+import { FieldLabel } from "@/components/ui/field";
 import { cn } from "@/lib/utils";
 
 import { IconThumbnail } from "./IconThumbnail";
@@ -29,8 +32,29 @@ function getIconOptionId(slug: string): string {
 
 type CategoryFilter = "All" | IconCategory;
 
+function getSelectAllChecked(
+  matchingIconSlugs: readonly string[],
+  selectedSlugs: readonly string[],
+): boolean | "indeterminate" {
+  const selectedVisibleCount = matchingIconSlugs.filter((slug) =>
+    selectedSlugs.includes(slug),
+  ).length;
+
+  if (selectedVisibleCount === 0) {
+    return false;
+  }
+
+  if (selectedVisibleCount === matchingIconSlugs.length) {
+    return true;
+  }
+
+  return "indeterminate";
+}
+
 type StackIconPickerProps = {
   describedBy?: string;
+  onAddIconSlugs: (iconSlugs: readonly string[]) => void;
+  onRemoveIconSlugs: (iconSlugs: readonly string[]) => void;
   onToggleSlug: (slug: string) => void;
   searchInputRef?: React.Ref<HTMLInputElement>;
   selectedSlugs: readonly string[];
@@ -38,6 +62,8 @@ type StackIconPickerProps = {
 
 export function StackIconPicker({
   describedBy,
+  onAddIconSlugs,
+  onRemoveIconSlugs,
   onToggleSlug,
   searchInputRef,
   selectedSlugs,
@@ -64,6 +90,11 @@ export function StackIconPicker({
         icon.slug.toLowerCase().includes(normalizedQuery)),
   );
   const activeIcon = matchingIcons[activeIndex];
+  const matchingIconSlugs = matchingIcons.map((icon) => icon.slug);
+  const selectAllChecked = getSelectAllChecked(
+    matchingIconSlugs,
+    selectedSlugs,
+  );
 
   React.useEffect(() => {
     if (!isOpen) {
@@ -132,6 +163,17 @@ export function StackIconPicker({
   function selectCategoryFilter(category: CategoryFilter) {
     setCategoryFilter(category);
     setActiveIndex(0);
+  }
+
+  function handleSelectAllChange() {
+    if (selectAllChecked === true) {
+      onRemoveIconSlugs(matchingIconSlugs);
+      return;
+    }
+
+    onAddIconSlugs(
+      matchingIconSlugs.filter((slug) => !selectedSlugs.includes(slug)),
+    );
   }
 
   function handleSearchKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
@@ -233,6 +275,22 @@ export function StackIconPicker({
                     );
                   })}
                 </div>
+                <div className="mb-1 flex items-center gap-2 px-1 py-1.5">
+                  <Checkbox
+                    checked={selectAllChecked}
+                    disabled={matchingIcons.length === 0}
+                    id="icon-picker-select-all"
+                    onCheckedChange={handleSelectAllChange}
+                    onMouseDown={(event) => event.preventDefault()}
+                    variant="picker"
+                  />
+                  <FieldLabel
+                    className="cursor-pointer font-normal"
+                    htmlFor="icon-picker-select-all"
+                  >
+                    Select All ({matchingIcons.length})
+                  </FieldLabel>
+                </div>
                 {matchingIcons.length === 0 ? (
                   <p className="px-3 py-6 text-center text-sm text-ink-3">
                     No icons match &quot;{query}&quot;.
@@ -271,19 +329,9 @@ export function StackIconPicker({
                             <span className="flex-1 truncate font-mono text-[11px] text-ink-3">
                               {icon.slug}
                             </span>
-                            <span
-                              aria-hidden="true"
-                              className={cn(
-                                "flex h-5 w-5 shrink-0 items-center justify-center rounded-md",
-                                isSelected
-                                  ? "bg-accent text-white"
-                                  : "border-[1.5px] border-border-ink",
-                              )}
-                            >
-                              {isSelected ? (
-                                <CheckIcon className="h-3.5 w-3.5" />
-                              ) : null}
-                            </span>
+                            <CheckboxIndicator
+                              state={isSelected ? "checked" : "unchecked"}
+                            />
                           </div>
                         </li>
                       );

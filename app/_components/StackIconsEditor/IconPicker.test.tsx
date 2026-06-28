@@ -14,6 +14,19 @@ function ControlledStackIconPicker({
 
   return (
     <StackIconPicker
+      onAddIconSlugs={(iconSlugs) =>
+        setSelectedSlugs((slugs) => [
+          ...slugs,
+          ...iconSlugs.filter((slug) => !slugs.includes(slug)),
+        ])
+      }
+      onRemoveIconSlugs={(iconSlugs) =>
+        setSelectedSlugs((slugs) => {
+          const iconSlugSet = new Set(iconSlugs);
+
+          return slugs.filter((slug) => !iconSlugSet.has(slug));
+        })
+      }
       onToggleSlug={(slug) =>
         setSelectedSlugs((slugs) =>
           slugs.includes(slug)
@@ -24,6 +37,10 @@ function ControlledStackIconPicker({
       selectedSlugs={selectedSlugs}
     />
   );
+}
+
+function getSelectAllCheckbox() {
+  return screen.getByRole("checkbox", { name: /Select All/ });
 }
 
 function getSearchInput() {
@@ -184,14 +201,160 @@ describe("StackIconPicker", () => {
 
     // Then
     expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
+    expect(getSelectAllCheckbox()).toBeDisabled();
+    expect(getSelectAllCheckbox()).toHaveAccessibleName("Select All (0)");
     expect(screen.getByText('No icons match "zzz-nope".')).toBeInTheDocument();
+  });
+
+  it("should select all visible icons when the select-all checkbox is checked", () => {
+    // Given
+    const databaseIcons = listRegisteredIcons().filter(
+      (icon) => icon.category === "Databases",
+    );
+
+    render(<ControlledStackIconPicker />);
+    fireEvent.focus(getSearchInput());
+    fireEvent.click(screen.getByRole("button", { name: "Databases" }));
+
+    expect(getSelectAllCheckbox()).toHaveAccessibleName(
+      `Select All (${databaseIcons.length})`,
+    );
+    expect(getSelectAllCheckbox()).not.toBeChecked();
+
+    // When
+    fireEvent.click(getSelectAllCheckbox());
+
+    // Then
+    expect(getSelectAllCheckbox()).toBeChecked();
+    expect(screen.getByRole("listbox")).toBeInTheDocument();
+    databaseIcons.forEach((icon) => {
+      expect(
+        screen.getByRole("option", {
+          name: `${icon.label} ${icon.slug}`,
+        }),
+      ).toHaveAttribute("aria-selected", "true");
+    });
+  });
+
+  it("should deselect only visible icons when the select-all checkbox is cleared", () => {
+    // Given
+    const databaseIcons = listRegisteredIcons().filter(
+      (icon) => icon.category === "Databases",
+    );
+
+    render(
+      <ControlledStackIconPicker
+        initialSlugs={["react", ...databaseIcons.map((icon) => icon.slug)]}
+      />,
+    );
+    fireEvent.focus(getSearchInput());
+    fireEvent.click(screen.getByRole("button", { name: "Databases" }));
+
+    expect(getSelectAllCheckbox()).toBeChecked();
+
+    // When
+    fireEvent.click(getSelectAllCheckbox());
+
+    // Then
+    expect(getSelectAllCheckbox()).not.toBeChecked();
+    expect(
+      screen.queryByRole("option", { name: "React react" }),
+    ).not.toBeInTheDocument();
+    databaseIcons.forEach((icon) => {
+      expect(
+        screen.getByRole("option", {
+          name: `${icon.label} ${icon.slug}`,
+        }),
+      ).toHaveAttribute("aria-selected", "false");
+    });
+  });
+
+  it("should complete a partial visible selection from the indeterminate select-all checkbox", () => {
+    // Given
+    const databaseIcons = listRegisteredIcons().filter(
+      (icon) => icon.category === "Databases",
+    );
+    const [firstDatabaseIcon] = databaseIcons;
+
+    render(
+      <ControlledStackIconPicker initialSlugs={[firstDatabaseIcon.slug]} />,
+    );
+    fireEvent.focus(getSearchInput());
+    fireEvent.click(screen.getByRole("button", { name: "Databases" }));
+
+    expect(getSelectAllCheckbox()).toHaveAttribute(
+      "data-state",
+      "indeterminate",
+    );
+
+    // When — fill in the remaining visible icons
+    fireEvent.click(getSelectAllCheckbox());
+
+    // Then
+    expect(getSelectAllCheckbox()).toBeChecked();
+    databaseIcons.forEach((icon) => {
+      expect(
+        screen.getByRole("option", {
+          name: `${icon.label} ${icon.slug}`,
+        }),
+      ).toHaveAttribute("aria-selected", "true");
+    });
+
+    // When — clear only the visible database icons
+    fireEvent.click(getSelectAllCheckbox());
+
+    // Then
+    expect(getSelectAllCheckbox()).not.toBeChecked();
+    databaseIcons.forEach((icon) => {
+      expect(
+        screen.getByRole("option", {
+          name: `${icon.label} ${icon.slug}`,
+        }),
+      ).toHaveAttribute("aria-selected", "false");
+    });
+  });
+
+  it("should scope select all to the current search query", () => {
+    // Given
+    render(<ControlledStackIconPicker />);
+    fireEvent.focus(getSearchInput());
+    fireEvent.change(getSearchInput(), { target: { value: "react" } });
+
+    const matchingIcons = listRegisteredIcons().filter(
+      (icon) =>
+        icon.label.toLowerCase().includes("react") ||
+        icon.slug.toLowerCase().includes("react"),
+    );
+
+    expect(getSelectAllCheckbox()).toHaveAccessibleName(
+      `Select All (${matchingIcons.length})`,
+    );
+
+    // When
+    fireEvent.click(getSelectAllCheckbox());
+
+    // Then
+    matchingIcons.forEach((icon) => {
+      expect(
+        screen.getByRole("option", {
+          name: `${icon.label} ${icon.slug}`,
+        }),
+      ).toHaveAttribute("aria-selected", "true");
+    });
   });
 
   it("should move the active row with arrows, toggle with Enter without closing, and close with Escape", () => {
     // Given
     const onToggleSlug = vi.fn();
 
-    render(<StackIconPicker onToggleSlug={onToggleSlug} selectedSlugs={[]} />);
+    render(
+      <StackIconPicker
+        onAddIconSlugs={vi.fn()}
+        onRemoveIconSlugs={vi.fn()}
+        onToggleSlug={onToggleSlug}
+        selectedSlugs={[]}
+      />,
+    );
     fireEvent.focus(getSearchInput());
 
     const [firstIcon, secondIcon] = listRegisteredIcons();

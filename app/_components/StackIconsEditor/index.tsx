@@ -111,6 +111,25 @@ export function StackIconsEditor({ initialState }: StackIconsEditorProps) {
     updateField("icons", nextSlugs.join(","));
   }
 
+  function addIconSlugs(iconSlugs: readonly string[]) {
+    updateField(
+      "icons",
+      [
+        ...selectedIconSlugs,
+        ...iconSlugs.filter((slug) => !selectedIconSlugs.includes(slug)),
+      ].join(","),
+    );
+  }
+
+  function removeIconSlugs(iconSlugs: readonly string[]) {
+    const iconSlugSet = new Set(iconSlugs);
+
+    updateField(
+      "icons",
+      selectedIconSlugs.filter((slug) => !iconSlugSet.has(slug)).join(","),
+    );
+  }
+
   function removeIconSlugAt(slugIndex: number) {
     updateField(
       "icons",
@@ -162,6 +181,8 @@ export function StackIconsEditor({ initialState }: StackIconsEditorProps) {
             describedBy={
               hasErrors(fieldValidation.icons) ? "icons-error" : undefined
             }
+            onAddIconSlugs={addIconSlugs}
+            onRemoveIconSlugs={removeIconSlugs}
             onToggleSlug={toggleIconSlug}
             searchInputRef={pickerSearchInputRef}
             selectedSlugs={selectedIconSlugs}
