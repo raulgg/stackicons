@@ -162,6 +162,9 @@ export function StackIconsEditor({ initialState }: StackIconsEditorProps) {
             selectedSlugs={selectedIconSlugs}
           />
           <SelectedIconTiles
+            hasIconsFieldError={
+              selectedIconSlugs.length === 0 && hasErrors(fieldValidation.icons)
+            }
             onAddIconRequest={focusIconPickerSearch}
             onRemoveSlug={removeIconSlugAt}
             onReorderSlug={reorderIconSlug}

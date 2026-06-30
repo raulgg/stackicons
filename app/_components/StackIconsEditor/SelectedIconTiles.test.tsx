@@ -5,11 +5,13 @@ import { describe, expect, it, vi } from "vitest";
 import { SelectedIconTiles } from "./SelectedIconTiles";
 
 function renderTiles({
+  hasIconsFieldError,
   onAddIconRequest = vi.fn(),
   onRemoveSlug = vi.fn(),
   onReorderSlug = vi.fn(),
   slugs = ["typescript", "react", "vercel"],
 }: {
+  hasIconsFieldError?: boolean;
   onAddIconRequest?: ReturnType<typeof vi.fn>;
   onRemoveSlug?: ReturnType<typeof vi.fn>;
   onReorderSlug?: ReturnType<typeof vi.fn>;
@@ -17,6 +19,7 @@ function renderTiles({
 } = {}) {
   render(
     <SelectedIconTiles
+      hasIconsFieldError={hasIconsFieldError}
       onAddIconRequest={onAddIconRequest}
       onRemoveSlug={onRemoveSlug}
       onReorderSlug={onReorderSlug}
@@ -132,5 +135,17 @@ describe("SelectedIconTiles", () => {
 
     // Then
     expect(onAddIconRequest).toHaveBeenCalledTimes(1);
+  });
+
+  it("should highlight the Add tile in error colors when hasIconsFieldError is true", () => {
+    // Given / When
+    renderTiles({ hasIconsFieldError: true, slugs: [] });
+
+    // Then
+    const addButton = screen.getByRole("button", { name: "Add" });
+
+    expect(addButton).toHaveClass("border-destructive");
+    expect(addButton).toHaveAttribute("aria-invalid", "true");
+    expect(addButton).toHaveAttribute("aria-describedby", "icons-error");
   });
 });
