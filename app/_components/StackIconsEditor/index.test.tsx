@@ -279,9 +279,7 @@ describe("StackIconsEditor", () => {
     const addButton = screen.getByRole("button", { name: "Add" });
     expect(addButton).toHaveAttribute("aria-invalid", "true");
     expect(addButton).toHaveClass("border-destructive");
-    expect(
-      screen.getByText("`s` must include at least one icon slug."),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Add at least one icon.")).toBeInTheDocument();
   });
 
   it("should generate icons image code with dark source by default", async () => {

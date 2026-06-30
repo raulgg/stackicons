@@ -453,7 +453,14 @@ function getStackIconsEditorFieldValidation({
     breakpointMinWidthByIndex: {},
     gap: validationErrors.filter(isGapValidationError),
     icons: [
-      ...validationErrors.filter(isIconsValidationError),
+      ...validationErrors
+        .filter(isIconsValidationError)
+        .map((e) =>
+          e === "`s` is required." ||
+          e === "`s` must include at least one icon slug."
+            ? "Add at least one icon."
+            : e,
+        ),
       ...(unknownSlugs.length > 0
         ? [formatUnknownSlugsMessage(unknownSlugs)]
         : []),
