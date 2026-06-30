@@ -122,28 +122,28 @@ export function StackIconPicker({
     };
   }, [isOpen]);
 
+  function updateDropdownPosition() {
+    const searchWrapper = searchWrapperRef.current;
+
+    if (searchWrapper === null) {
+      return;
+    }
+
+    const rect = searchWrapper.getBoundingClientRect();
+
+    setDropdownPosition({
+      left: rect.left + window.scrollX,
+      top: rect.bottom + window.scrollY + 8,
+      width: rect.width,
+    });
+  }
+
   // The dropdown portals to document.body so the EditorSection card's
   // overflow-hidden cannot clip it. Position is derived from the search
   // input's bounding rect and kept in sync while the picker is open.
   React.useEffect(() => {
     if (!isOpen) {
       return;
-    }
-
-    function updateDropdownPosition() {
-      const searchWrapper = searchWrapperRef.current;
-
-      if (searchWrapper === null) {
-        return;
-      }
-
-      const rect = searchWrapper.getBoundingClientRect();
-
-      setDropdownPosition({
-        left: rect.left + window.scrollX,
-        top: rect.bottom + window.scrollY + 8,
-        width: rect.width,
-      });
     }
 
     updateDropdownPosition();
@@ -157,6 +157,7 @@ export function StackIconPicker({
 
   function openPicker() {
     setActiveIndex(0);
+    updateDropdownPosition();
     setIsOpen(true);
   }
 

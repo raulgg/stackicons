@@ -71,6 +71,23 @@ describe("StackIconPicker", () => {
     );
   });
 
+  it("should position the dropdown portal when the picker opens", () => {
+    // Given
+    render(<ControlledStackIconPicker />);
+
+    // When
+    fireEvent.focus(getSearchInput());
+
+    // Then — position is set synchronously on open, not after an effect tick
+    const dropdownStyle = screen
+      .getByRole("listbox")
+      .parentElement?.getAttribute("style");
+
+    expect(dropdownStyle).toContain("left:");
+    expect(dropdownStyle).toContain("top:");
+    expect(dropdownStyle).toContain("width:");
+  });
+
   it("should render the open dropdown in a portal outside the picker's section card", () => {
     // Given — the picker sits inside a card that clips overflowing content
     render(
