@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { IconThumbnail } from "./IconThumbnail";
 
 type SelectedIconTilesProps = {
+  hasIconsFieldError?: boolean;
   onAddIconRequest: () => void;
   onRemoveSlug: (slugIndex: number) => void;
   onReorderSlug: (fromIndex: number, toIndex: number) => void;
@@ -18,6 +19,7 @@ type SelectedIconTilesProps = {
 // Draggable tile grid for the selected icons. Tile order is the icon order in
 // the generated icons image, so drops splice the dragged slug into place.
 export function SelectedIconTiles({
+  hasIconsFieldError,
   onAddIconRequest,
   onRemoveSlug,
   onReorderSlug,
@@ -55,7 +57,14 @@ export function SelectedIconTiles({
       ))}
       <li>
         <button
-          className="flex h-full w-[96px] flex-col items-center justify-center gap-1.5 rounded-[6px] border border-dashed border-border-strong bg-surface-2 px-[10px] pb-[11px] pt-[14px] text-ink-3 hover:border-accent hover:text-accent"
+          aria-describedby={hasIconsFieldError ? "icons-error" : undefined}
+          aria-invalid={hasIconsFieldError || undefined}
+          className={cn(
+            "flex h-full w-[96px] flex-col items-center justify-center gap-1.5 rounded-[6px] border border-dashed px-[10px] pb-[11px] pt-[14px]",
+            hasIconsFieldError
+              ? "border-destructive bg-destructive-soft text-destructive"
+              : "border-border-strong bg-surface-2 text-ink-3 hover:border-accent hover:text-accent",
+          )}
           onClick={onAddIconRequest}
           type="button"
         >

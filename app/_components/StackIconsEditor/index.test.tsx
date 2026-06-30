@@ -276,6 +276,9 @@ describe("StackIconsEditor", () => {
     });
     expect(getIconsImageCodeText()).toBe(ADD_ICONS_IMAGE_CODE_PLACEHOLDER);
     expect(getIconSlugsTextarea()).toHaveAttribute("aria-invalid", "true");
+    const addButton = screen.getByRole("button", { name: "Add" });
+    expect(addButton).toHaveAttribute("aria-invalid", "true");
+    expect(addButton).toHaveClass("border-destructive");
     expect(
       screen.getByText("`s` must include at least one icon slug."),
     ).toBeInTheDocument();
