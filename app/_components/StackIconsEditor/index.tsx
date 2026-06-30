@@ -52,6 +52,7 @@ type StackIconsEditorFieldValidation = {
   gap: string[];
   icons: string[];
   layout: string[];
+  size: string[];
   breakpointColumnsByIndex: Record<number, string[]>;
   breakpointMinWidthByIndex: Record<number, string[]>;
 };
@@ -340,6 +341,9 @@ export function StackIconsEditor({ initialState }: StackIconsEditorProps) {
       >
         <div>
           <SpacingSliderRow
+            describedBy={
+              hasErrors(fieldValidation.size) ? "size-error" : undefined
+            }
             label="Icon size"
             max={MAX_ICON_SIZE}
             min={MIN_ICON_SIZE}
@@ -347,6 +351,7 @@ export function StackIconsEditor({ initialState }: StackIconsEditorProps) {
             step={ICON_SIZE_STEP}
             value={state.iconSize}
           />
+          <FieldError errors={fieldValidation.size} id="size-error" />
           <div aria-hidden="true" className="my-[18px] border-t" />
           <SpacingSliderRow
             describedBy={
@@ -451,21 +456,21 @@ function getStackIconsEditorFieldValidation({
     baseColumns: [],
     breakpointColumnsByIndex: {},
     breakpointMinWidthByIndex: {},
-    gap: validationErrors.filter(isGapValidationError),
+    gap: validationErrors.filter(isGapValidationError).map(toGapErrorMessage),
     icons: [
       ...validationErrors
         .filter(isIconsValidationError)
-        .map((e) =>
-          e === "`s` is required." ||
-          e === "`s` must include at least one icon slug."
-            ? "Add at least one icon."
-            : e,
-        ),
+        .map(toIconsErrorMessage),
       ...(unknownSlugs.length > 0
         ? [formatUnknownSlugsMessage(unknownSlugs)]
         : []),
     ],
-    layout: validationErrors.filter(isLayoutValidationError),
+    layout: validationErrors
+      .filter(isLayoutValidationError)
+      .map(toLayoutErrorMessage),
+    size: validationErrors
+      .filter(isSizeValidationError)
+      .map(toSizeErrorMessage),
   };
 
   if (columnLayoutResult) {
@@ -487,10 +492,18 @@ function isGapValidationError(error: string): boolean {
   return error.includes("`gap`");
 }
 
+function isSizeValidationError(error: string): boolean {
+  return error.includes("`size`");
+}
+
 function isLayoutValidationError(error: string): boolean {
   return (
     !isIconsValidationError(error) &&
     !isGapValidationError(error) &&
+    !isSizeValidationError(error) &&
+    !error.includes("`cols`") &&
+    !error.includes("Invalid input: expected number") &&
+    !error.includes("Invalid option") &&
     ![
       "Each column layout must use 2 to 20 columns.",
       "Breakpoint rows must include columns and breakpoint px.",
@@ -504,6 +517,45 @@ function hasErrors(
   errors: readonly string[] | undefined,
 ): errors is readonly string[] {
   return errors !== undefined && errors.length > 0;
+}
+
+function toGapErrorMessage(error: string): string {
+  if (error === "`gap` must be an integer.")
+    return "Gap must be a whole number.";
+  if (error === "`gap` must be at least 0.") return "Gap must be 0 or greater.";
+  if (error === "`gap` must be at most 24.") return "Gap must be 24 or less.";
+  return error;
+}
+
+function toSizeErrorMessage(error: string): string {
+  if (error === "`size` must be an integer.")
+    return "Icon size must be a whole number.";
+  if (error === "`size` must be at least 24.")
+    return "Icon size must be at least 24.";
+  if (error === "`size` must be at most 64.")
+    return "Icon size must be at most 64.";
+  return error;
+}
+
+function toLayoutErrorMessage(error: string): string {
+  if (error === "At least one column layout is required.")
+    return "Add at least one column layout.";
+  if (error === "Exactly one base column layout is required.")
+    return "A base layout is required.";
+  if (error === "Breakpoint px values must be unique.")
+    return "Breakpoint widths must be unique.";
+  return error;
+}
+
+function toIconsErrorMessage(error: string): string {
+  if (
+    error === "`s` is required." ||
+    error === "`s` must include at least one icon slug."
+  )
+    return "Add at least one icon.";
+  if (error === "`s` must include 1000 icons or fewer.")
+    return "Add 1000 icons or fewer.";
+  return error;
 }
 
 type SpacingSliderRowProps = {
