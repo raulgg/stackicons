@@ -89,4 +89,4 @@ describe("useExample", () => {
 - **Avoid** testing implementation details (internal state, private functions, class names) unless they are the contract.
 - **Prefer** user-visible behavior and public APIs.
 - **Do not** assert on snapshot dumps of large trees unless a snapshot is explicitly the right tool.
-- Run tests before opening a PR: `bun run test`.
+

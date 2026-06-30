@@ -18,16 +18,20 @@ Generated README HTML targets the short `/icons` route. Each image URL uses the 
 
 ## Scripts
 
-| Command         | Purpose             |
-| --------------- | ------------------- |
-| `bun run dev`   | Local dev server    |
-| `bun run build` | Production build    |
-| `bun run lint`  | ESLint              |
-| `bun run test`  | Vitest (watch mode) |
+| Command                | Purpose                          |
+| ---------------------- | -------------------------------- |
+| `bun run dev`          | Local dev server                 |
+| `bun run build`        | Production build                 |
+| `bun run lint`         | ESLint                           |
+| `bun run format`       | Prettier (write)                 |
+| `bun run format:check` | Prettier (check only)            |
+| `bun run type-check`   | Next.js route types + TypeScript |
+| `bun run test`         | Vitest (one run)                 |
+| `bun run test:watch`   | Vitest (watch mode)              |
 
 ### Tests
 
-Unit tests run on **Vitest** with Testing Library and jsdom. Use `bun run test` — not `bun test`, which is Bun's separate test runner and is blocked by a `bunfig.toml` preload guard.
+Unit tests run on **Vitest** with Testing Library and jsdom. Use `bun run test` for a single run, or `bun run test:watch` while developing — not `bun test`, which is Bun's separate test runner and is blocked by a `bunfig.toml` preload guard.
 
 Tests are **colocated** next to the file they cover, using the same base name with a `.test` suffix (e.g. `Button.tsx` → `Button.test.tsx`). That applies to components, hooks, utilities, API route handlers, and any other unit under test.
 
